@@ -1,0 +1,14 @@
+# Firebase SQL Connect service configuration.
+# Replace these values after creating the SQL Connect service in Firebase Console.
+serviceId: visible-thinking
+location: asia-northeast3
+schema:
+  source: ./schema
+  datasource:
+    postgresql:
+      database: visible_thinking
+      cloudSql:
+        instanceId: visible-thinking-sql
+        schemaValidation: COMPATIBLE
+connectorDirs:
+  - ./teacher

@@ -1,0 +1,5 @@
+connectorId: teacher
+generate:
+  javascriptSdk:
+    outputDir: ../../src/lib/dataconnect-generated
+    package: "@visible-thinking/dataconnect"

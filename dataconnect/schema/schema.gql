@@ -1,0 +1,122 @@
+enum ActivityMode {
+  INDIVIDUAL
+  GROUP
+}
+
+enum ActivityStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  MODIFIED
+}
+
+enum RoutineColumn {
+  SEE
+  THINK
+  WONDER
+}
+
+type SchoolClass @table(name: "school_class", key: "id") {
+  id: String! @col(dataType: "varchar(64)")
+  name: String! @col(dataType: "varchar(80)")
+}
+
+type Student @table(name: "student", key: "id") {
+  id: String! @col(dataType: "varchar(64)")
+  schoolClass: SchoolClass!
+  studentNumber: String! @col(dataType: "varchar(32)")
+  name: String! @col(dataType: "varchar(80)")
+  passwordIssued: Boolean! @default(value: false)
+}
+
+type Activity @table(name: "activity", key: "id") {
+  id: String! @col(dataType: "varchar(96)")
+  title: String!
+  routine: String! @col(dataType: "varchar(80)")
+  activityMode: ActivityMode!
+  subject: String! @col(dataType: "varchar(80)")
+  status: ActivityStatus!
+  code: String! @col(dataType: "varchar(32)")
+  materialType: String! @col(dataType: "varchar(40)")
+  activityDate: Date!
+  submittedCount: Int! @default(value: 0)
+  targetCount: Int! @default(value: 0)
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type ActivityClass @table(name: "activity_class", key: ["activity", "schoolClass"]) {
+  activity: Activity!
+  schoolClass: SchoolClass!
+}
+
+type ActivityAttendance @table(name: "activity_attendance", key: ["activity", "student"]) {
+  activity: Activity!
+  student: Student!
+  status: AttendanceStatus!
+}
+
+type ActivityGroup @table(name: "activity_group", key: "id") {
+  id: String! @col(dataType: "varchar(128)")
+  activity: Activity!
+  name: String! @col(dataType: "varchar(80)")
+}
+
+type ActivityGroupMember @table(name: "activity_group_member", key: ["activityGroup", "student"]) {
+  activityGroup: ActivityGroup!
+  student: Student!
+}
+
+type IndividualSubmission @table(name: "individual_submission", key: ["activity", "student"]) {
+  activity: Activity!
+  student: Student!
+  status: SubmissionStatus!
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type GroupSubmission @table(name: "group_submission", key: ["activity", "activityGroup"]) {
+  activity: Activity!
+  activityGroup: ActivityGroup!
+  status: SubmissionStatus!
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type ThinkingCard @table(name: "thinking_card", key: "id") {
+  id: String! @col(dataType: "varchar(128)")
+  activity: Activity!
+  student: Student!
+  column: RoutineColumn!
+  content: String!
+  tags: [String]
+  tagsPublic: Boolean! @default(value: false)
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type GroupThinkingCard @table(name: "group_thinking_card", key: "id") {
+  id: String! @col(dataType: "varchar(128)")
+  activity: Activity!
+  activityGroup: ActivityGroup!
+  updatedByStudent: Student!
+  column: RoutineColumn!
+  content: String!
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type GroupSubmissionAgreement @table(name: "group_submission_agreement", key: ["activity", "activityGroup", "student"]) {
+  activity: Activity!
+  activityGroup: ActivityGroup!
+  student: Student!
+  agreed: Boolean! @default(value: false)
+  updatedAt: Timestamp! @default(expr: "request.time")
+}

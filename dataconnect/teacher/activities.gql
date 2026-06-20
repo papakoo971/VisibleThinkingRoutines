@@ -1,0 +1,170 @@
+query ListActivities @auth(level: PUBLIC, insecureReason: "Prototype teacher activity list before Firebase Auth is connected.") {
+  activities {
+    id
+    title
+    routine
+    activityMode
+    subject
+    status
+    code
+    materialType
+    activityDate
+    submittedCount
+    targetCount
+    activityClasses_on_activity {
+      schoolClass {
+        id
+        name
+      }
+    }
+  }
+}
+
+query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype activity detail before Firebase Auth is connected.") {
+  activity(id: $id) {
+    id
+    title
+    routine
+    activityMode
+    subject
+    status
+    code
+    materialType
+    activityDate
+    submittedCount
+    targetCount
+    activityClasses_on_activity {
+      schoolClass {
+        id
+        name
+      }
+    }
+    activityAttendances_on_activity {
+      status
+      student {
+        id
+        name
+        studentNumber
+        schoolClass {
+          id
+          name
+        }
+      }
+    }
+    activityGroups_on_activity {
+      id
+      name
+      activityGroupMembers_on_activityGroup {
+        student {
+          id
+          name
+          studentNumber
+        }
+      }
+    }
+  }
+}
+
+mutation UpsertSchoolClass($id: String!, $name: String!) @auth(level: PUBLIC, insecureReason: "Prototype setup before teacher authentication is connected.") {
+  schoolClass_upsert(data: {
+    id: $id
+    name: $name
+  })
+}
+
+mutation UpsertStudent($id: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!, $passwordIssued: Boolean!) @auth(level: PUBLIC, insecureReason: "Prototype setup before teacher authentication is connected.") {
+  student_upsert(data: {
+    id: $id
+    schoolClass: { id: $schoolClassId }
+    studentNumber: $studentNumber
+    name: $name
+    passwordIssued: $passwordIssued
+  })
+}
+
+mutation UpsertActivity(
+  $id: String!
+  $title: String!
+  $routine: String!
+  $activityMode: ActivityMode!
+  $subject: String!
+  $status: ActivityStatus!
+  $code: String!
+  $materialType: String!
+  $activityDate: Date!
+  $submittedCount: Int!
+  $targetCount: Int!
+) @auth(level: PUBLIC, insecureReason: "Prototype create activity before teacher authentication is connected.") {
+  activity_upsert(data: {
+    id: $id
+    title: $title
+    routine: $routine
+    activityMode: $activityMode
+    subject: $subject
+    status: $status
+    code: $code
+    materialType: $materialType
+    activityDate: $activityDate
+    submittedCount: $submittedCount
+    targetCount: $targetCount
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation UpsertActivityClass($activityId: String!, $schoolClassId: String!) @auth(level: PUBLIC, insecureReason: "Prototype create activity before teacher authentication is connected.") {
+  activityClass_upsert(data: {
+    activity: { id: $activityId }
+    schoolClass: { id: $schoolClassId }
+  })
+}
+
+mutation UpsertActivityAttendance($activityId: String!, $studentId: String!, $status: AttendanceStatus!) @auth(level: PUBLIC, insecureReason: "Prototype attendance setup before teacher authentication is connected.") {
+  activityAttendance_upsert(data: {
+    activity: { id: $activityId }
+    student: { id: $studentId }
+    status: $status
+  })
+}
+
+mutation UpsertActivityGroup($id: String!, $activityId: String!, $name: String!) @auth(level: PUBLIC, insecureReason: "Prototype group setup before teacher authentication is connected.") {
+  activityGroup_upsert(data: {
+    id: $id
+    activity: { id: $activityId }
+    name: $name
+  })
+}
+
+mutation UpsertActivityGroupMember($activityGroupId: String!, $studentId: String!) @auth(level: PUBLIC, insecureReason: "Prototype group setup before teacher authentication is connected.") {
+  activityGroupMember_upsert(data: {
+    activityGroup: { id: $activityGroupId }
+    student: { id: $studentId }
+  })
+}
+
+mutation UpsertIndividualSubmission($activityId: String!, $studentId: String!, $status: SubmissionStatus!) @auth(level: PUBLIC, insecureReason: "Prototype submission setup before teacher authentication is connected.") {
+  individualSubmission_upsert(data: {
+    activity: { id: $activityId }
+    student: { id: $studentId }
+    status: $status
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation UpsertGroupSubmission($activityId: String!, $activityGroupId: String!, $status: SubmissionStatus!) @auth(level: PUBLIC, insecureReason: "Prototype submission setup before teacher authentication is connected.") {
+  groupSubmission_upsert(data: {
+    activity: { id: $activityId }
+    activityGroup: { id: $activityGroupId }
+    status: $status
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation UpsertGroupSubmissionAgreement($activityId: String!, $activityGroupId: String!, $studentId: String!, $agreed: Boolean!) @auth(level: PUBLIC, insecureReason: "Prototype submission agreement before teacher authentication is connected.") {
+  groupSubmissionAgreement_upsert(data: {
+    activity: { id: $activityId }
+    activityGroup: { id: $activityGroupId }
+    student: { id: $studentId }
+    agreed: $agreed
+    updatedAt_expr: "request.time"
+  })
+}
