@@ -18,7 +18,7 @@ export default function StudentPortalPage() {
             </label>
             <label className="text-sm font-medium">
               이름
-              <input className="mt-1 h-10 w-full rounded-md border border-zinc-300 px-3" defaultValue="김민준" />
+              <input className="mt-1 h-10 w-full rounded-md border border-zinc-300 px-3" defaultValue="김민서" />
             </label>
             <label className="text-sm font-medium">
               비밀번호
@@ -35,7 +35,7 @@ export default function StudentPortalPage() {
           <div className="border-b border-zinc-200 px-5 py-4">
             <div className="flex items-center gap-2">
               <UserRound className="h-5 w-5 text-emerald-700" />
-              <h2 className="font-semibold">김민준 학생의 활동</h2>
+              <h2 className="font-semibold">김민서 학생의 활동</h2>
             </div>
           </div>
           <StudentActivityList initialActivities={activities} />

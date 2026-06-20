@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className={`flex items-center gap-3 border-b border-zinc-200 py-4 ${sidebarCollapsed ? "px-3" : "px-5"}`}>
             <Link href="/" className={sidebarCollapsed ? "sr-only" : "min-w-0 flex-1"}>
               <span className="block text-sm font-semibold text-emerald-700">Visible Thinking</span>
-              <span className="mt-1 block text-xl font-semibold tracking-tight">수업 운영실</span>
+              <span className="mt-1 block text-xl font-semibold tracking-tight">수업 운영</span>
             </Link>
             <button
               type="button"

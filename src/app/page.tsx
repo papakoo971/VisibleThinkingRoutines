@@ -39,13 +39,13 @@ export default function Home() {
         <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <p className="mb-4 inline-flex rounded-md bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-900">
-              첫 루틴: See-Think-Wonder 개인 활동형
+              첫 루틴: See-Think-Wonder 개인 활동
             </p>
             <h2 className="max-w-3xl text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
               교사의 수업 운영과 학생의 사고 기록을 한 화면 흐름으로 연결합니다.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600">
-              이 초기 구현은 Firebase 연결 전 단계의 작동 가능한 화면 골격입니다. 학생 등록, 모둠 관리, 활동 생성,
+              이 초기 구현은 Firebase 연결 전 단계에서도 작동 가능한 화면 골격입니다. 학생 등록, 모둠 관리, 활동 생성,
               학생 작성, 교사 결과 조회의 핵심 인터페이스를 먼저 확인할 수 있습니다.
             </p>
           </div>

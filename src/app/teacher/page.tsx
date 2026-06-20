@@ -26,7 +26,7 @@ export default async function TeacherDashboard({
     <AppShell>
       <PageHeader
         eyebrow={teacherProfile.schoolLabel}
-        title={`${teacherProfile.name}님의 수업 운영`}
+        title={`${teacherProfile.name}의 수업 운영`}
         description="학급, 학생, 모둠, 활동을 관리하고 사고 루틴 결과를 확인합니다."
         action={<PrimaryLink href="/teacher/activities/new">활동 만들기</PrimaryLink>}
       />
@@ -53,8 +53,7 @@ export default async function TeacherDashboard({
               </Link>
             </div>
             <Link href="/teacher/activities/new" className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
-              <Plus className="h-4 w-4" />
-              새 활동
+              <Plus className="h-4 w-4" />새 활동
             </Link>
           </div>
           <div className="grid gap-6 p-5">
