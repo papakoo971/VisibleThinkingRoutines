@@ -1,5 +1,5 @@
 # Firebase SQL Connect service configuration.
-# Replace these values after creating the SQL Connect service in Firebase Console.
+# Replace serviceId, location, database, and instanceId with the values created in Firebase Console.
 serviceId: visible-thinking
 location: asia-northeast3
 schema:

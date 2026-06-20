@@ -1,64 +1,48 @@
 # Firebase SQL Connect setup
 
-This project uses Firebase SQL Connect as the target persistent store.
+This project uses Firebase SQL Connect as the target persistent store, backed by Cloud SQL for PostgreSQL.
 
-## What is already prepared
+## Prepared in this repo
 
-- `firebase.json` points Firebase CLI to `dataconnect/`.
-- `dataconnect/dataconnect.yaml` defines the SQL Connect service placeholder.
-- `dataconnect/schema/schema.gql` defines the relational data model for classes, students, activities, groups, attendance, submissions, cards, and group agreements.
+- `firebase.json` points the Firebase CLI to `dataconnect/`.
+- `dataconnect/dataconnect.yaml` defines the SQL Connect service, schema directory, datasource, and connector directories.
+- `dataconnect/schema/schema.gql` defines the relational model for classes, students, activities, groups, attendance, submissions, cards, and group agreements.
+- `dataconnect/teacher/connector.yaml` configures the teacher connector and generated JavaScript SDK output.
 - `dataconnect/teacher/activities.gql` defines the first teacher-facing queries and mutations.
+- `src/lib/dataconnect-generated/` contains the generated SDK from the current schema and connector.
+- `src/lib/firebase-client.ts` and `src/lib/firebase-sql-connect.ts` initialize Firebase and SQL Connect.
 
-## Values to update after creating the Firebase resources
+## Values to replace
 
-Edit `dataconnect/dataconnect.yaml`:
+After creating the Firebase SQL Connect service, update `dataconnect/dataconnect.yaml` with the real Firebase Console values:
 
 ```yaml
 serviceId: visible-thinking
 location: asia-northeast3
 schema:
+  source: ./schema
   datasource:
     postgresql:
       database: visible_thinking
       cloudSql:
         instanceId: visible-thinking-sql
+        schemaValidation: COMPATIBLE
+connectorDirs:
+  - ./teacher
 ```
 
-Use the actual values from Firebase Console:
+Replace these fields:
 
-- `serviceId`: Firebase SQL Connect service ID.
-- `location`: service region.
+- `serviceId`: SQL Connect service ID.
+- `location`: SQL Connect service region.
 - `database`: PostgreSQL database name.
 - `instanceId`: Cloud SQL for PostgreSQL instance ID.
 
-## User steps
+`schemaValidation: COMPATIBLE` is intentional for this prototype because compatible migrations leave unused database tables and columns in place.
 
-1. Create or select a Firebase project in Firebase Console.
-2. Enable Firebase SQL Connect.
-3. Create a Cloud SQL for PostgreSQL instance through SQL Connect.
-4. Choose the region. For Korea, start with `asia-northeast3` unless your Firebase project uses another region.
-5. Install or update Firebase CLI locally.
-6. Run Firebase login:
+## Environment file
 
-```bash
-firebase login
-```
-
-7. Link this project directory to your Firebase project:
-
-```bash
-firebase use --add
-```
-
-8. Initialize SQL Connect if the CLI requires project metadata:
-
-```bash
-firebase init dataconnect
-```
-
-Keep the existing `dataconnect/` directory when prompted.
-
-9. Copy `.env.local.example` to `.env.local` and fill in the Firebase Web App values from Firebase Console:
+Copy `.env.local.example` to `.env.local` and fill in the Firebase Web App config:
 
 ```text
 NEXT_PUBLIC_FIREBASE_API_KEY=
@@ -67,20 +51,58 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 ```
 
-10. Compile the local SQL Connect schema and connector:
+Keep `.env.local` uncommitted. It is ignored by `.gitignore`.
+
+For local SQL Connect emulator work, set:
+
+```text
+NEXT_PUBLIC_FIREBASE_DATACONNECT_EMULATOR=true
+NEXT_PUBLIC_FIREBASE_DATACONNECT_EMULATOR_HOST=localhost
+NEXT_PUBLIC_FIREBASE_DATACONNECT_EMULATOR_PORT=9399
+```
+
+Use `false` when running against the live Firebase SQL Connect service.
+
+## Firebase setup steps
+
+1. Create or select a Firebase project in Firebase Console.
+2. Add a Web App to the Firebase project and copy its config into `.env.local`.
+3. Enable Firebase SQL Connect.
+4. Create a Cloud SQL for PostgreSQL instance through SQL Connect.
+5. Choose the service region. For Korea, start with `asia-northeast3` unless the project requires another region.
+6. Update `dataconnect/dataconnect.yaml` with the real service and database values.
+7. Log in and link this local directory to the Firebase project:
+
+```bash
+firebase login
+firebase use --add
+```
+
+8. Validate the local schema and connector:
 
 ```bash
 firebase dataconnect:compile
 ```
 
-11. Start the SQL Connect emulator from VS Code Firebase extension, or with the Firebase CLI if available.
-12. Generate the JavaScript SDK after the connector validates:
+9. Configure SQL permissions if required by the Firebase project:
+
+```bash
+firebase dataconnect:sql:setup
+```
+
+10. Apply database schema migrations:
+
+```bash
+firebase dataconnect:sql:migrate
+```
+
+11. Regenerate the JavaScript SDK declared in `dataconnect/teacher/connector.yaml`:
 
 ```bash
 firebase dataconnect:sdk:generate
 ```
 
-The connector is configured to generate into:
+The generated SDK should remain in:
 
 ```text
 src/lib/dataconnect-generated
@@ -88,20 +110,7 @@ src/lib/dataconnect-generated
 
 ## Next code step
 
-The generated SDK currently exists in:
-
-```text
-src/lib/dataconnect-generated
-```
-
-The Firebase app and SQL Connect client initialization helpers are:
-
-```text
-src/lib/firebase-client.ts
-src/lib/firebase-sql-connect.ts
-```
-
-After the Firebase project and SQL Connect service are connected, replace the current server memory store in:
+After the Firebase project and SQL Connect service are connected, replace the current process-memory implementation in:
 
 ```text
 src/lib/created-activity-store.ts
@@ -113,4 +122,8 @@ with calls to the generated SQL Connect SDK operations from:
 src/lib/dataconnect-generated
 ```
 
-Until that SDK exists, the app keeps using the current API and memory fallback so development can continue.
+Until that replacement is complete, the app keeps using the existing Next.js API routes, in-memory server store, and `localStorage` fallback.
+
+## Current prototype caveat
+
+The operations in `dataconnect/teacher/activities.gql` still use prototype `@auth(level: PUBLIC)` directives. Tighten those directives after Firebase Auth teacher/student flows are implemented.
