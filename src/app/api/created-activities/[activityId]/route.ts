@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(_request: Request, context: { params: Promise<{ activityId: string }> }) {
   const { activityId } = await context.params;
-  const activity = getCreatedActivityPayload(activityId);
+  const activity = await getCreatedActivityPayload(activityId);
 
   if (!activity) {
     return Response.json({ message: "Activity not found" }, { status: 404 });
@@ -15,6 +15,6 @@ export async function GET(_request: Request, context: { params: Promise<{ activi
 
 export async function DELETE(_request: Request, context: { params: Promise<{ activityId: string }> }) {
   const { activityId } = await context.params;
-  deleteCreatedActivityPayload(activityId);
+  await deleteCreatedActivityPayload(activityId);
   return Response.json({ ok: true });
 }
