@@ -260,6 +260,27 @@ export interface GetActivityData {
             } & Student_Key;
           })[];
         } & ActivityGroup_Key)[];
+          individualSubmissions_on_activity: ({
+            status: SubmissionStatus;
+            student: {
+              id: string;
+            } & Student_Key;
+          })[];
+            groupSubmissions_on_activity: ({
+              status: SubmissionStatus;
+              activityGroup: {
+                id: string;
+              } & ActivityGroup_Key;
+            })[];
+              groupSubmissionAgreements_on_activity: ({
+                agreed: boolean;
+                activityGroup: {
+                  id: string;
+                } & ActivityGroup_Key;
+                  student: {
+                    id: string;
+                  } & Student_Key;
+              })[];
   } & Activity_Key;
 }
 ```

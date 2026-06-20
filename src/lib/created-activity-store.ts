@@ -1,10 +1,11 @@
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
+import { sqlConnectCreatedActivityStore } from "@/lib/sql-connect-created-activity-store";
 
 type CreatedActivityGlobal = typeof globalThis & {
   __visibleThinkingCreatedActivities?: CreatedActivityPayload[];
 };
 
-type CreatedActivityStore = {
+export type CreatedActivityStore = {
   list(): Promise<CreatedActivityPayload[]>;
   get(activityId: string): Promise<CreatedActivityPayload | undefined>;
   upsert(payload: CreatedActivityPayload): Promise<CreatedActivityPayload>;
@@ -36,7 +37,8 @@ const memoryCreatedActivityStore: CreatedActivityStore = {
   },
 };
 
-const createdActivityStore = memoryCreatedActivityStore;
+const createdActivityStore =
+  process.env.CREATED_ACTIVITY_STORE === "sql-connect" ? sqlConnectCreatedActivityStore : memoryCreatedActivityStore;
 
 export function listCreatedActivityPayloads() {
   return createdActivityStore.list();

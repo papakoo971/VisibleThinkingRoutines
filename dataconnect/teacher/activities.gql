@@ -62,6 +62,27 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
         }
       }
     }
+    individualSubmissions_on_activity {
+      status
+      student {
+        id
+      }
+    }
+    groupSubmissions_on_activity {
+      status
+      activityGroup {
+        id
+      }
+    }
+    groupSubmissionAgreements_on_activity {
+      agreed
+      activityGroup {
+        id
+      }
+      student {
+        id
+      }
+    }
   }
 }
 

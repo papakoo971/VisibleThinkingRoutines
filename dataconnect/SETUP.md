@@ -63,6 +63,18 @@ NEXT_PUBLIC_FIREBASE_DATACONNECT_EMULATOR_PORT=9399
 
 Use `false` when running against the live Firebase SQL Connect service.
 
+The current API routes use the in-memory store by default:
+
+```text
+CREATED_ACTIVITY_STORE=memory
+```
+
+After SQL Connect is provisioned, migrated, and the generated SDK has been regenerated, switch created activity API persistence to SQL Connect:
+
+```text
+CREATED_ACTIVITY_STORE=sql-connect
+```
+
 ## Firebase setup steps
 
 1. Create or select a Firebase project in Firebase Console.
@@ -108,21 +120,21 @@ The generated SDK should remain in:
 src/lib/dataconnect-generated
 ```
 
-## Next code step
+## Current SQL-backed store state
 
-After the Firebase project and SQL Connect service are connected, replace the current process-memory implementation in:
+The SQL Connect implementation is available behind:
 
 ```text
-src/lib/created-activity-store.ts
+CREATED_ACTIVITY_STORE=sql-connect
 ```
 
-with calls to the generated SQL Connect SDK operations from:
+It currently writes activities, class assignments, attendance, activity groups, group members, submission status, and group agreement state through the generated SDK in:
 
 ```text
 src/lib/dataconnect-generated
 ```
 
-Until that replacement is complete, the app keeps using the existing Next.js API routes, in-memory server store, and `localStorage` fallback.
+The default remains `CREATED_ACTIVITY_STORE=memory` until the Firebase project is provisioned and migrated. Activity deletion still requires a generated delete mutation before it can be enabled for the SQL-backed store.
 
 ## Current prototype caveat
 
