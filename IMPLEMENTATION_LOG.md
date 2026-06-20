@@ -1,5 +1,115 @@
 # Implementation Log
 
+## 2026-06-20
+
+### Context
+
+This session focused on making the prototype easier to continue safely:
+
+- Initialized local Git history.
+- Connected the repository to GitHub.
+- Clarified Firebase SQL Connect setup instructions.
+- Added a storage adapter boundary before switching persistence from memory to SQL Connect.
+- Added the first SQL Connect-backed created activity store implementation behind an environment toggle.
+
+### Git And Repository Setup
+
+- Recreated the local `.git` directory with the current Windows user after the first initialization had ownership issues.
+- Renamed the default branch to `main`.
+- Added GitHub remote:
+  - `https://github.com/papakoo971/VisibleThinkingRoutines.git`
+- Pushed all work to `origin/main`.
+- Current latest commit:
+  - `e29f187 Add SQL Connect created activity store`
+
+### Firebase SQL Connect Setup Documentation
+
+- Updated `.env.local.example` with clearer sections for:
+  - Firebase Web App config
+  - SQL Connect emulator settings
+  - server-side created activity store selection
+- Reworked `dataconnect/SETUP.md` around:
+  - prepared repo files
+  - Firebase Console values to replace
+  - `.env.local` setup
+  - Firebase CLI setup order
+  - SQL migration and SDK regeneration
+  - current SQL-backed store state
+- Clarified that `.env.local` remains uncommitted.
+- Clarified that `CREATED_ACTIVITY_STORE=memory` is the default until Firebase SQL Connect is provisioned and migrated.
+
+### Storage Adapter Work
+
+- Added a `CreatedActivityStore` interface in `src/lib/created-activity-store.ts`.
+- Wrapped the existing process-memory store in a `memoryCreatedActivityStore` implementation.
+- Kept the existing exported API functions:
+  - `listCreatedActivityPayloads`
+  - `getCreatedActivityPayload`
+  - `upsertCreatedActivityPayload`
+  - `deleteCreatedActivityPayload`
+- Updated Next.js Route Handlers to await the async store boundary.
+- Preserved the existing API response shape for current UI callers.
+
+### SQL Connect Store Implementation
+
+- Added `src/lib/sql-connect-created-activity-store.ts`.
+- Added SQL Connect write support for:
+  - school classes
+  - students referenced by created activity payloads
+  - activities
+  - activity-class assignments
+  - attendance
+  - activity groups
+  - group members
+  - individual submission status
+  - group submission status
+  - group submission agreement state
+- Added SQL Connect list/detail read mapping back into `CreatedActivityPayload`.
+- Extended `GetActivity` in `dataconnect/teacher/activities.gql` to include:
+  - individual submissions
+  - group submissions
+  - group submission agreements
+- Regenerated `src/lib/dataconnect-generated`.
+- Added store selection:
+  - `CREATED_ACTIVITY_STORE=memory`
+  - `CREATED_ACTIVITY_STORE=sql-connect`
+- Kept `memory` as the default behavior.
+- SQL-backed activity deletion now returns `501` until a generated delete mutation is added.
+
+### Verification Done
+
+- `firebase.cmd dataconnect:compile --non-interactive` succeeded.
+- `npm.cmd run build` succeeded after each storage/setup change.
+- GitHub push succeeded after each completed step.
+
+### Known Limitations
+
+- Firebase project is still not linked locally.
+- `.env.local` is still not filled.
+- `dataconnect/dataconnect.yaml` still uses placeholder service/database values.
+- `CREATED_ACTIVITY_STORE=sql-connect` has not been smoke-tested against a real Firebase SQL Connect service yet.
+- SQL-backed delete requires a delete mutation.
+- SQL-backed card content persistence is not fully wired into the created activity payload flow yet.
+- `npm run lint` currently fails on pre-existing issues:
+  - React hook lint in `student-activity-view.tsx`
+  - React hook/manual memoization lint in `activity-results-view.tsx`
+  - generated CommonJS SDK `require()` lint in `src/lib/dataconnect-generated/index.cjs.js`
+
+### Next Steps
+
+1. Create or select the Firebase project.
+2. Add a Firebase Web App and fill `.env.local`.
+3. Enable Firebase SQL Connect and create the Cloud SQL for PostgreSQL instance.
+4. Replace `dataconnect/dataconnect.yaml` placeholder values.
+5. Run `firebase use --add`.
+6. Run `firebase dataconnect:compile`.
+7. Run `firebase dataconnect:sql:setup` if required.
+8. Run `firebase dataconnect:sql:migrate`.
+9. Run `firebase dataconnect:sdk:generate`.
+10. Set `CREATED_ACTIVITY_STORE=sql-connect`.
+11. Run API smoke tests for create/list/detail.
+12. Add generated delete mutation before enabling SQL-backed activity deletion.
+
 ## 2026-06-14
 
 ### Context
