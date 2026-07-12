@@ -1,5 +1,26 @@
 # Implementation Log
 
+## 2026-07-12 CSV Student Import And Account Issuance
+
+### Completed
+
+- Added an owner-filtered student list query for server-side duplicate student-number checks.
+- Added a teacher-profile-protected CSV import Route Handler with a 200-row request limit and field validation.
+- Created missing classes, persisted students, created Firebase email/password accounts, and linked their UIDs in one import flow.
+- Generated 12-character temporary passwords and returned them only in the one-time import response.
+- Added CSV header parsing for Korean and English columns, sample CSV download, per-row errors, and credentials CSV download.
+- Added compensating cleanup when Firebase account linking or student persistence fails.
+- Added ownership-checked student and class deletion operations for CRUD and integration-test cleanup.
+- Deployed the updated SQL Connect connector and regenerated the SDK.
+
+### Verification
+
+- A CSV row creates its class, student record, Firebase account, and UID link.
+- The issued email and temporary password successfully authenticate the student session.
+- Re-importing the same teacher-scoped student number returns a duplicate-row error without another account.
+- A linked student account receives `403` when calling the teacher-only CSV import endpoint.
+- Smoke-test teacher/student accounts, profiles, class, and student rows are removed after verification.
+
 ## 2026-07-12 Student Authentication And Assigned Activity Access
 
 ### Completed

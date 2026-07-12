@@ -142,6 +142,43 @@ export function upsertStudent(dcOrVars, vars) {
   return executeMutation(upsertStudentRef(dcInstance, inputVars));
 }
 
+export const listMyStudentsRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyStudents');
+}
+listMyStudentsRef.operationName = 'ListMyStudents';
+
+export function listMyStudents(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listMyStudentsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const deleteStudentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteStudent', inputVars);
+}
+deleteStudentRef.operationName = 'DeleteStudent';
+
+export function deleteStudent(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteStudentRef(dcInstance, inputVars));
+}
+
+export const deleteSchoolClassRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteSchoolClass', inputVars);
+}
+deleteSchoolClassRef.operationName = 'DeleteSchoolClass';
+
+export function deleteSchoolClass(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteSchoolClassRef(dcInstance, inputVars));
+}
+
 export const createActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

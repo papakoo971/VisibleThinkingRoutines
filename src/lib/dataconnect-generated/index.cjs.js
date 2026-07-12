@@ -167,6 +167,49 @@ exports.upsertStudent = function upsertStudent(dcOrVars, vars) {
 }
 ;
 
+const listMyStudentsRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyStudents');
+}
+listMyStudentsRef.operationName = 'ListMyStudents';
+exports.listMyStudentsRef = listMyStudentsRef;
+
+exports.listMyStudents = function listMyStudents(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listMyStudentsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const deleteStudentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteStudent', inputVars);
+}
+deleteStudentRef.operationName = 'DeleteStudent';
+exports.deleteStudentRef = deleteStudentRef;
+
+exports.deleteStudent = function deleteStudent(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteStudentRef(dcInstance, inputVars));
+}
+;
+
+const deleteSchoolClassRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteSchoolClass', inputVars);
+}
+deleteSchoolClassRef.operationName = 'DeleteSchoolClass';
+exports.deleteSchoolClassRef = deleteSchoolClassRef;
+
+exports.deleteSchoolClass = function deleteSchoolClass(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteSchoolClassRef(dcInstance, inputVars));
+}
+;
+
 const createActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

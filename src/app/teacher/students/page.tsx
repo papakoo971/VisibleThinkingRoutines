@@ -1,12 +1,21 @@
 "use client";
 
-import { DragEvent, useMemo, useState } from "react";
+import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { Download, FileSpreadsheet, GripVertical, KeyRound, Plus, Trash2, Upload, Users, Workflow } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { classes as initialClasses, groups, students } from "@/lib/mock-data";
+import { getFirebaseAuth } from "@/lib/firebase-auth";
 
 type GroupAssignment = Record<string, string[]>;
 type ManagedGroup = { id: string; name: string };
+type IssuedCredential = { className: string; studentNumber: string; name: string; email: string; password: string };
+type ImportResult = {
+  total: number;
+  successCount: number;
+  errorCount: number;
+  credentials: IssuedCredential[];
+  errors: Array<{ row: number; message: string }>;
+};
 
 const initialGroupAssignments = groups.reduce<GroupAssignment>((assignment, group) => {
   assignment[group.id] = group.studentIds;
@@ -19,11 +28,21 @@ export default function StudentsPage() {
   const [newClassName, setNewClassName] = useState("");
   const [managedGroups, setManagedGroups] = useState<ManagedGroup[]>(groups.map((group) => ({ id: group.id, name: group.name })));
   const [groupAssignments, setGroupAssignments] = useState(initialGroupAssignments);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedStudents = useMemo(
-    () => students.filter((student) => student.className === selectedClassName),
-    [selectedClassName]
-  );
+  const selectedStudents = useMemo(() => [
+    ...students.filter((student) => student.className === selectedClassName),
+    ...(importResult?.credentials ?? []).filter((student) => student.className === selectedClassName).map((student) => ({
+      id: student.studentNumber,
+      className: student.className,
+      studentNumber: student.studentNumber,
+      name: student.name,
+      passwordIssued: true,
+    })),
+  ], [importResult, selectedClassName]);
 
   const assignedStudentIds = new Set(Object.values(groupAssignments).flat());
   const unassignedStudents = selectedStudents.filter((student) => !assignedStudentIds.has(student.id));
@@ -76,6 +95,48 @@ export default function StudentsPage() {
       delete next[groupId];
       return next;
     });
+  }
+
+  async function importCsv(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setImporting(true);
+    setImportError(null);
+
+    try {
+      const rows = parseStudentCsv(await file.text());
+      const user = getFirebaseAuth().currentUser;
+      if (!user) throw new Error("교사 로그인이 필요합니다.");
+      const response = await fetch("/api/teacher/students/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` },
+        body: JSON.stringify({ rows }),
+      });
+      const result = (await response.json()) as ImportResult & { message?: string };
+      if (!response.ok) throw new Error(result.message ?? "학생 등록에 실패했습니다.");
+      setImportResult(result);
+      if (result.credentials[0]) {
+        const nextClasses = Array.from(new Set([...classList, ...result.credentials.map((item) => item.className)]));
+        setClassList(nextClasses);
+        setSelectedClassName(result.credentials[0].className);
+      }
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : "CSV 파일을 처리하지 못했습니다.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  function downloadCredentials() {
+    if (!importResult?.credentials.length) return;
+    const header = "학급,학번,이름,로그인 이메일,임시 비밀번호";
+    const lines = importResult.credentials.map((item) => [item.className, item.studentNumber, item.name, item.email, item.password].map(csvCell).join(","));
+    downloadTextFile(`student-credentials-${new Date().toISOString().slice(0, 10)}.csv`, `\uFEFF${[header, ...lines].join("\n")}`);
+  }
+
+  function downloadSample() {
+    downloadTextFile("student-import-sample.csv", "\uFEFF학급,학번,이름\n5학년 1반,20260101,김민준\n");
   }
 
   return (
@@ -148,7 +209,7 @@ export default function StudentsPage() {
             </div>
             <p className="mt-2 text-sm text-zinc-600">CSV 또는 XLSX로 학생을 일괄 등록하고 비밀번호를 발급합니다.</p>
           </div>
-          <button className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-200 px-3 text-sm font-semibold">
+          <button type="button" onClick={downloadCredentials} disabled={!importResult?.credentials.length} className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-200 px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400">
             <KeyRound className="h-4 w-4" />
             비밀번호 다운로드
           </button>
@@ -160,15 +221,23 @@ export default function StudentsPage() {
               <FileSpreadsheet className="h-8 w-8 text-emerald-700" />
               <p className="mt-3 text-sm font-medium">CSV 또는 XLSX 파일 업로드</p>
               <p className="mt-1 text-xs text-zinc-500">필수 컬럼: 학급, 학번, 이름</p>
-              <button className="mt-4 inline-flex h-9 items-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white">
+              <input ref={fileInputRef} onChange={importCsv} type="file" accept=".csv,text/csv" className="hidden" />
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={importing} className="mt-4 inline-flex h-9 items-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white disabled:bg-zinc-400">
                 <Upload className="h-4 w-4" />
-                파일 선택
+                {importing ? "등록 중..." : "CSV 파일 선택"}
               </button>
             </div>
-            <button className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white text-sm font-semibold">
+            <button type="button" onClick={downloadSample} className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white text-sm font-semibold">
               <Download className="h-4 w-4" />
               샘플 CSV 다운로드
             </button>
+            {importError ? <p role="alert" className="mt-3 text-sm text-red-700">{importError}</p> : null}
+            {importResult ? (
+              <div className="mt-3 rounded-md border border-zinc-200 bg-stone-50 p-3 text-sm">
+                <p className="font-semibold">총 {importResult.total}행 · 성공 {importResult.successCount} · 오류 {importResult.errorCount}</p>
+                {importResult.errors.map((error) => <p key={`${error.row}-${error.message}`} className="mt-1 text-red-700">{error.row}행: {error.message}</p>)}
+              </div>
+            ) : null}
           </div>
 
           <div className="overflow-x-auto rounded-md border border-zinc-200">
@@ -186,7 +255,7 @@ export default function StudentsPage() {
                   <tr key={student.id}>
                     <td className="px-4 py-3 font-mono text-xs">{student.studentNumber}</td>
                     <td className="px-4 py-3 font-medium">{student.name}</td>
-                    <td className="px-4 py-3 text-emerald-700">발급됨</td>
+                    <td className="px-4 py-3 text-emerald-700">{student.passwordIssued ? "발급됨" : "미발급"}</td>
                     <td className="px-4 py-3">
                       <button className="rounded-md border border-zinc-200 px-2.5 py-1.5 text-xs font-semibold">
                         재발급
@@ -304,4 +373,54 @@ function StudentDragCard({
       <span className="ml-auto text-xs text-zinc-500">{student.studentNumber}</span>
     </div>
   );
+}
+
+function parseStudentCsv(source: string) {
+  const lines = source.replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim());
+  if (lines.length < 2) throw new Error("헤더와 학생 데이터가 포함된 CSV 파일을 선택해 주세요.");
+  const headers = parseCsvLine(lines[0]).map((header) => header.trim().toLowerCase());
+  const classIndex = headers.findIndex((header) => ["학급", "class", "classname"].includes(header));
+  const numberIndex = headers.findIndex((header) => ["학번", "studentnumber", "student_number"].includes(header));
+  const nameIndex = headers.findIndex((header) => ["이름", "name"].includes(header));
+  if ([classIndex, numberIndex, nameIndex].some((index) => index < 0)) throw new Error("필수 헤더는 학급, 학번, 이름입니다.");
+
+  return lines.slice(1).map((line) => {
+    const cells = parseCsvLine(line);
+    return { className: cells[classIndex] ?? "", studentNumber: cells[numberIndex] ?? "", name: cells[nameIndex] ?? "" };
+  });
+}
+
+function parseCsvLine(line: string) {
+  const cells: string[] = [];
+  let current = "";
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '"' && quoted && line[index + 1] === '"') {
+      current += '"';
+      index += 1;
+    } else if (character === '"') {
+      quoted = !quoted;
+    } else if (character === "," && !quoted) {
+      cells.push(current.trim());
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
+function csvCell(value: string) {
+  return `"${value.replaceAll('"', '""')}"`;
+}
+
+function downloadTextFile(filename: string, content: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }

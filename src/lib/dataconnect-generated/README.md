@@ -11,6 +11,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetMyTeacherProfile*](#getmyteacherprofile)
   - [*ListActivities*](#listactivities)
   - [*GetTeacherActivity*](#getteacheractivity)
+  - [*ListMyStudents*](#listmystudents)
   - [*GetMyStudent*](#getmystudent)
   - [*ListMyStudentActivities*](#listmystudentactivities)
   - [*GetMyStudentActivity*](#getmystudentactivity)
@@ -21,6 +22,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*UnlinkStudentAuth*](#unlinkstudentauth)
   - [*UpsertSchoolClass*](#upsertschoolclass)
   - [*UpsertStudent*](#upsertstudent)
+  - [*DeleteStudent*](#deletestudent)
+  - [*DeleteSchoolClass*](#deleteschoolclass)
   - [*CreateActivity*](#createactivity)
   - [*DeleteActivity*](#deleteactivity)
   - [*UpsertActivityClass*](#upsertactivityclass)
@@ -453,6 +456,108 @@ console.log(data.activities);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.activities);
+});
+```
+
+## ListMyStudents
+You can execute the `ListMyStudents` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyStudents(options?: ExecuteQueryOptions): QueryPromise<ListMyStudentsData, undefined>;
+
+interface ListMyStudentsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListMyStudentsData, undefined>;
+}
+export const listMyStudentsRef: ListMyStudentsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyStudents(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListMyStudentsData, undefined>;
+
+interface ListMyStudentsRef {
+  ...
+  (dc: DataConnect): QueryRef<ListMyStudentsData, undefined>;
+}
+export const listMyStudentsRef: ListMyStudentsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyStudentsRef:
+```typescript
+const name = listMyStudentsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyStudents` query has no variables.
+### Return Type
+Recall that executing the `ListMyStudents` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyStudentsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyStudentsData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    authUid?: string | null;
+    studentNumber: string;
+    name: string;
+    passwordIssued: boolean;
+    schoolClass: {
+      id: string;
+      name: string;
+    } & SchoolClass_Key;
+  } & Student_Key)[];
+}
+```
+### Using `ListMyStudents`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyStudents } from '@visible-thinking/dataconnect';
+
+
+// Call the `listMyStudents()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyStudents();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyStudents(dataConnect);
+
+console.log(data.students);
+
+// Or, you can use the `Promise` API.
+listMyStudents().then((response) => {
+  const data = response.data;
+  console.log(data.students);
+});
+```
+
+### Using `ListMyStudents`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyStudentsRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `listMyStudentsRef()` function to get a reference to the query.
+const ref = listMyStudentsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyStudentsRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.students);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.students);
 });
 ```
 
@@ -1513,6 +1618,224 @@ console.log(data.student_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.student_upsert);
+});
+```
+
+## DeleteStudent
+You can execute the `DeleteStudent` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteStudent(vars: DeleteStudentVariables): MutationPromise<DeleteStudentData, DeleteStudentVariables>;
+
+interface DeleteStudentRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteStudentVariables): MutationRef<DeleteStudentData, DeleteStudentVariables>;
+}
+export const deleteStudentRef: DeleteStudentRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteStudent(dc: DataConnect, vars: DeleteStudentVariables): MutationPromise<DeleteStudentData, DeleteStudentVariables>;
+
+interface DeleteStudentRef {
+  ...
+  (dc: DataConnect, vars: DeleteStudentVariables): MutationRef<DeleteStudentData, DeleteStudentVariables>;
+}
+export const deleteStudentRef: DeleteStudentRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteStudentRef:
+```typescript
+const name = deleteStudentRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteStudent` mutation requires an argument of type `DeleteStudentVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteStudentVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteStudent` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteStudentData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteStudentData {
+  student_delete?: Student_Key | null;
+}
+```
+### Using `DeleteStudent`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteStudent, DeleteStudentVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteStudent` mutation requires an argument of type `DeleteStudentVariables`:
+const deleteStudentVars: DeleteStudentVariables = {
+  id: ...,
+};
+
+// Call the `deleteStudent()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteStudent(deleteStudentVars);
+// Variables can be defined inline as well.
+const { data } = await deleteStudent({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteStudent(dataConnect, deleteStudentVars);
+
+console.log(data.student_delete);
+
+// Or, you can use the `Promise` API.
+deleteStudent(deleteStudentVars).then((response) => {
+  const data = response.data;
+  console.log(data.student_delete);
+});
+```
+
+### Using `DeleteStudent`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteStudentRef, DeleteStudentVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteStudent` mutation requires an argument of type `DeleteStudentVariables`:
+const deleteStudentVars: DeleteStudentVariables = {
+  id: ...,
+};
+
+// Call the `deleteStudentRef()` function to get a reference to the mutation.
+const ref = deleteStudentRef(deleteStudentVars);
+// Variables can be defined inline as well.
+const ref = deleteStudentRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteStudentRef(dataConnect, deleteStudentVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.student_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.student_delete);
+});
+```
+
+## DeleteSchoolClass
+You can execute the `DeleteSchoolClass` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteSchoolClass(vars: DeleteSchoolClassVariables): MutationPromise<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+
+interface DeleteSchoolClassRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteSchoolClassVariables): MutationRef<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+}
+export const deleteSchoolClassRef: DeleteSchoolClassRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteSchoolClass(dc: DataConnect, vars: DeleteSchoolClassVariables): MutationPromise<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+
+interface DeleteSchoolClassRef {
+  ...
+  (dc: DataConnect, vars: DeleteSchoolClassVariables): MutationRef<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+}
+export const deleteSchoolClassRef: DeleteSchoolClassRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteSchoolClassRef:
+```typescript
+const name = deleteSchoolClassRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteSchoolClass` mutation requires an argument of type `DeleteSchoolClassVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteSchoolClassVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteSchoolClass` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteSchoolClassData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteSchoolClassData {
+  schoolClass_delete?: SchoolClass_Key | null;
+}
+```
+### Using `DeleteSchoolClass`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteSchoolClass, DeleteSchoolClassVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteSchoolClass` mutation requires an argument of type `DeleteSchoolClassVariables`:
+const deleteSchoolClassVars: DeleteSchoolClassVariables = {
+  id: ...,
+};
+
+// Call the `deleteSchoolClass()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteSchoolClass(deleteSchoolClassVars);
+// Variables can be defined inline as well.
+const { data } = await deleteSchoolClass({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteSchoolClass(dataConnect, deleteSchoolClassVars);
+
+console.log(data.schoolClass_delete);
+
+// Or, you can use the `Promise` API.
+deleteSchoolClass(deleteSchoolClassVars).then((response) => {
+  const data = response.data;
+  console.log(data.schoolClass_delete);
+});
+```
+
+### Using `DeleteSchoolClass`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteSchoolClassRef, DeleteSchoolClassVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteSchoolClass` mutation requires an argument of type `DeleteSchoolClassVariables`:
+const deleteSchoolClassVars: DeleteSchoolClassVariables = {
+  id: ...,
+};
+
+// Call the `deleteSchoolClassRef()` function to get a reference to the mutation.
+const ref = deleteSchoolClassRef(deleteSchoolClassVars);
+// Variables can be defined inline as well.
+const ref = deleteSchoolClassRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteSchoolClassRef(dataConnect, deleteSchoolClassVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.schoolClass_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.schoolClass_delete);
 });
 ```
 

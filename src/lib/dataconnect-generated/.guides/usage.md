@@ -14,19 +14,19 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, linkStudentAuth, unlinkStudentAuth, upsertSchoolClass, upsertStudent, createActivity } from '@visible-thinking/dataconnect';
+import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, linkStudentAuth, unlinkStudentAuth, upsertSchoolClass, upsertStudent, listMyStudents } from '@visible-thinking/dataconnect';
 
 
-// Operation GetMyTeacherProfile: 
+// Operation GetMyTeacherProfile:
 const { data } = await GetMyTeacherProfile(dataConnect);
 
 // Operation UpsertMyTeacherProfile:  For variables, look at type UpsertMyTeacherProfileVars in ../index.d.ts
 const { data } = await UpsertMyTeacherProfile(dataConnect, upsertMyTeacherProfileVars);
 
-// Operation DeleteMyTeacherProfile: 
+// Operation DeleteMyTeacherProfile:
 const { data } = await DeleteMyTeacherProfile(dataConnect);
 
-// Operation ListActivities: 
+// Operation ListActivities:
 const { data } = await ListActivities(dataConnect);
 
 // Operation GetTeacherActivity:  For variables, look at type GetTeacherActivityVars in ../index.d.ts
@@ -44,8 +44,8 @@ const { data } = await UpsertSchoolClass(dataConnect, upsertSchoolClassVars);
 // Operation UpsertStudent:  For variables, look at type UpsertStudentVars in ../index.d.ts
 const { data } = await UpsertStudent(dataConnect, upsertStudentVars);
 
-// Operation CreateActivity:  For variables, look at type CreateActivityVars in ../index.d.ts
-const { data } = await CreateActivity(dataConnect, createActivityVars);
+// Operation ListMyStudents:
+const { data } = await ListMyStudents(dataConnect);
 
 
 ```

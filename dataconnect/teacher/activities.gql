@@ -166,6 +166,39 @@ mutation UpsertStudent($externalId: String!, $schoolClassId: String!, $studentNu
   })
 }
 
+query ListMyStudents @auth(level: USER) {
+  students(where: { teacherId: { eq_expr: "auth.uid" } }) {
+    id
+    externalId
+    authUid
+    studentNumber
+    name
+    passwordIssued
+    schoolClass {
+      id
+      name
+    }
+  }
+}
+
+mutation DeleteStudent($id: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $id }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
+  student_delete(key: { id: $id })
+}
+
+mutation DeleteSchoolClass($id: String!) @auth(level: USER) @transaction {
+  query @redact {
+    schoolClass(key: { id: $id }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
+  schoolClass_delete(key: { id: $id })
+}
+
 mutation CreateActivity(
   $id: String!
   $title: String!

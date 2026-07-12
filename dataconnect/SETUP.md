@@ -150,4 +150,6 @@ Teacher profile and teacher activity operations require Firebase Authentication 
 
 Student accounts are linked through nullable, unique `Student.authUid`. `GetMyStudent`, `ListMyStudentActivities`, and `GetMyStudentActivity` require Firebase Authentication and only return activities where the linked student has `PRESENT` attendance. Teacher detail reads use a separate owner-filtered operation.
 
-`LinkStudentAuth` and `UnlinkStudentAuth` provide the ownership-checked connector boundary for the upcoming teacher account-issuance UI. Until that UI is implemented, student Firebase accounts must be provisioned and linked through an administrative workflow.
+`LinkStudentAuth` and `UnlinkStudentAuth` provide the ownership-checked connector boundary used by the teacher account-issuance flow.
+
+The teacher student-management page now supports CSV import. Its authenticated Route Handler validates the teacher profile, rejects duplicate teacher-scoped student numbers, creates Firebase student accounts, links `authUid`, and returns one-time temporary credentials for CSV download. XLSX parsing and password reissuance remain follow-up work.

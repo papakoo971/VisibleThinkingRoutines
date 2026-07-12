@@ -94,6 +94,22 @@ export interface DeleteMyTeacherProfileData {
   teacherProfile_delete?: TeacherProfile_Key | null;
 }
 
+export interface DeleteSchoolClassData {
+  schoolClass_delete?: SchoolClass_Key | null;
+}
+
+export interface DeleteSchoolClassVariables {
+  id: string;
+}
+
+export interface DeleteStudentData {
+  student_delete?: Student_Key | null;
+}
+
+export interface DeleteStudentVariables {
+  id: string;
+}
+
 export interface GetMyStudentActivityData {
   activityAttendances: ({
     activity: {
@@ -345,6 +361,21 @@ export interface ListMyStudentActivitiesData {
   })[];
 }
 
+export interface ListMyStudentsData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    authUid?: string | null;
+    studentNumber: string;
+    name: string;
+    passwordIssued: boolean;
+    schoolClass: {
+      id: string;
+      name: string;
+    } & SchoolClass_Key;
+  } & Student_Key)[];
+}
+
 export interface SchoolClass_Key {
   id: string;
   __typename?: 'SchoolClass_Key';
@@ -579,6 +610,42 @@ export const upsertStudentRef: UpsertStudentRef;
 
 export function upsertStudent(vars: UpsertStudentVariables): MutationPromise<UpsertStudentData, UpsertStudentVariables>;
 export function upsertStudent(dc: DataConnect, vars: UpsertStudentVariables): MutationPromise<UpsertStudentData, UpsertStudentVariables>;
+
+interface ListMyStudentsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListMyStudentsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListMyStudentsData, undefined>;
+  operationName: string;
+}
+export const listMyStudentsRef: ListMyStudentsRef;
+
+export function listMyStudents(options?: ExecuteQueryOptions): QueryPromise<ListMyStudentsData, undefined>;
+export function listMyStudents(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListMyStudentsData, undefined>;
+
+interface DeleteStudentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteStudentVariables): MutationRef<DeleteStudentData, DeleteStudentVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteStudentVariables): MutationRef<DeleteStudentData, DeleteStudentVariables>;
+  operationName: string;
+}
+export const deleteStudentRef: DeleteStudentRef;
+
+export function deleteStudent(vars: DeleteStudentVariables): MutationPromise<DeleteStudentData, DeleteStudentVariables>;
+export function deleteStudent(dc: DataConnect, vars: DeleteStudentVariables): MutationPromise<DeleteStudentData, DeleteStudentVariables>;
+
+interface DeleteSchoolClassRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteSchoolClassVariables): MutationRef<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteSchoolClassVariables): MutationRef<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+  operationName: string;
+}
+export const deleteSchoolClassRef: DeleteSchoolClassRef;
+
+export function deleteSchoolClass(vars: DeleteSchoolClassVariables): MutationPromise<DeleteSchoolClassData, DeleteSchoolClassVariables>;
+export function deleteSchoolClass(dc: DataConnect, vars: DeleteSchoolClassVariables): MutationPromise<DeleteSchoolClassData, DeleteSchoolClassVariables>;
 
 interface CreateActivityRef {
   /* Allow users to create refs without passing in DataConnect */
