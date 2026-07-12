@@ -169,6 +169,45 @@ query GetMyStudentWork($activityId: String!) @auth(level: USER) {
   }
 }
 
+query GetMyGroupWork($activityId: String!) @auth(level: USER) {
+  students(where: { authUid: { eq_expr: "auth.uid" } }, limit: 1) {
+    id
+    externalId
+    name
+    schoolClass { name }
+  }
+  activityGroupMembers(where: {
+    student: { authUid: { eq_expr: "auth.uid" } }
+    activityGroup: { activity: { id: { eq: $activityId } } }
+  }, limit: 1) {
+    activityGroup {
+      id
+      name
+      activity { status }
+      activityGroupMembers_on_activityGroup {
+        student { id externalId name authUid }
+      }
+      groupThinkingCards_on_activityGroup {
+        id
+        column
+        content
+        updatedAt
+        updatedByStudent { id externalId name }
+      }
+      groupSubmissions_on_activityGroup { status updatedAt }
+      groupSubmissionAgreements_on_activityGroup {
+        agreed
+        updatedAt
+        student { id externalId name }
+      }
+    }
+  }
+  activityAttendances(where: { activity: { id: { eq: $activityId } } }) {
+    status
+    student { id externalId }
+  }
+}
+
 mutation UpsertMyThinkingCard($externalId: String!, $activityId: String!, $studentId: String!, $column: RoutineColumn!, $content: String!) @auth(level: USER) @transaction {
   query @redact {
     student(key: { id: $studentId }) {
@@ -214,6 +253,75 @@ mutation SetMyIndividualSubmission($activityId: String!, $studentId: String!, $s
   individualSubmission_upsert(data: {
     activity: { id: $activityId }
     student: { id: $studentId }
+    status: $status
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation UpsertMyGroupThinkingCard($externalId: String!, $activityId: String!, $activityGroupId: String!, $studentId: String!, $column: RoutineColumn!, $content: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) { authUid @check(expr: "this == auth.uid") }
+    activityGroupMember(key: { activityGroupId: $activityGroupId, studentId: $studentId }) { student { authUid @check(expr: "this == auth.uid") } }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+    activityGroup(key: { id: $activityGroupId }) { activity { id @check(expr: "this == vars.activityId") } }
+  }
+  groupThinkingCard_upsert(data: {
+    id_expr: "vars.activityGroupId + ':' + vars.externalId"
+    activity: { id: $activityId }
+    activityGroup: { id: $activityGroupId }
+    updatedByStudent: { id: $studentId }
+    column: $column
+    content: $content
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation DeleteMyGroupThinkingCard($externalId: String!, $activityId: String!, $activityGroupId: String!, $studentId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) { authUid @check(expr: "this == auth.uid") }
+    activityGroupMember(key: { activityGroupId: $activityGroupId, studentId: $studentId }) { student { authUid @check(expr: "this == auth.uid") } }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+    groupThinkingCard(key: { id_expr: "vars.activityGroupId + ':' + vars.externalId" }) { activityGroup { id @check(expr: "this == vars.activityGroupId") } }
+  }
+  groupThinkingCard_delete(key: { id_expr: "vars.activityGroupId + ':' + vars.externalId" })
+}
+
+mutation SetMyGroupAgreement($activityId: String!, $activityGroupId: String!, $studentId: String!, $agreed: Boolean!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) { authUid @check(expr: "this == auth.uid") }
+    activityGroupMember(key: { activityGroupId: $activityGroupId, studentId: $studentId }) { student { authUid @check(expr: "this == auth.uid") } }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+  }
+  groupSubmissionAgreement_upsert(data: {
+    activity: { id: $activityId }
+    activityGroup: { id: $activityGroupId }
+    student: { id: $studentId }
+    agreed: $agreed
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation SetMyGroupSubmission($activityId: String!, $activityGroupId: String!, $studentId: String!, $status: SubmissionStatus!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) { authUid @check(expr: "this == auth.uid") }
+    activityGroupMember(key: { activityGroupId: $activityGroupId, studentId: $studentId }) { student { authUid @check(expr: "this == auth.uid") } }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+  }
+  groupSubmission_upsert(data: {
+    activity: { id: $activityId }
+    activityGroup: { id: $activityGroupId }
     status: $status
     updatedAt_expr: "request.time"
   })

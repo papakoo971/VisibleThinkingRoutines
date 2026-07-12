@@ -106,7 +106,7 @@ function ActivityResultsWorkspace({
   const activityIndividualSubmissions = liveResults
     ? liveResults.submissions.map((submission) => ({ activityId: activity.id, ...submission }))
     : allIndividualSubmissions.filter((submission) => submission.activityId === activity.id);
-  const activityGroupSubmissions = allGroupSubmissions.filter((submission) => submission.activityId === activity.id);
+  const activityGroupSubmissions = liveResults?.groupSubmissions.map((submission) => ({ activityId: activity.id, ...submission })) ?? allGroupSubmissions.filter((submission) => submission.activityId === activity.id);
   const activityCards = activity.activityMode === "group"
     ? activityGroupSubmissions.flatMap((submission) =>
         submission.cards.map((card) => ({

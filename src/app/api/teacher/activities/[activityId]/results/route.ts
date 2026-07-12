@@ -50,10 +50,12 @@ export async function GET(request: Request, context: { params: Promise<{ activit
     const presentStudentIds = new Set(activity.activityAttendances_on_activity
       .filter((attendance) => attendance.status !== AttendanceStatus.ABSENT)
       .map((attendance) => attendance.student.id));
-    const submittedCount = activity.individualSubmissions_on_activity.filter((submission) =>
+    const individualSubmittedCount = activity.individualSubmissions_on_activity.filter((submission) =>
       presentStudentIds.has(submission.student.id) && submission.status === SubmissionStatus.SUBMITTED
     ).length;
-    const targetCount = presentStudentIds.size;
+    const groupSubmittedCount = activity.activityGroups_on_activity.filter((group) => group.groupSubmissions_on_activityGroup[0]?.status === SubmissionStatus.SUBMITTED).length;
+    const submittedCount = activity.activityMode === ActivityMode.GROUP ? groupSubmittedCount : individualSubmittedCount;
+    const targetCount = activity.activityMode === ActivityMode.GROUP ? activity.activityGroups_on_activity.length : presentStudentIds.size;
 
     return Response.json({
       activity: {
@@ -81,6 +83,24 @@ export async function GET(request: Request, context: { params: Promise<{ activit
           content: card.content,
           tags: card.tags ?? [],
           tagsPublic: card.tagsPublic,
+          updatedAt: card.updatedAt,
+        })),
+      })),
+      groupSubmissions: activity.activityGroups_on_activity.map((group) => ({
+        groupId: group.id,
+        groupName: group.name,
+        status: submissionName(group.groupSubmissions_on_activityGroup[0]?.status ?? SubmissionStatus.DRAFT),
+        agreements: group.groupSubmissionAgreements_on_activityGroup.map((agreement) => ({
+          studentId: externalStudentId(agreement.student),
+          studentName: agreement.student.name,
+          agreed: agreement.agreed,
+        })),
+        cards: group.groupThinkingCards_on_activityGroup.map((card) => ({
+          id: card.id,
+          updatedByStudentId: externalStudentId(card.updatedByStudent),
+          updatedByStudentName: card.updatedByStudent.name,
+          column: columnName(card.column),
+          content: card.content,
           updatedAt: card.updatedAt,
         })),
       })),

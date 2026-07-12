@@ -20,6 +20,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListMyStudentActivities*](#listmystudentactivities)
   - [*GetMyStudentActivity*](#getmystudentactivity)
   - [*GetMyStudentWork*](#getmystudentwork)
+  - [*GetMyGroupWork*](#getmygroupwork)
 - [**Mutations**](#mutations)
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
@@ -54,6 +55,10 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertMyThinkingCard*](#upsertmythinkingcard)
   - [*DeleteMyThinkingCard*](#deletemythinkingcard)
   - [*SetMyIndividualSubmission*](#setmyindividualsubmission)
+  - [*UpsertMyGroupThinkingCard*](#upsertmygroupthinkingcard)
+  - [*DeleteMyGroupThinkingCard*](#deletemygroupthinkingcard)
+  - [*SetMyGroupAgreement*](#setmygroupagreement)
+  - [*SetMyGroupSubmission*](#setmygroupsubmission)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `teacher`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -685,6 +690,33 @@ export interface GetTeacherActivityResultsData {
         };
       } & Student_Key;
     })[];
+    activityGroups_on_activity: ({
+      id: string;
+      name: string;
+      groupThinkingCards_on_activityGroup: ({
+        id: string;
+        column: RoutineColumn;
+        content: string;
+        updatedAt: TimestampString;
+        updatedByStudent: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      } & GroupThinkingCard_Key)[];
+      groupSubmissions_on_activityGroup: ({
+        status: SubmissionStatus;
+        updatedAt: TimestampString;
+      })[];
+      groupSubmissionAgreements_on_activityGroup: ({
+        agreed: boolean;
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      })[];
+    } & ActivityGroup_Key)[];
     activityAttendances_on_activity: ({
       status: AttendanceStatus;
       student: {
@@ -1662,6 +1694,178 @@ executeQuery(ref).then((response) => {
   console.log(data.thinkingCards);
   console.log(data.individualSubmissions);
   console.log(data.aiAnalyses);
+});
+```
+
+## GetMyGroupWork
+You can execute the `GetMyGroupWork` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getMyGroupWork(vars: GetMyGroupWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+
+interface GetMyGroupWorkRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyGroupWorkVariables): QueryRef<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+}
+export const getMyGroupWorkRef: GetMyGroupWorkRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyGroupWork(dc: DataConnect, vars: GetMyGroupWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+
+interface GetMyGroupWorkRef {
+  ...
+  (dc: DataConnect, vars: GetMyGroupWorkVariables): QueryRef<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+}
+export const getMyGroupWorkRef: GetMyGroupWorkRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyGroupWorkRef:
+```typescript
+const name = getMyGroupWorkRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyGroupWork` query requires an argument of type `GetMyGroupWorkVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetMyGroupWorkVariables {
+  activityId: string;
+}
+```
+### Return Type
+Recall that executing the `GetMyGroupWork` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyGroupWorkData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyGroupWorkData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    name: string;
+    schoolClass: {
+      name: string;
+    };
+  } & Student_Key)[];
+  activityGroupMembers: ({
+    activityGroup: {
+      id: string;
+      name: string;
+      activity: {
+        status: ActivityStatus;
+      };
+      activityGroupMembers_on_activityGroup: ({
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+          authUid?: string | null;
+        } & Student_Key;
+      })[];
+      groupThinkingCards_on_activityGroup: ({
+        id: string;
+        column: RoutineColumn;
+        content: string;
+        updatedAt: TimestampString;
+        updatedByStudent: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      } & GroupThinkingCard_Key)[];
+      groupSubmissions_on_activityGroup: ({
+        status: SubmissionStatus;
+        updatedAt: TimestampString;
+      })[];
+      groupSubmissionAgreements_on_activityGroup: ({
+        agreed: boolean;
+        updatedAt: TimestampString;
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      })[];
+    } & ActivityGroup_Key;
+  })[];
+  activityAttendances: ({
+    status: AttendanceStatus;
+    student: {
+      id: string;
+      externalId?: string | null;
+    } & Student_Key;
+  })[];
+}
+```
+### Using `GetMyGroupWork`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyGroupWork, GetMyGroupWorkVariables } from '@visible-thinking/dataconnect';
+
+// The `GetMyGroupWork` query requires an argument of type `GetMyGroupWorkVariables`:
+const getMyGroupWorkVars: GetMyGroupWorkVariables = {
+  activityId: ...,
+};
+
+// Call the `getMyGroupWork()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyGroupWork(getMyGroupWorkVars);
+// Variables can be defined inline as well.
+const { data } = await getMyGroupWork({ activityId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyGroupWork(dataConnect, getMyGroupWorkVars);
+
+console.log(data.students);
+console.log(data.activityGroupMembers);
+console.log(data.activityAttendances);
+
+// Or, you can use the `Promise` API.
+getMyGroupWork(getMyGroupWorkVars).then((response) => {
+  const data = response.data;
+  console.log(data.students);
+  console.log(data.activityGroupMembers);
+  console.log(data.activityAttendances);
+});
+```
+
+### Using `GetMyGroupWork`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyGroupWorkRef, GetMyGroupWorkVariables } from '@visible-thinking/dataconnect';
+
+// The `GetMyGroupWork` query requires an argument of type `GetMyGroupWorkVariables`:
+const getMyGroupWorkVars: GetMyGroupWorkVariables = {
+  activityId: ...,
+};
+
+// Call the `getMyGroupWorkRef()` function to get a reference to the query.
+const ref = getMyGroupWorkRef(getMyGroupWorkVars);
+// Variables can be defined inline as well.
+const ref = getMyGroupWorkRef({ activityId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyGroupWorkRef(dataConnect, getMyGroupWorkVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.students);
+console.log(data.activityGroupMembers);
+console.log(data.activityAttendances);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.students);
+  console.log(data.activityGroupMembers);
+  console.log(data.activityAttendances);
 });
 ```
 
@@ -5466,5 +5670,483 @@ console.log(data.individualSubmission_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.individualSubmission_upsert);
+});
+```
+
+## UpsertMyGroupThinkingCard
+You can execute the `UpsertMyGroupThinkingCard` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertMyGroupThinkingCard(vars: UpsertMyGroupThinkingCardVariables): MutationPromise<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+
+interface UpsertMyGroupThinkingCardRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyGroupThinkingCardVariables): MutationRef<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+}
+export const upsertMyGroupThinkingCardRef: UpsertMyGroupThinkingCardRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertMyGroupThinkingCard(dc: DataConnect, vars: UpsertMyGroupThinkingCardVariables): MutationPromise<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+
+interface UpsertMyGroupThinkingCardRef {
+  ...
+  (dc: DataConnect, vars: UpsertMyGroupThinkingCardVariables): MutationRef<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+}
+export const upsertMyGroupThinkingCardRef: UpsertMyGroupThinkingCardRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertMyGroupThinkingCardRef:
+```typescript
+const name = upsertMyGroupThinkingCardRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertMyGroupThinkingCard` mutation requires an argument of type `UpsertMyGroupThinkingCardVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertMyGroupThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+  column: RoutineColumn;
+  content: string;
+}
+```
+### Return Type
+Recall that executing the `UpsertMyGroupThinkingCard` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertMyGroupThinkingCardData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertMyGroupThinkingCardData {
+  groupThinkingCard_upsert: GroupThinkingCard_Key;
+}
+```
+### Using `UpsertMyGroupThinkingCard`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertMyGroupThinkingCard, UpsertMyGroupThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyGroupThinkingCard` mutation requires an argument of type `UpsertMyGroupThinkingCardVariables`:
+const upsertMyGroupThinkingCardVars: UpsertMyGroupThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  column: ...,
+  content: ...,
+};
+
+// Call the `upsertMyGroupThinkingCard()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertMyGroupThinkingCard(upsertMyGroupThinkingCardVars);
+// Variables can be defined inline as well.
+const { data } = await upsertMyGroupThinkingCard({ externalId: ..., activityId: ..., activityGroupId: ..., studentId: ..., column: ..., content: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertMyGroupThinkingCard(dataConnect, upsertMyGroupThinkingCardVars);
+
+console.log(data.groupThinkingCard_upsert);
+
+// Or, you can use the `Promise` API.
+upsertMyGroupThinkingCard(upsertMyGroupThinkingCardVars).then((response) => {
+  const data = response.data;
+  console.log(data.groupThinkingCard_upsert);
+});
+```
+
+### Using `UpsertMyGroupThinkingCard`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertMyGroupThinkingCardRef, UpsertMyGroupThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyGroupThinkingCard` mutation requires an argument of type `UpsertMyGroupThinkingCardVariables`:
+const upsertMyGroupThinkingCardVars: UpsertMyGroupThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  column: ...,
+  content: ...,
+};
+
+// Call the `upsertMyGroupThinkingCardRef()` function to get a reference to the mutation.
+const ref = upsertMyGroupThinkingCardRef(upsertMyGroupThinkingCardVars);
+// Variables can be defined inline as well.
+const ref = upsertMyGroupThinkingCardRef({ externalId: ..., activityId: ..., activityGroupId: ..., studentId: ..., column: ..., content: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertMyGroupThinkingCardRef(dataConnect, upsertMyGroupThinkingCardVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.groupThinkingCard_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.groupThinkingCard_upsert);
+});
+```
+
+## DeleteMyGroupThinkingCard
+You can execute the `DeleteMyGroupThinkingCard` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteMyGroupThinkingCard(vars: DeleteMyGroupThinkingCardVariables): MutationPromise<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+
+interface DeleteMyGroupThinkingCardRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteMyGroupThinkingCardVariables): MutationRef<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+}
+export const deleteMyGroupThinkingCardRef: DeleteMyGroupThinkingCardRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteMyGroupThinkingCard(dc: DataConnect, vars: DeleteMyGroupThinkingCardVariables): MutationPromise<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+
+interface DeleteMyGroupThinkingCardRef {
+  ...
+  (dc: DataConnect, vars: DeleteMyGroupThinkingCardVariables): MutationRef<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+}
+export const deleteMyGroupThinkingCardRef: DeleteMyGroupThinkingCardRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteMyGroupThinkingCardRef:
+```typescript
+const name = deleteMyGroupThinkingCardRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteMyGroupThinkingCard` mutation requires an argument of type `DeleteMyGroupThinkingCardVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteMyGroupThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteMyGroupThinkingCard` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteMyGroupThinkingCardData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteMyGroupThinkingCardData {
+  groupThinkingCard_delete?: GroupThinkingCard_Key | null;
+}
+```
+### Using `DeleteMyGroupThinkingCard`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteMyGroupThinkingCard, DeleteMyGroupThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteMyGroupThinkingCard` mutation requires an argument of type `DeleteMyGroupThinkingCardVariables`:
+const deleteMyGroupThinkingCardVars: DeleteMyGroupThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+};
+
+// Call the `deleteMyGroupThinkingCard()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteMyGroupThinkingCard(deleteMyGroupThinkingCardVars);
+// Variables can be defined inline as well.
+const { data } = await deleteMyGroupThinkingCard({ externalId: ..., activityId: ..., activityGroupId: ..., studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteMyGroupThinkingCard(dataConnect, deleteMyGroupThinkingCardVars);
+
+console.log(data.groupThinkingCard_delete);
+
+// Or, you can use the `Promise` API.
+deleteMyGroupThinkingCard(deleteMyGroupThinkingCardVars).then((response) => {
+  const data = response.data;
+  console.log(data.groupThinkingCard_delete);
+});
+```
+
+### Using `DeleteMyGroupThinkingCard`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteMyGroupThinkingCardRef, DeleteMyGroupThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteMyGroupThinkingCard` mutation requires an argument of type `DeleteMyGroupThinkingCardVariables`:
+const deleteMyGroupThinkingCardVars: DeleteMyGroupThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+};
+
+// Call the `deleteMyGroupThinkingCardRef()` function to get a reference to the mutation.
+const ref = deleteMyGroupThinkingCardRef(deleteMyGroupThinkingCardVars);
+// Variables can be defined inline as well.
+const ref = deleteMyGroupThinkingCardRef({ externalId: ..., activityId: ..., activityGroupId: ..., studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteMyGroupThinkingCardRef(dataConnect, deleteMyGroupThinkingCardVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.groupThinkingCard_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.groupThinkingCard_delete);
+});
+```
+
+## SetMyGroupAgreement
+You can execute the `SetMyGroupAgreement` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+setMyGroupAgreement(vars: SetMyGroupAgreementVariables): MutationPromise<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+
+interface SetMyGroupAgreementRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetMyGroupAgreementVariables): MutationRef<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+}
+export const setMyGroupAgreementRef: SetMyGroupAgreementRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setMyGroupAgreement(dc: DataConnect, vars: SetMyGroupAgreementVariables): MutationPromise<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+
+interface SetMyGroupAgreementRef {
+  ...
+  (dc: DataConnect, vars: SetMyGroupAgreementVariables): MutationRef<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+}
+export const setMyGroupAgreementRef: SetMyGroupAgreementRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setMyGroupAgreementRef:
+```typescript
+const name = setMyGroupAgreementRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetMyGroupAgreement` mutation requires an argument of type `SetMyGroupAgreementVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetMyGroupAgreementVariables {
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+  agreed: boolean;
+}
+```
+### Return Type
+Recall that executing the `SetMyGroupAgreement` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetMyGroupAgreementData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetMyGroupAgreementData {
+  groupSubmissionAgreement_upsert: GroupSubmissionAgreement_Key;
+}
+```
+### Using `SetMyGroupAgreement`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setMyGroupAgreement, SetMyGroupAgreementVariables } from '@visible-thinking/dataconnect';
+
+// The `SetMyGroupAgreement` mutation requires an argument of type `SetMyGroupAgreementVariables`:
+const setMyGroupAgreementVars: SetMyGroupAgreementVariables = {
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  agreed: ...,
+};
+
+// Call the `setMyGroupAgreement()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setMyGroupAgreement(setMyGroupAgreementVars);
+// Variables can be defined inline as well.
+const { data } = await setMyGroupAgreement({ activityId: ..., activityGroupId: ..., studentId: ..., agreed: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setMyGroupAgreement(dataConnect, setMyGroupAgreementVars);
+
+console.log(data.groupSubmissionAgreement_upsert);
+
+// Or, you can use the `Promise` API.
+setMyGroupAgreement(setMyGroupAgreementVars).then((response) => {
+  const data = response.data;
+  console.log(data.groupSubmissionAgreement_upsert);
+});
+```
+
+### Using `SetMyGroupAgreement`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setMyGroupAgreementRef, SetMyGroupAgreementVariables } from '@visible-thinking/dataconnect';
+
+// The `SetMyGroupAgreement` mutation requires an argument of type `SetMyGroupAgreementVariables`:
+const setMyGroupAgreementVars: SetMyGroupAgreementVariables = {
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  agreed: ...,
+};
+
+// Call the `setMyGroupAgreementRef()` function to get a reference to the mutation.
+const ref = setMyGroupAgreementRef(setMyGroupAgreementVars);
+// Variables can be defined inline as well.
+const ref = setMyGroupAgreementRef({ activityId: ..., activityGroupId: ..., studentId: ..., agreed: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setMyGroupAgreementRef(dataConnect, setMyGroupAgreementVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.groupSubmissionAgreement_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.groupSubmissionAgreement_upsert);
+});
+```
+
+## SetMyGroupSubmission
+You can execute the `SetMyGroupSubmission` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+setMyGroupSubmission(vars: SetMyGroupSubmissionVariables): MutationPromise<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+
+interface SetMyGroupSubmissionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetMyGroupSubmissionVariables): MutationRef<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+}
+export const setMyGroupSubmissionRef: SetMyGroupSubmissionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setMyGroupSubmission(dc: DataConnect, vars: SetMyGroupSubmissionVariables): MutationPromise<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+
+interface SetMyGroupSubmissionRef {
+  ...
+  (dc: DataConnect, vars: SetMyGroupSubmissionVariables): MutationRef<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+}
+export const setMyGroupSubmissionRef: SetMyGroupSubmissionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setMyGroupSubmissionRef:
+```typescript
+const name = setMyGroupSubmissionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetMyGroupSubmission` mutation requires an argument of type `SetMyGroupSubmissionVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetMyGroupSubmissionVariables {
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+  status: SubmissionStatus;
+}
+```
+### Return Type
+Recall that executing the `SetMyGroupSubmission` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetMyGroupSubmissionData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetMyGroupSubmissionData {
+  groupSubmission_upsert: GroupSubmission_Key;
+}
+```
+### Using `SetMyGroupSubmission`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setMyGroupSubmission, SetMyGroupSubmissionVariables } from '@visible-thinking/dataconnect';
+
+// The `SetMyGroupSubmission` mutation requires an argument of type `SetMyGroupSubmissionVariables`:
+const setMyGroupSubmissionVars: SetMyGroupSubmissionVariables = {
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  status: ...,
+};
+
+// Call the `setMyGroupSubmission()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setMyGroupSubmission(setMyGroupSubmissionVars);
+// Variables can be defined inline as well.
+const { data } = await setMyGroupSubmission({ activityId: ..., activityGroupId: ..., studentId: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setMyGroupSubmission(dataConnect, setMyGroupSubmissionVars);
+
+console.log(data.groupSubmission_upsert);
+
+// Or, you can use the `Promise` API.
+setMyGroupSubmission(setMyGroupSubmissionVars).then((response) => {
+  const data = response.data;
+  console.log(data.groupSubmission_upsert);
+});
+```
+
+### Using `SetMyGroupSubmission`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setMyGroupSubmissionRef, SetMyGroupSubmissionVariables } from '@visible-thinking/dataconnect';
+
+// The `SetMyGroupSubmission` mutation requires an argument of type `SetMyGroupSubmissionVariables`:
+const setMyGroupSubmissionVars: SetMyGroupSubmissionVariables = {
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  status: ...,
+};
+
+// Call the `setMyGroupSubmissionRef()` function to get a reference to the mutation.
+const ref = setMyGroupSubmissionRef(setMyGroupSubmissionVars);
+// Variables can be defined inline as well.
+const ref = setMyGroupSubmissionRef({ activityId: ..., activityGroupId: ..., studentId: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setMyGroupSubmissionRef(dataConnect, setMyGroupSubmissionVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.groupSubmission_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.groupSubmission_upsert);
 });
 ```

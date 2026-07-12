@@ -147,6 +147,17 @@ export interface DeleteMyAiCredentialData {
   teacherAiCredential_delete?: TeacherAiCredential_Key | null;
 }
 
+export interface DeleteMyGroupThinkingCardData {
+  groupThinkingCard_delete?: GroupThinkingCard_Key | null;
+}
+
+export interface DeleteMyGroupThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+}
+
 export interface DeleteMyTeacherProfileData {
   teacherProfile_delete?: TeacherProfile_Key | null;
 }
@@ -228,6 +239,69 @@ export interface GetMyAiCredentialData {
     keyHint: string;
     updatedAt: TimestampString;
   };
+}
+
+export interface GetMyGroupWorkData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    name: string;
+    schoolClass: {
+      name: string;
+    };
+  } & Student_Key)[];
+  activityGroupMembers: ({
+    activityGroup: {
+      id: string;
+      name: string;
+      activity: {
+        status: ActivityStatus;
+      };
+      activityGroupMembers_on_activityGroup: ({
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+          authUid?: string | null;
+        } & Student_Key;
+      })[];
+      groupThinkingCards_on_activityGroup: ({
+        id: string;
+        column: RoutineColumn;
+        content: string;
+        updatedAt: TimestampString;
+        updatedByStudent: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      } & GroupThinkingCard_Key)[];
+      groupSubmissions_on_activityGroup: ({
+        status: SubmissionStatus;
+        updatedAt: TimestampString;
+      })[];
+      groupSubmissionAgreements_on_activityGroup: ({
+        agreed: boolean;
+        updatedAt: TimestampString;
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      })[];
+    } & ActivityGroup_Key;
+  })[];
+  activityAttendances: ({
+    status: AttendanceStatus;
+    student: {
+      id: string;
+      externalId?: string | null;
+    } & Student_Key;
+  })[];
+}
+
+export interface GetMyGroupWorkVariables {
+  activityId: string;
 }
 
 export interface GetMyStudentActivityData {
@@ -499,6 +573,33 @@ export interface GetTeacherActivityResultsData {
         };
       } & Student_Key;
     })[];
+    activityGroups_on_activity: ({
+      id: string;
+      name: string;
+      groupThinkingCards_on_activityGroup: ({
+        id: string;
+        column: RoutineColumn;
+        content: string;
+        updatedAt: TimestampString;
+        updatedByStudent: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      } & GroupThinkingCard_Key)[];
+      groupSubmissions_on_activityGroup: ({
+        status: SubmissionStatus;
+        updatedAt: TimestampString;
+      })[];
+      groupSubmissionAgreements_on_activityGroup: ({
+        agreed: boolean;
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+        } & Student_Key;
+      })[];
+    } & ActivityGroup_Key)[];
     activityAttendances_on_activity: ({
       status: AttendanceStatus;
       student: {
@@ -691,6 +792,28 @@ export interface SetAiAnalysisVisibilityVariables {
   studentVisible: boolean;
 }
 
+export interface SetMyGroupAgreementData {
+  groupSubmissionAgreement_upsert: GroupSubmissionAgreement_Key;
+}
+
+export interface SetMyGroupAgreementVariables {
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+  agreed: boolean;
+}
+
+export interface SetMyGroupSubmissionData {
+  groupSubmission_upsert: GroupSubmission_Key;
+}
+
+export interface SetMyGroupSubmissionVariables {
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+  status: SubmissionStatus;
+}
+
 export interface SetMyIndividualSubmissionData {
   individualSubmission_upsert: IndividualSubmission_Key;
 }
@@ -854,6 +977,19 @@ export interface UpsertMyAiCredentialVariables {
   initializationVector: string;
   authenticationTag: string;
   keyHint: string;
+}
+
+export interface UpsertMyGroupThinkingCardData {
+  groupThinkingCard_upsert: GroupThinkingCard_Key;
+}
+
+export interface UpsertMyGroupThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  activityGroupId: string;
+  studentId: string;
+  column: RoutineColumn;
+  content: string;
 }
 
 export interface UpsertMyTeacherProfileData {
@@ -1402,6 +1538,18 @@ export const getMyStudentWorkRef: GetMyStudentWorkRef;
 export function getMyStudentWork(vars: GetMyStudentWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentWorkData, GetMyStudentWorkVariables>;
 export function getMyStudentWork(dc: DataConnect, vars: GetMyStudentWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentWorkData, GetMyStudentWorkVariables>;
 
+interface GetMyGroupWorkRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyGroupWorkVariables): QueryRef<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetMyGroupWorkVariables): QueryRef<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+  operationName: string;
+}
+export const getMyGroupWorkRef: GetMyGroupWorkRef;
+
+export function getMyGroupWork(vars: GetMyGroupWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+export function getMyGroupWork(dc: DataConnect, vars: GetMyGroupWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyGroupWorkData, GetMyGroupWorkVariables>;
+
 interface UpsertMyThinkingCardRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: UpsertMyThinkingCardVariables): MutationRef<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
@@ -1437,3 +1585,51 @@ export const setMyIndividualSubmissionRef: SetMyIndividualSubmissionRef;
 
 export function setMyIndividualSubmission(vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
 export function setMyIndividualSubmission(dc: DataConnect, vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+
+interface UpsertMyGroupThinkingCardRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyGroupThinkingCardVariables): MutationRef<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertMyGroupThinkingCardVariables): MutationRef<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+  operationName: string;
+}
+export const upsertMyGroupThinkingCardRef: UpsertMyGroupThinkingCardRef;
+
+export function upsertMyGroupThinkingCard(vars: UpsertMyGroupThinkingCardVariables): MutationPromise<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+export function upsertMyGroupThinkingCard(dc: DataConnect, vars: UpsertMyGroupThinkingCardVariables): MutationPromise<UpsertMyGroupThinkingCardData, UpsertMyGroupThinkingCardVariables>;
+
+interface DeleteMyGroupThinkingCardRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteMyGroupThinkingCardVariables): MutationRef<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteMyGroupThinkingCardVariables): MutationRef<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+  operationName: string;
+}
+export const deleteMyGroupThinkingCardRef: DeleteMyGroupThinkingCardRef;
+
+export function deleteMyGroupThinkingCard(vars: DeleteMyGroupThinkingCardVariables): MutationPromise<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+export function deleteMyGroupThinkingCard(dc: DataConnect, vars: DeleteMyGroupThinkingCardVariables): MutationPromise<DeleteMyGroupThinkingCardData, DeleteMyGroupThinkingCardVariables>;
+
+interface SetMyGroupAgreementRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetMyGroupAgreementVariables): MutationRef<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetMyGroupAgreementVariables): MutationRef<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+  operationName: string;
+}
+export const setMyGroupAgreementRef: SetMyGroupAgreementRef;
+
+export function setMyGroupAgreement(vars: SetMyGroupAgreementVariables): MutationPromise<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+export function setMyGroupAgreement(dc: DataConnect, vars: SetMyGroupAgreementVariables): MutationPromise<SetMyGroupAgreementData, SetMyGroupAgreementVariables>;
+
+interface SetMyGroupSubmissionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetMyGroupSubmissionVariables): MutationRef<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetMyGroupSubmissionVariables): MutationRef<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+  operationName: string;
+}
+export const setMyGroupSubmissionRef: SetMyGroupSubmissionRef;
+
+export function setMyGroupSubmission(vars: SetMyGroupSubmissionVariables): MutationPromise<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;
+export function setMyGroupSubmission(dc: DataConnect, vars: SetMyGroupSubmissionVariables): MutationPromise<SetMyGroupSubmissionData, SetMyGroupSubmissionVariables>;

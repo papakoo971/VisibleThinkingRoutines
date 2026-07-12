@@ -1,5 +1,25 @@
 # Implementation Log
 
+## 2026-07-12 Realtime MVP Group Collaboration
+
+### Completed
+
+- Added student-authorized Data Connect queries and mutations for shared group cards, agreements, and submission state.
+- Added card-level shared writes so one member's save does not replace another member's cards.
+- Added two-second group-work synchronization while preserving locally dirty cards until their save completes.
+- Restricted agreement changes to the signed-in member and required every present member's agreement before submission.
+- Excluded absent group members from the agreement requirement.
+- Added live group cards, authors, agreements, status, and group submission rate to teacher results.
+- Deployed the updated Data Connect connector.
+
+### Verification
+
+- A two-student Firebase integration test confirms each member sees the other's card.
+- Two independent card writes remain present, proving card-level saves avoid whole-document overwrite.
+- Submission before unanimous present-member agreement returns `409`.
+- Submission succeeds after both members agree and is visible to both students and the teacher.
+- Teacher results contain both cards, both agreements, and a 100% group submission rate.
+
 ## 2026-07-12 AI Provider Readiness And Submission Rate
 
 ### Completed

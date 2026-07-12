@@ -13,7 +13,7 @@ import {
 import type { RoutineColumn } from "@/lib/mock-data";
 import { fetchCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
-import { fetchStudentWork, saveStudentWork, type StudentWork } from "@/lib/student-work";
+import { deleteGroupCard, fetchStudentWork, saveStudentWork, setMyGroupAgreement, submitGroupWork, upsertGroupCard, type StudentWork } from "@/lib/student-work";
 
 type LocalCard = {
   id: string;
@@ -109,23 +109,21 @@ function StudentActivityWorkspace({
   const [modifiedAfterSubmit, setModifiedAfterSubmit] = useState(studentWork?.status === "modified");
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const saveVersion = useRef(0);
+  const dirtyGroupCards = useRef(new Set<string>());
   const [agreements, setAgreements] = useState<Record<string, boolean>>(
-    Object.fromEntries(
+    studentWork?.agreements ?? Object.fromEntries(
       (groupSubmission?.agreements ?? []).map((agreement) => [agreement.studentId, agreement.agreed])
     )
   );
 
   const groupMembers = useMemo(() => {
+    if (studentWork?.mode === "group") return studentWork.group?.members ?? [];
     if (!currentGroup) return [];
     return currentGroup.studentIds.map((studentId) => students.find((student) => student.id === studentId)).filter(Boolean);
-  }, [currentGroup]);
+  }, [currentGroup, studentWork]);
 
-  const presentMembers = groupMembers.filter(
-    (student) => student && allActivityAttendance.find((item) => item.activityId === activity.id && item.studentId === student.id)?.status !== "absent"
-  );
-  const absentMembers = groupMembers.filter(
-    (student) => student && allActivityAttendance.find((item) => item.activityId === activity.id && item.studentId === student.id)?.status === "absent"
-  );
+  const presentMembers = groupMembers.filter((student) => student && ("present" in student ? student.present : allActivityAttendance.find((item) => item.activityId === activity.id && item.studentId === student.id)?.status !== "absent"));
+  const absentMembers = groupMembers.filter((student) => student && ("present" in student ? !student.present : allActivityAttendance.find((item) => item.activityId === activity.id && item.studentId === student.id)?.status === "absent"));
   const allPresentMembersAgreed = presentMembers.length > 0 && presentMembers.every((student) => student && agreements[student.id]);
 
   const statusLabel = useMemo(() => {
@@ -150,9 +148,46 @@ function StudentActivityWorkspace({
     return () => window.clearTimeout(timeout);
   }, [activity.activityMode, activityId, cards, createdPayload, modifiedAfterSubmit, readOnly, studentWork, submitted]);
 
+  useEffect(() => {
+    if (studentWork?.mode !== "group" || readOnly) return;
+    const dirtyIds = [...dirtyGroupCards.current];
+    if (!dirtyIds.length) return;
+    const version = saveVersion.current;
+    const timeout = window.setTimeout(() => {
+      Promise.all(cards.filter((card) => dirtyIds.includes(card.id)).map((card) => upsertGroupCard(activityId, card))).then(() => {
+        dirtyIds.forEach((id) => dirtyGroupCards.current.delete(id));
+        if (saveVersion.current === version) setSaveState("saved");
+      }).catch(() => {
+        if (saveVersion.current === version) setSaveState("error");
+      });
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [activityId, cards, readOnly, studentWork?.mode]);
+
+  useEffect(() => {
+    if (studentWork?.mode !== "group") return;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const next = await fetchStudentWork(activityId);
+        if (!active || next.mode !== "group") return;
+        if (dirtyGroupCards.current.size === 0) setCards(next.cards);
+        setAgreements(next.agreements ?? {});
+        setSubmitted(next.status === "submitted" || next.status === "modified");
+        setModifiedAfterSubmit(next.status === "modified");
+      } catch {
+        // Keep the last synchronized view during a transient polling failure.
+      }
+    };
+    const interval = window.setInterval(() => void refresh(), 2_000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, [activityId, studentWork?.mode]);
+
   function addCard(column: RoutineColumn) {
     if (readOnly) return;
-    setCards((current) => [...current, { id: crypto.randomUUID(), column, content: "" }]);
+    const id = crypto.randomUUID();
+    setCards((current) => [...current, { id, column, content: "" }]);
+    if (studentWork?.mode === "group") dirtyGroupCards.current.add(id);
     saveVersion.current += 1;
     setSaveState("saving");
     if (submitted) setModifiedAfterSubmit(true);
@@ -161,6 +196,7 @@ function StudentActivityWorkspace({
   function updateCard(id: string, content: string) {
     if (readOnly) return;
     setCards((current) => current.map((card) => (card.id === id ? { ...card, content } : card)));
+    if (studentWork?.mode === "group") dirtyGroupCards.current.add(id);
     saveVersion.current += 1;
     setSaveState("saving");
     if (submitted) setModifiedAfterSubmit(true);
@@ -169,13 +205,18 @@ function StudentActivityWorkspace({
   function deleteCard(id: string) {
     if (readOnly) return;
     setCards((current) => current.filter((card) => card.id !== id));
+    dirtyGroupCards.current.delete(id);
+    if (studentWork?.mode === "group") void deleteGroupCard(activityId, id).then(() => setSaveState("saved")).catch(() => setSaveState("error"));
     saveVersion.current += 1;
     setSaveState("saving");
     if (submitted) setModifiedAfterSubmit(true);
   }
 
   function toggleAgreement(studentId: string) {
-    setAgreements((current) => ({ ...current, [studentId]: !current[studentId] }));
+    if (studentWork?.mode === "group" && studentId !== studentWork.student.id) return;
+    const agreed = !agreements[studentId];
+    setAgreements((current) => ({ ...current, [studentId]: agreed }));
+    if (studentWork?.mode === "group") void setMyGroupAgreement(activityId, agreed).catch(() => setSaveState("error"));
     if (submitted) setModifiedAfterSubmit(true);
   }
 
@@ -187,7 +228,7 @@ function StudentActivityWorkspace({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{activity.routine}</p>
             <h1 className="mt-1 text-xl font-semibold tracking-tight">{activity.title}</h1>
             <p className="mt-1 text-sm text-zinc-600">
-              {studentWork?.student.name ?? currentStudent.name} · {studentWork?.student.className ?? currentStudent.className} · {activity.activityMode === "group" ? currentGroup?.name : "개인 활동"}
+              {studentWork?.student.name ?? currentStudent.name} · {studentWork?.student.className ?? currentStudent.className} · {activity.activityMode === "group" ? studentWork?.group?.name ?? currentGroup?.name : "개인 활동"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -199,7 +240,16 @@ function StudentActivityWorkspace({
               {statusLabel}
             </span>
             <button
-              onClick={() => { saveVersion.current += 1; setSubmitted(true); setModifiedAfterSubmit(false); setSaveState("saving"); }}
+              onClick={() => {
+                saveVersion.current += 1;
+                setSaveState("saving");
+                if (studentWork?.mode === "group") {
+                  void submitGroupWork(activityId).then(() => { setSubmitted(true); setModifiedAfterSubmit(false); setSaveState("saved"); }).catch(() => setSaveState("error"));
+                } else {
+                  setSubmitted(true);
+                  setModifiedAfterSubmit(false);
+                }
+              }}
               disabled={readOnly || (activity.activityMode === "group" && !allPresentMembersAgreed)}
               className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
             >
@@ -261,9 +311,10 @@ function StudentActivityWorkspace({
                       key={student.id}
                       type="button"
                       onClick={() => toggleAgreement(student.id)}
+                      disabled={studentWork?.mode === "group" && student.id !== studentWork.student.id}
                       className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${
                         agreements[student.id] ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-zinc-200 bg-stone-50"
-                      }`}
+                      } disabled:cursor-default disabled:opacity-80`}
                     >
                       <span className="font-semibold">{student.name}</span>
                       <span>{agreements[student.id] ? "동의 완료" : "동의 필요"}</span>

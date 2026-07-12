@@ -259,6 +259,19 @@ query GetTeacherActivityResults($id: String!) @auth(level: USER) {
         schoolClass { name }
       }
     }
+    activityGroups_on_activity {
+      id
+      name
+      groupThinkingCards_on_activityGroup {
+        id column content updatedAt
+        updatedByStudent { id externalId name }
+      }
+      groupSubmissions_on_activityGroup { status updatedAt }
+      groupSubmissionAgreements_on_activityGroup {
+        agreed
+        student { id externalId name }
+      }
+    }
     activityAttendances_on_activity {
       status
       student {

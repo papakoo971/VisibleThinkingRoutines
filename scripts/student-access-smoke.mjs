@@ -13,6 +13,7 @@ if (!projectId || !apiKey || !appId) throw new Error("Firebase configuration is 
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const activityId = `student-access-${suffix}`;
+const groupActivityId = `group-collaboration-${suffix}`;
 const idTokens = [];
 
 async function createIdentity(label) {
@@ -53,7 +54,14 @@ async function api(path, { idToken, method = "GET", body } = {}) {
     headers: { ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}), ...(body ? { "Content-Type": "application/json" } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const result = await response.json();
+  const text = await response.text();
+  let result;
+  try {
+    result = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`${method} ${path} returned non-JSON ${response.status}: ${text.slice(0, 300)}`);
+  }
+  if (!text && !response.ok) throw new Error(`${method} ${path} returned an empty ${response.status} response.`);
   return { status: response.status, result };
 }
 
@@ -85,6 +93,7 @@ try {
   teacher = await createIdentity("teacher");
   assignedStudent = await createIdentity("assigned");
   const unassignedStudent = await createIdentity("unassigned");
+  const groupPeer = await createIdentity("group-peer");
 
   const create = await api("/api/created-activities", { method: "POST", idToken: teacher.idToken, body: payload() });
   if (create.status !== 201) throw new Error(`Teacher create failed: ${JSON.stringify(create)}`);
@@ -255,6 +264,35 @@ try {
   const afterDelete = await api(workPath, { idToken: assignedStudent.idToken });
   if (afterDelete.result.cards?.length !== 0 || afterDelete.result.status !== "modified") throw new Error("Card deletion or modified status was not persisted.");
 
+  await sqlMutation("UpsertStudent", { externalId: "s3", schoolClassId: `${teacher.uid}:5학년 1반`, studentNumber: `S3-${suffix}`, name: "공동 편집 학생", passwordIssued: true }, teacher.idToken);
+  await sqlMutation("LinkStudentAuth", { studentId: `${teacher.uid}:s3`, authUid: groupPeer.uid }, teacher.idToken);
+  const collaborationGroupId = `${groupActivityId}:g1`;
+  const groupCreate = await api("/api/created-activities", { method: "POST", idToken: teacher.idToken, body: {
+    activity: { id: groupActivityId, title: "모둠 공동 편집 검증", routine: "See-Think-Wonder", activityMode: "group", subject: "통합 테스트", classes: ["5학년 1반"], status: "active", code: "GRP-Q7K9M", materialType: "image", materialUrl: null, materialName: null, instructions: "공동 편집", activityDate: "2026-07-12", submittedCount: 0, targetCount: 1 },
+    activityAttendance: [{ activityId: groupActivityId, studentId: "s1", status: "present" }, { activityId: groupActivityId, studentId: "s3", status: "present" }],
+    activityGroups: [{ id: collaborationGroupId, activityId: groupActivityId, name: "검증 모둠", studentIds: ["s1", "s3"] }],
+    groupSubmissions: [{ activityId: groupActivityId, groupId: collaborationGroupId, status: "draft", agreements: [{ activityId: groupActivityId, groupId: collaborationGroupId, studentId: "s1", agreed: false }, { activityId: groupActivityId, groupId: collaborationGroupId, studentId: "s3", agreed: false }], cards: [] }],
+    individualSubmissions: [],
+    routes: { teacherResults: `/teacher/activities/${groupActivityId}/results`, studentEntry: `/student/activities/${groupActivityId}` },
+  } });
+  if (groupCreate.status !== 201) throw new Error(`Group activity creation failed: ${JSON.stringify(groupCreate)}`);
+  const groupWorkPath = `/api/student/activities/${groupActivityId}/work`;
+  const firstGroupView = await api(groupWorkPath, { idToken: assignedStudent.idToken });
+  if (firstGroupView.status !== 200 || firstGroupView.result.mode !== "group" || firstGroupView.result.group?.members.length !== 2) throw new Error("Assigned group work did not load.");
+  const peerCard = await api(groupWorkPath, { method: "PATCH", idToken: groupPeer.idToken, body: { action: "upsertCard", card: { id: "peer-card", column: "see", content: "모둠원이 작성한 카드" } } });
+  if (peerCard.status !== 200 || !(await api(groupWorkPath, { idToken: assignedStudent.idToken })).result.cards.some((card) => card.id === "peer-card" && card.updatedBy.id === "s3")) throw new Error("A peer card was not visible to the other group member.");
+  await api(groupWorkPath, { method: "PATCH", idToken: assignedStudent.idToken, body: { action: "upsertCard", card: { id: "owner-card", column: "think", content: "다른 모둠원의 카드" } } });
+  const sharedCards = await api(groupWorkPath, { idToken: groupPeer.idToken });
+  if (sharedCards.result.cards.length !== 2) throw new Error("Card-level group edits overwrote another member's card.");
+  const earlyGroupSubmit = await api(groupWorkPath, { method: "PATCH", idToken: assignedStudent.idToken, body: { action: "submit" } });
+  if (earlyGroupSubmit.status !== 409) throw new Error("Group submission should require every present member's agreement.");
+  await api(groupWorkPath, { method: "PATCH", idToken: assignedStudent.idToken, body: { action: "agreement", agreed: true } });
+  await api(groupWorkPath, { method: "PATCH", idToken: groupPeer.idToken, body: { action: "agreement", agreed: true } });
+  const finalGroupSubmit = await api(groupWorkPath, { method: "PATCH", idToken: groupPeer.idToken, body: { action: "submit" } });
+  if (finalGroupSubmit.status !== 200 || (await api(groupWorkPath, { idToken: assignedStudent.idToken })).result.status !== "submitted") throw new Error("Agreed group work was not submitted.");
+  const teacherGroupResults = await api(`/api/teacher/activities/${groupActivityId}/results`, { idToken: teacher.idToken });
+  if (teacherGroupResults.status !== 200 || teacherGroupResults.result.submissionSummary?.rate !== 100 || teacherGroupResults.result.groupSubmissions?.[0]?.cards.length !== 2 || teacherGroupResults.result.groupSubmissions?.[0]?.agreements.some((item) => !item.agreed)) throw new Error("Teacher group results did not include the shared cards, agreements, and submission rate.");
+
   const unassignedSession = await api("/api/student/session", { idToken: unassignedStudent.idToken });
   if (unassignedSession.status !== 403) throw new Error(`Unassigned session should be 403, got ${unassignedSession.status}.`);
   const unassignedDetail = await api(`/api/created-activities/${activityId}`, { idToken: unassignedStudent.idToken });
@@ -266,17 +304,20 @@ try {
   const removedSettings = await api(aiSettingsPath, { method: "DELETE", idToken: teacher.idToken });
   if (removedSettings.status !== 200) throw new Error("Teacher AI settings deletion failed.");
 
-  console.log("PASS: live class/default-group management, encrypted AI settings, teacher-approved feedback, owner checks, and activity lifecycle all persist.");
+  console.log("PASS: class management, student accounts, AI settings, activity lifecycle, and two-student group collaboration persist with owner checks.");
 } finally {
   if (teacher) {
     await Promise.allSettled([
       api("/api/teacher/ai-settings", { method: "DELETE", idToken: teacher.idToken }),
       sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),
+      sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s3` }, teacher.idToken),
       api(`/api/created-activities/${activityId}`, { method: "DELETE", idToken: teacher.idToken }),
+      api(`/api/created-activities/${groupActivityId}`, { method: "DELETE", idToken: teacher.idToken }),
     ]);
     await Promise.allSettled([
       sqlMutation("DeleteStudent", { id: `${teacher.uid}:s1` }, teacher.idToken),
       sqlMutation("DeleteStudent", { id: `${teacher.uid}:s2` }, teacher.idToken),
+      sqlMutation("DeleteStudent", { id: `${teacher.uid}:s3` }, teacher.idToken),
     ]);
     await sqlMutation("DeleteSchoolClass", { id: `${teacher.uid}:5학년 1반` }, teacher.idToken).catch(() => undefined);
   }

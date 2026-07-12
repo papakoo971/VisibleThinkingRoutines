@@ -553,6 +553,19 @@ export function getMyStudentWork(dcOrVars, varsOrOptions, options) {
   return executeQuery(getMyStudentWorkRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
+export const getMyGroupWorkRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyGroupWork', inputVars);
+}
+getMyGroupWorkRef.operationName = 'GetMyGroupWork';
+
+export function getMyGroupWork(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyGroupWorkRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
 export const upsertMyThinkingCardRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -587,4 +600,52 @@ setMyIndividualSubmissionRef.operationName = 'SetMyIndividualSubmission';
 export function setMyIndividualSubmission(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(setMyIndividualSubmissionRef(dcInstance, inputVars));
+}
+
+export const upsertMyGroupThinkingCardRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertMyGroupThinkingCard', inputVars);
+}
+upsertMyGroupThinkingCardRef.operationName = 'UpsertMyGroupThinkingCard';
+
+export function upsertMyGroupThinkingCard(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertMyGroupThinkingCardRef(dcInstance, inputVars));
+}
+
+export const deleteMyGroupThinkingCardRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteMyGroupThinkingCard', inputVars);
+}
+deleteMyGroupThinkingCardRef.operationName = 'DeleteMyGroupThinkingCard';
+
+export function deleteMyGroupThinkingCard(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteMyGroupThinkingCardRef(dcInstance, inputVars));
+}
+
+export const setMyGroupAgreementRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetMyGroupAgreement', inputVars);
+}
+setMyGroupAgreementRef.operationName = 'SetMyGroupAgreement';
+
+export function setMyGroupAgreement(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setMyGroupAgreementRef(dcInstance, inputVars));
+}
+
+export const setMyGroupSubmissionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetMyGroupSubmission', inputVars);
+}
+setMyGroupSubmissionRef.operationName = 'SetMyGroupSubmission';
+
+export function setMyGroupSubmission(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setMyGroupSubmissionRef(dcInstance, inputVars));
 }

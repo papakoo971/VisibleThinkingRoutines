@@ -11,6 +11,13 @@ export type TeacherActivityResults = {
     sourceFingerprint: string;
     cards: Array<{ id: string; studentId: string; column: RoutineColumn; content: string; tags: string[]; tagsPublic: boolean; updatedAt: string }>;
   }>;
+  groupSubmissions: Array<{
+    groupId: string;
+    groupName: string;
+    status: "draft" | "submitted" | "modified";
+    agreements: Array<{ studentId: string; studentName: string; agreed: boolean }>;
+    cards: Array<{ id: string; updatedByStudentId: string; updatedByStudentName: string; column: RoutineColumn; content: string; updatedAt: string }>;
+  }>;
   sourceFingerprint: string;
   analyses: Array<{
     id: string; scope: string; studentId?: string | null; studentVisible: boolean; status: string; model: string; summary?: string | null;
