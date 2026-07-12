@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, FileText, Plus, Save, Trash2, Users } from "lucide-react";
 import {
   activities,
@@ -13,6 +13,7 @@ import {
 import type { RoutineColumn } from "@/lib/mock-data";
 import { fetchCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
+import { fetchStudentWork, saveStudentWork, type StudentWork } from "@/lib/student-work";
 
 type LocalCard = {
   id: string;
@@ -35,14 +36,18 @@ const individualInitialCards: LocalCard[] = [
 
 export function StudentActivityView({ activityId }: { activityId: string }) {
   const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null | undefined>(undefined);
+  const [studentWork, setStudentWork] = useState<StudentWork | null>(null);
   const mockActivity = activities.find((item) => item.id === activityId);
 
   useEffect(() => {
     let ignore = false;
 
     if (!mockActivity) {
-      fetchCreatedActivityPayload(activityId).then((payload) => {
-        if (!ignore) setCreatedPayload(payload ?? null);
+      Promise.all([fetchCreatedActivityPayload(activityId), fetchStudentWork(activityId).catch(() => null)]).then(([payload, work]) => {
+        if (!ignore) {
+          setCreatedPayload(payload ?? null);
+          setStudentWork(work);
+        }
       });
     }
 
@@ -67,6 +72,7 @@ export function StudentActivityView({ activityId }: { activityId: string }) {
       key={`${activity.id}-${activity.activityMode}`}
       activityId={activityId}
       createdPayload={createdPayload ?? null}
+      studentWork={studentWork}
     />
   );
 }
@@ -74,9 +80,11 @@ export function StudentActivityView({ activityId }: { activityId: string }) {
 function StudentActivityWorkspace({
   activityId,
   createdPayload,
+  studentWork,
 }: {
   activityId: string;
   createdPayload: CreatedActivityPayload | null;
+  studentWork: StudentWork | null;
 }) {
   const mockActivity = activities.find((item) => item.id === activityId);
   const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
@@ -87,15 +95,18 @@ function StudentActivityWorkspace({
   const currentGroup = allActivityGroups.find((group) => group.activityId === activity.id && group.studentIds.includes(currentStudent.id));
   const groupSubmission = allGroupSubmissions.find((submission) => submission.activityId === activity.id && submission.groupId === currentGroup?.id);
   const individualSubmission = allIndividualSubmissions.find((submission) => submission.activityId === activity.id && submission.studentId === currentStudent.id);
-  const initialCards: LocalCard[] =
+  const initialCards: LocalCard[] = studentWork?.cards ?? (
     activity.activityMode === "group" && currentGroup
       ? (groupSubmission?.cards ?? []).map((card) => ({ id: card.id, column: card.column, content: card.content }))
-      : (individualSubmission?.cards ?? individualInitialCards).map((card) => ({ id: card.id, column: card.column, content: card.content }));
+      : (individualSubmission?.cards ?? (createdPayload ? [] : individualInitialCards)).map((card) => ({ id: card.id, column: card.column, content: card.content }))
+  );
 
   const [cards, setCards] = useState(initialCards);
   const [activeColumn, setActiveColumn] = useState<RoutineColumn>("see");
-  const [submitted, setSubmitted] = useState(false);
-  const [modifiedAfterSubmit, setModifiedAfterSubmit] = useState(false);
+  const [submitted, setSubmitted] = useState(studentWork?.status === "submitted" || studentWork?.status === "modified");
+  const [modifiedAfterSubmit, setModifiedAfterSubmit] = useState(studentWork?.status === "modified");
+  const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
+  const saveVersion = useRef(0);
   const [agreements, setAgreements] = useState<Record<string, boolean>>(
     Object.fromEntries(
       (groupSubmission?.agreements ?? []).map((agreement) => [agreement.studentId, agreement.agreed])
@@ -121,18 +132,40 @@ function StudentActivityWorkspace({
     return "제출 완료";
   }, [modifiedAfterSubmit, submitted]);
 
+  useEffect(() => {
+    if (!createdPayload || activity.activityMode !== "individual" || !studentWork) return;
+    const version = saveVersion.current;
+    const timeout = window.setTimeout(() => {
+      saveStudentWork(activityId, {
+        cards,
+        status: submitted ? (modifiedAfterSubmit ? "modified" : "submitted") : "draft",
+      }).then(() => {
+        if (saveVersion.current === version) setSaveState("saved");
+      }).catch(() => {
+        if (saveVersion.current === version) setSaveState("error");
+      });
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [activity.activityMode, activityId, cards, createdPayload, modifiedAfterSubmit, studentWork, submitted]);
+
   function addCard(column: RoutineColumn) {
     setCards((current) => [...current, { id: crypto.randomUUID(), column, content: "" }]);
+    saveVersion.current += 1;
+    setSaveState("saving");
     if (submitted) setModifiedAfterSubmit(true);
   }
 
   function updateCard(id: string, content: string) {
     setCards((current) => current.map((card) => (card.id === id ? { ...card, content } : card)));
+    saveVersion.current += 1;
+    setSaveState("saving");
     if (submitted) setModifiedAfterSubmit(true);
   }
 
   function deleteCard(id: string) {
     setCards((current) => current.filter((card) => card.id !== id));
+    saveVersion.current += 1;
+    setSaveState("saving");
     if (submitted) setModifiedAfterSubmit(true);
   }
 
@@ -149,19 +182,19 @@ function StudentActivityWorkspace({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{activity.routine}</p>
             <h1 className="mt-1 text-xl font-semibold tracking-tight">{activity.title}</h1>
             <p className="mt-1 text-sm text-zinc-600">
-              {currentStudent.name} · {currentStudent.className} · {activity.activityMode === "group" ? currentGroup?.name : "개인 활동"}
+              {studentWork?.student.name ?? currentStudent.name} · {studentWork?.student.className ?? currentStudent.className} · {activity.activityMode === "group" ? currentGroup?.name : "개인 활동"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-200 bg-stone-50 px-3 text-sm font-medium">
               <Save className="h-4 w-4 text-emerald-700" />
-              자동 저장됨
+              {saveState === "saving" ? "저장 중..." : saveState === "error" ? "저장 실패" : "자동 저장됨"}
             </span>
             <span className="inline-flex h-9 items-center rounded-md border border-zinc-200 bg-white px-3 text-sm font-medium">
               {statusLabel}
             </span>
             <button
-              onClick={() => setSubmitted(true)}
+              onClick={() => { saveVersion.current += 1; setSubmitted(true); setModifiedAfterSubmit(false); setSaveState("saving"); }}
               disabled={activity.activityMode === "group" && !allPresentMembersAgreed}
               className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
             >

@@ -84,15 +84,34 @@ try {
   }
   const assignedDetail = await api(`/api/created-activities/${activityId}`, { idToken: assignedStudent.idToken });
   if (assignedDetail.status !== 200 || assignedDetail.result.activity?.activity.id !== activityId) throw new Error("Assigned student detail failed.");
+  const workPath = `/api/student/activities/${activityId}/work`;
+  const saved = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
+    cards: [{ id: `card-${suffix}`, column: "see", content: "자동 저장 검증 카드" }], status: "draft",
+  } });
+  if (saved.status !== 200) throw new Error(`Student card save failed: ${JSON.stringify(saved)}`);
+  const draft = await api(workPath, { idToken: assignedStudent.idToken });
+  if (draft.status !== 200 || draft.result.cards?.[0]?.content !== "자동 저장 검증 카드" || draft.result.status !== "draft") throw new Error("Saved draft was not restored.");
+  const submitted = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
+    cards: [{ id: `card-${suffix}`, column: "think", content: "제출 후 카드" }], status: "submitted",
+  } });
+  if (submitted.status !== 200) throw new Error("Student submission failed.");
+  const restored = await api(workPath, { idToken: assignedStudent.idToken });
+  if (restored.result.status !== "submitted" || restored.result.cards?.[0]?.column !== "think") throw new Error("Submitted work was not restored.");
+  const deleted = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: { cards: [], status: "modified" } });
+  if (deleted.status !== 200) throw new Error("Student card deletion failed.");
+  const afterDelete = await api(workPath, { idToken: assignedStudent.idToken });
+  if (afterDelete.result.cards?.length !== 0 || afterDelete.result.status !== "modified") throw new Error("Card deletion or modified status was not persisted.");
 
   const unassignedSession = await api("/api/student/session", { idToken: unassignedStudent.idToken });
   if (unassignedSession.status !== 403) throw new Error(`Unassigned session should be 403, got ${unassignedSession.status}.`);
   const unassignedDetail = await api(`/api/created-activities/${activityId}`, { idToken: unassignedStudent.idToken });
   if (unassignedDetail.status !== 404) throw new Error(`Unassigned detail should be 404, got ${unassignedDetail.status}.`);
+  const unassignedWork = await api(workPath, { method: "PUT", idToken: unassignedStudent.idToken, body: { cards: [], status: "draft" } });
+  if (unassignedWork.status !== 403) throw new Error(`Unassigned work write should be 403, got ${unassignedWork.status}.`);
   const anonymousDetail = await api(`/api/created-activities/${activityId}`);
   if (anonymousDetail.status !== 401) throw new Error(`Anonymous detail should be 401, got ${anonymousDetail.status}.`);
 
-  console.log("PASS: assigned student access succeeds; unassigned and anonymous activity access is denied.");
+  console.log("PASS: student draft/save/submit/modify/delete persists, while unassigned and anonymous access is denied.");
 } finally {
   if (teacher) await Promise.allSettled([
     sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),

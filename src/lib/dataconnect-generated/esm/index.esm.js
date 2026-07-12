@@ -15,6 +15,12 @@ export const AttendanceStatus = {
   ABSENT: "ABSENT",
 }
 
+export const RoutineColumn = {
+  SEE: "SEE",
+  THINK: "THINK",
+  WONDER: "WONDER",
+}
+
 export const SubmissionStatus = {
   DRAFT: "DRAFT",
   SUBMITTED: "SUBMITTED",
@@ -324,4 +330,53 @@ export function getMyStudentActivity(dcOrVars, varsOrOptions, options) {
 
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getMyStudentActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getMyStudentWorkRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyStudentWork', inputVars);
+}
+getMyStudentWorkRef.operationName = 'GetMyStudentWork';
+
+export function getMyStudentWork(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyStudentWorkRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const upsertMyThinkingCardRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertMyThinkingCard', inputVars);
+}
+upsertMyThinkingCardRef.operationName = 'UpsertMyThinkingCard';
+
+export function upsertMyThinkingCard(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertMyThinkingCardRef(dcInstance, inputVars));
+}
+
+export const deleteMyThinkingCardRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteMyThinkingCard', inputVars);
+}
+deleteMyThinkingCardRef.operationName = 'DeleteMyThinkingCard';
+
+export function deleteMyThinkingCard(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteMyThinkingCardRef(dcInstance, inputVars));
+}
+
+export const setMyIndividualSubmissionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetMyIndividualSubmission', inputVars);
+}
+setMyIndividualSubmissionRef.operationName = 'SetMyIndividualSubmission';
+
+export function setMyIndividualSubmission(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setMyIndividualSubmissionRef(dcInstance, inputVars));
 }

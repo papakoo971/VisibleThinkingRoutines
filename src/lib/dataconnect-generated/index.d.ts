@@ -23,6 +23,12 @@ export enum AttendanceStatus {
   ABSENT = "ABSENT",
 };
 
+export enum RoutineColumn {
+  SEE = "SEE",
+  THINK = "THINK",
+  WONDER = "WONDER",
+};
+
 export enum SubmissionStatus {
   DRAFT = "DRAFT",
   SUBMITTED = "SUBMITTED",
@@ -92,6 +98,16 @@ export interface DeleteActivityVariables {
 
 export interface DeleteMyTeacherProfileData {
   teacherProfile_delete?: TeacherProfile_Key | null;
+}
+
+export interface DeleteMyThinkingCardData {
+  thinkingCard_delete?: ThinkingCard_Key | null;
+}
+
+export interface DeleteMyThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  studentId: string;
 }
 
 export interface DeleteSchoolClassData {
@@ -197,6 +213,31 @@ export interface GetMyStudentData {
       name: string;
     } & SchoolClass_Key;
   } & Student_Key)[];
+}
+
+export interface GetMyStudentWorkData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    name: string;
+    schoolClass: {
+      name: string;
+    };
+  } & Student_Key)[];
+  thinkingCards: ({
+    id: string;
+    column: RoutineColumn;
+    content: string;
+    updatedAt: TimestampString;
+  } & ThinkingCard_Key)[];
+  individualSubmissions: ({
+    status: SubmissionStatus;
+    updatedAt: TimestampString;
+  })[];
+}
+
+export interface GetMyStudentWorkVariables {
+  activityId: string;
 }
 
 export interface GetMyTeacherProfileData {
@@ -381,6 +422,16 @@ export interface SchoolClass_Key {
   __typename?: 'SchoolClass_Key';
 }
 
+export interface SetMyIndividualSubmissionData {
+  individualSubmission_upsert: IndividualSubmission_Key;
+}
+
+export interface SetMyIndividualSubmissionVariables {
+  activityId: string;
+  studentId: string;
+  status: SubmissionStatus;
+}
+
 export interface Student_Key {
   id: string;
   __typename?: 'Student_Key';
@@ -481,6 +532,18 @@ export interface UpsertMyTeacherProfileVariables {
   email: string;
   displayName: string;
   operationMode: TeacherOperationMode;
+}
+
+export interface UpsertMyThinkingCardData {
+  thinkingCard_upsert: ThinkingCard_Key;
+}
+
+export interface UpsertMyThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  studentId: string;
+  column: RoutineColumn;
+  content: string;
 }
 
 export interface UpsertSchoolClassData {
@@ -790,4 +853,52 @@ export const getMyStudentActivityRef: GetMyStudentActivityRef;
 
 export function getMyStudentActivity(vars: GetMyStudentActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentActivityData, GetMyStudentActivityVariables>;
 export function getMyStudentActivity(dc: DataConnect, vars: GetMyStudentActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+
+interface GetMyStudentWorkRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyStudentWorkVariables): QueryRef<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetMyStudentWorkVariables): QueryRef<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+  operationName: string;
+}
+export const getMyStudentWorkRef: GetMyStudentWorkRef;
+
+export function getMyStudentWork(vars: GetMyStudentWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+export function getMyStudentWork(dc: DataConnect, vars: GetMyStudentWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+
+interface UpsertMyThinkingCardRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyThinkingCardVariables): MutationRef<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertMyThinkingCardVariables): MutationRef<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+  operationName: string;
+}
+export const upsertMyThinkingCardRef: UpsertMyThinkingCardRef;
+
+export function upsertMyThinkingCard(vars: UpsertMyThinkingCardVariables): MutationPromise<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+export function upsertMyThinkingCard(dc: DataConnect, vars: UpsertMyThinkingCardVariables): MutationPromise<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+
+interface DeleteMyThinkingCardRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteMyThinkingCardVariables): MutationRef<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteMyThinkingCardVariables): MutationRef<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+  operationName: string;
+}
+export const deleteMyThinkingCardRef: DeleteMyThinkingCardRef;
+
+export function deleteMyThinkingCard(vars: DeleteMyThinkingCardVariables): MutationPromise<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+export function deleteMyThinkingCard(dc: DataConnect, vars: DeleteMyThinkingCardVariables): MutationPromise<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+
+interface SetMyIndividualSubmissionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetMyIndividualSubmissionVariables): MutationRef<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetMyIndividualSubmissionVariables): MutationRef<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+  operationName: string;
+}
+export const setMyIndividualSubmissionRef: SetMyIndividualSubmissionRef;
+
+export function setMyIndividualSubmission(vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+export function setMyIndividualSubmission(dc: DataConnect, vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
 

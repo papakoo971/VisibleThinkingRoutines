@@ -15,6 +15,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetMyStudent*](#getmystudent)
   - [*ListMyStudentActivities*](#listmystudentactivities)
   - [*GetMyStudentActivity*](#getmystudentactivity)
+  - [*GetMyStudentWork*](#getmystudentwork)
 - [**Mutations**](#mutations)
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
@@ -33,6 +34,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertIndividualSubmission*](#upsertindividualsubmission)
   - [*UpsertGroupSubmission*](#upsertgroupsubmission)
   - [*UpsertGroupSubmissionAgreement*](#upsertgroupsubmissionagreement)
+  - [*UpsertMyThinkingCard*](#upsertmythinkingcard)
+  - [*DeleteMyThinkingCard*](#deletemythinkingcard)
+  - [*SetMyIndividualSubmission*](#setmyindividualsubmission)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `teacher`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -946,6 +950,140 @@ console.log(data.activityAttendances);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.activityAttendances);
+});
+```
+
+## GetMyStudentWork
+You can execute the `GetMyStudentWork` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getMyStudentWork(vars: GetMyStudentWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+
+interface GetMyStudentWorkRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyStudentWorkVariables): QueryRef<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+}
+export const getMyStudentWorkRef: GetMyStudentWorkRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyStudentWork(dc: DataConnect, vars: GetMyStudentWorkVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+
+interface GetMyStudentWorkRef {
+  ...
+  (dc: DataConnect, vars: GetMyStudentWorkVariables): QueryRef<GetMyStudentWorkData, GetMyStudentWorkVariables>;
+}
+export const getMyStudentWorkRef: GetMyStudentWorkRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyStudentWorkRef:
+```typescript
+const name = getMyStudentWorkRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyStudentWork` query requires an argument of type `GetMyStudentWorkVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetMyStudentWorkVariables {
+  activityId: string;
+}
+```
+### Return Type
+Recall that executing the `GetMyStudentWork` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyStudentWorkData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyStudentWorkData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    name: string;
+    schoolClass: {
+      name: string;
+    };
+  } & Student_Key)[];
+  thinkingCards: ({
+    id: string;
+    column: RoutineColumn;
+    content: string;
+    updatedAt: TimestampString;
+  } & ThinkingCard_Key)[];
+  individualSubmissions: ({
+    status: SubmissionStatus;
+    updatedAt: TimestampString;
+  })[];
+}
+```
+### Using `GetMyStudentWork`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyStudentWork, GetMyStudentWorkVariables } from '@visible-thinking/dataconnect';
+
+// The `GetMyStudentWork` query requires an argument of type `GetMyStudentWorkVariables`:
+const getMyStudentWorkVars: GetMyStudentWorkVariables = {
+  activityId: ...,
+};
+
+// Call the `getMyStudentWork()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyStudentWork(getMyStudentWorkVars);
+// Variables can be defined inline as well.
+const { data } = await getMyStudentWork({ activityId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyStudentWork(dataConnect, getMyStudentWorkVars);
+
+console.log(data.students);
+console.log(data.thinkingCards);
+console.log(data.individualSubmissions);
+
+// Or, you can use the `Promise` API.
+getMyStudentWork(getMyStudentWorkVars).then((response) => {
+  const data = response.data;
+  console.log(data.students);
+  console.log(data.thinkingCards);
+  console.log(data.individualSubmissions);
+});
+```
+
+### Using `GetMyStudentWork`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyStudentWorkRef, GetMyStudentWorkVariables } from '@visible-thinking/dataconnect';
+
+// The `GetMyStudentWork` query requires an argument of type `GetMyStudentWorkVariables`:
+const getMyStudentWorkVars: GetMyStudentWorkVariables = {
+  activityId: ...,
+};
+
+// Call the `getMyStudentWorkRef()` function to get a reference to the query.
+const ref = getMyStudentWorkRef(getMyStudentWorkVars);
+// Variables can be defined inline as well.
+const ref = getMyStudentWorkRef({ activityId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyStudentWorkRef(dataConnect, getMyStudentWorkVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.students);
+console.log(data.thinkingCards);
+console.log(data.individualSubmissions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.students);
+  console.log(data.thinkingCards);
+  console.log(data.individualSubmissions);
 });
 ```
 
@@ -2886,5 +3024,356 @@ console.log(data.groupSubmissionAgreement_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.groupSubmissionAgreement_upsert);
+});
+```
+
+## UpsertMyThinkingCard
+You can execute the `UpsertMyThinkingCard` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertMyThinkingCard(vars: UpsertMyThinkingCardVariables): MutationPromise<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+
+interface UpsertMyThinkingCardRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyThinkingCardVariables): MutationRef<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+}
+export const upsertMyThinkingCardRef: UpsertMyThinkingCardRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertMyThinkingCard(dc: DataConnect, vars: UpsertMyThinkingCardVariables): MutationPromise<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+
+interface UpsertMyThinkingCardRef {
+  ...
+  (dc: DataConnect, vars: UpsertMyThinkingCardVariables): MutationRef<UpsertMyThinkingCardData, UpsertMyThinkingCardVariables>;
+}
+export const upsertMyThinkingCardRef: UpsertMyThinkingCardRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertMyThinkingCardRef:
+```typescript
+const name = upsertMyThinkingCardRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertMyThinkingCard` mutation requires an argument of type `UpsertMyThinkingCardVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertMyThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  studentId: string;
+  column: RoutineColumn;
+  content: string;
+}
+```
+### Return Type
+Recall that executing the `UpsertMyThinkingCard` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertMyThinkingCardData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertMyThinkingCardData {
+  thinkingCard_upsert: ThinkingCard_Key;
+}
+```
+### Using `UpsertMyThinkingCard`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertMyThinkingCard, UpsertMyThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyThinkingCard` mutation requires an argument of type `UpsertMyThinkingCardVariables`:
+const upsertMyThinkingCardVars: UpsertMyThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  studentId: ...,
+  column: ...,
+  content: ...,
+};
+
+// Call the `upsertMyThinkingCard()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertMyThinkingCard(upsertMyThinkingCardVars);
+// Variables can be defined inline as well.
+const { data } = await upsertMyThinkingCard({ externalId: ..., activityId: ..., studentId: ..., column: ..., content: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertMyThinkingCard(dataConnect, upsertMyThinkingCardVars);
+
+console.log(data.thinkingCard_upsert);
+
+// Or, you can use the `Promise` API.
+upsertMyThinkingCard(upsertMyThinkingCardVars).then((response) => {
+  const data = response.data;
+  console.log(data.thinkingCard_upsert);
+});
+```
+
+### Using `UpsertMyThinkingCard`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertMyThinkingCardRef, UpsertMyThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyThinkingCard` mutation requires an argument of type `UpsertMyThinkingCardVariables`:
+const upsertMyThinkingCardVars: UpsertMyThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  studentId: ...,
+  column: ...,
+  content: ...,
+};
+
+// Call the `upsertMyThinkingCardRef()` function to get a reference to the mutation.
+const ref = upsertMyThinkingCardRef(upsertMyThinkingCardVars);
+// Variables can be defined inline as well.
+const ref = upsertMyThinkingCardRef({ externalId: ..., activityId: ..., studentId: ..., column: ..., content: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertMyThinkingCardRef(dataConnect, upsertMyThinkingCardVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.thinkingCard_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.thinkingCard_upsert);
+});
+```
+
+## DeleteMyThinkingCard
+You can execute the `DeleteMyThinkingCard` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteMyThinkingCard(vars: DeleteMyThinkingCardVariables): MutationPromise<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+
+interface DeleteMyThinkingCardRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteMyThinkingCardVariables): MutationRef<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+}
+export const deleteMyThinkingCardRef: DeleteMyThinkingCardRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteMyThinkingCard(dc: DataConnect, vars: DeleteMyThinkingCardVariables): MutationPromise<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+
+interface DeleteMyThinkingCardRef {
+  ...
+  (dc: DataConnect, vars: DeleteMyThinkingCardVariables): MutationRef<DeleteMyThinkingCardData, DeleteMyThinkingCardVariables>;
+}
+export const deleteMyThinkingCardRef: DeleteMyThinkingCardRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteMyThinkingCardRef:
+```typescript
+const name = deleteMyThinkingCardRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteMyThinkingCard` mutation requires an argument of type `DeleteMyThinkingCardVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteMyThinkingCardVariables {
+  externalId: string;
+  activityId: string;
+  studentId: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteMyThinkingCard` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteMyThinkingCardData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteMyThinkingCardData {
+  thinkingCard_delete?: ThinkingCard_Key | null;
+}
+```
+### Using `DeleteMyThinkingCard`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteMyThinkingCard, DeleteMyThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteMyThinkingCard` mutation requires an argument of type `DeleteMyThinkingCardVariables`:
+const deleteMyThinkingCardVars: DeleteMyThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  studentId: ...,
+};
+
+// Call the `deleteMyThinkingCard()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteMyThinkingCard(deleteMyThinkingCardVars);
+// Variables can be defined inline as well.
+const { data } = await deleteMyThinkingCard({ externalId: ..., activityId: ..., studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteMyThinkingCard(dataConnect, deleteMyThinkingCardVars);
+
+console.log(data.thinkingCard_delete);
+
+// Or, you can use the `Promise` API.
+deleteMyThinkingCard(deleteMyThinkingCardVars).then((response) => {
+  const data = response.data;
+  console.log(data.thinkingCard_delete);
+});
+```
+
+### Using `DeleteMyThinkingCard`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteMyThinkingCardRef, DeleteMyThinkingCardVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteMyThinkingCard` mutation requires an argument of type `DeleteMyThinkingCardVariables`:
+const deleteMyThinkingCardVars: DeleteMyThinkingCardVariables = {
+  externalId: ...,
+  activityId: ...,
+  studentId: ...,
+};
+
+// Call the `deleteMyThinkingCardRef()` function to get a reference to the mutation.
+const ref = deleteMyThinkingCardRef(deleteMyThinkingCardVars);
+// Variables can be defined inline as well.
+const ref = deleteMyThinkingCardRef({ externalId: ..., activityId: ..., studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteMyThinkingCardRef(dataConnect, deleteMyThinkingCardVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.thinkingCard_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.thinkingCard_delete);
+});
+```
+
+## SetMyIndividualSubmission
+You can execute the `SetMyIndividualSubmission` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+setMyIndividualSubmission(vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+
+interface SetMyIndividualSubmissionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetMyIndividualSubmissionVariables): MutationRef<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+}
+export const setMyIndividualSubmissionRef: SetMyIndividualSubmissionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setMyIndividualSubmission(dc: DataConnect, vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+
+interface SetMyIndividualSubmissionRef {
+  ...
+  (dc: DataConnect, vars: SetMyIndividualSubmissionVariables): MutationRef<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
+}
+export const setMyIndividualSubmissionRef: SetMyIndividualSubmissionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setMyIndividualSubmissionRef:
+```typescript
+const name = setMyIndividualSubmissionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetMyIndividualSubmission` mutation requires an argument of type `SetMyIndividualSubmissionVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetMyIndividualSubmissionVariables {
+  activityId: string;
+  studentId: string;
+  status: SubmissionStatus;
+}
+```
+### Return Type
+Recall that executing the `SetMyIndividualSubmission` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetMyIndividualSubmissionData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetMyIndividualSubmissionData {
+  individualSubmission_upsert: IndividualSubmission_Key;
+}
+```
+### Using `SetMyIndividualSubmission`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setMyIndividualSubmission, SetMyIndividualSubmissionVariables } from '@visible-thinking/dataconnect';
+
+// The `SetMyIndividualSubmission` mutation requires an argument of type `SetMyIndividualSubmissionVariables`:
+const setMyIndividualSubmissionVars: SetMyIndividualSubmissionVariables = {
+  activityId: ...,
+  studentId: ...,
+  status: ...,
+};
+
+// Call the `setMyIndividualSubmission()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setMyIndividualSubmission(setMyIndividualSubmissionVars);
+// Variables can be defined inline as well.
+const { data } = await setMyIndividualSubmission({ activityId: ..., studentId: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setMyIndividualSubmission(dataConnect, setMyIndividualSubmissionVars);
+
+console.log(data.individualSubmission_upsert);
+
+// Or, you can use the `Promise` API.
+setMyIndividualSubmission(setMyIndividualSubmissionVars).then((response) => {
+  const data = response.data;
+  console.log(data.individualSubmission_upsert);
+});
+```
+
+### Using `SetMyIndividualSubmission`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setMyIndividualSubmissionRef, SetMyIndividualSubmissionVariables } from '@visible-thinking/dataconnect';
+
+// The `SetMyIndividualSubmission` mutation requires an argument of type `SetMyIndividualSubmissionVariables`:
+const setMyIndividualSubmissionVars: SetMyIndividualSubmissionVariables = {
+  activityId: ...,
+  studentId: ...,
+  status: ...,
+};
+
+// Call the `setMyIndividualSubmissionRef()` function to get a reference to the mutation.
+const ref = setMyIndividualSubmissionRef(setMyIndividualSubmissionVars);
+// Variables can be defined inline as well.
+const ref = setMyIndividualSubmissionRef({ activityId: ..., studentId: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setMyIndividualSubmissionRef(dataConnect, setMyIndividualSubmissionVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.individualSubmission_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.individualSubmission_upsert);
 });
 ```

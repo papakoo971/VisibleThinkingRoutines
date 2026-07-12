@@ -113,3 +113,78 @@ query GetMyStudentActivity($id: String!) @auth(level: USER) {
     }
   }
 }
+
+query GetMyStudentWork($activityId: String!) @auth(level: USER) {
+  students(where: { authUid: { eq_expr: "auth.uid" } }, limit: 1) {
+    id
+    externalId
+    name
+    schoolClass { name }
+  }
+  thinkingCards(where: {
+    activity: { id: { eq: $activityId } }
+    student: { authUid: { eq_expr: "auth.uid" } }
+  }) {
+    id
+    column
+    content
+    updatedAt
+  }
+  individualSubmissions(where: {
+    activity: { id: { eq: $activityId } }
+    student: { authUid: { eq_expr: "auth.uid" } }
+  }, limit: 1) {
+    status
+    updatedAt
+  }
+}
+
+mutation UpsertMyThinkingCard($externalId: String!, $activityId: String!, $studentId: String!, $column: RoutineColumn!, $content: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) {
+      authUid @check(expr: "this == auth.uid")
+    }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+  }
+  thinkingCard_upsert(data: {
+    id_expr: "auth.uid + ':' + vars.externalId"
+    activity: { id: $activityId }
+    student: { id: $studentId }
+    column: $column
+    content: $content
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation DeleteMyThinkingCard($externalId: String!, $activityId: String!, $studentId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) { authUid @check(expr: "this == auth.uid") }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+    thinkingCard(key: { id_expr: "auth.uid + ':' + vars.externalId" }) {
+      student { authUid @check(expr: "this == auth.uid") }
+    }
+  }
+  thinkingCard_delete(key: { id_expr: "auth.uid + ':' + vars.externalId" })
+}
+
+mutation SetMyIndividualSubmission($activityId: String!, $studentId: String!, $status: SubmissionStatus!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) { authUid @check(expr: "this == auth.uid") }
+    activityAttendance(key: { activityId: $activityId, studentId: $studentId }) {
+      status @check(expr: "this == 'PRESENT'")
+      activity { status @check(expr: "this == 'ACTIVE'") }
+    }
+  }
+  individualSubmission_upsert(data: {
+    activity: { id: $activityId }
+    student: { id: $studentId }
+    status: $status
+    updatedAt_expr: "request.time"
+  })
+}

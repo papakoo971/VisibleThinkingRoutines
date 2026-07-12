@@ -1,5 +1,28 @@
 # Implementation Log
 
+## 2026-07-12 Student Card Autosave And Submission
+
+### Completed
+
+- Added authenticated student work queries for the linked student's cards and individual submission status.
+- Added transactional card upsert/delete and submission mutations that verify Firebase UID, present attendance, and active activity status.
+- Derived card storage IDs inside SQL Connect from `auth.uid` and the client card ID so direct connector calls cannot target another student's card.
+- Added a bearer-token-protected student work Route Handler with card count, column, and content-length validation.
+- Implemented full-snapshot synchronization so deleted cards are removed from PostgreSQL as part of autosave.
+- Loaded persisted cards and draft/submitted/modified state into the student activity workspace.
+- Added a 700ms debounced autosave indicator with stale-response protection.
+- Persisted `DRAFT`, `SUBMITTED`, and post-submission `MODIFIED` status transitions.
+- Deployed the updated connector and regenerated the SQL Connect SDK.
+
+### Verification
+
+- An assigned student can save and restore a draft card.
+- Card content and column changes persist across reads.
+- Submission and post-submission modification states persist.
+- Removing all cards deletes their database records while preserving the modified submission state.
+- An unassigned authenticated user cannot write student work, and anonymous activity access remains denied.
+- Integration-test activities, cards, links, and Firebase Auth users are removed after verification.
+
 ## 2026-07-12 CSV Student Import And Account Issuance
 
 ### Completed
