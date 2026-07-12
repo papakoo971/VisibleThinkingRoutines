@@ -47,7 +47,7 @@ getMyTeacherProfileRef.operationName = 'GetMyTeacherProfile';
 exports.getMyTeacherProfileRef = getMyTeacherProfileRef;
 
 exports.getMyTeacherProfile = function getMyTeacherProfile(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(getMyTeacherProfileRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -90,24 +90,52 @@ listActivitiesRef.operationName = 'ListActivities';
 exports.listActivitiesRef = listActivitiesRef;
 
 exports.listActivities = function listActivities(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listActivitiesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 
-const getActivityRef = (dcOrVars, vars) => {
+const getTeacherActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetActivity', inputVars);
+  return queryRef(dcInstance, 'GetTeacherActivity', inputVars);
 }
-getActivityRef.operationName = 'GetActivity';
-exports.getActivityRef = getActivityRef;
+getTeacherActivityRef.operationName = 'GetTeacherActivity';
+exports.getTeacherActivityRef = getTeacherActivityRef;
 
-exports.getActivity = function getActivity(dcOrVars, varsOrOptions, options) {
-  
+exports.getTeacherActivity = function getTeacherActivity(dcOrVars, varsOrOptions, options) {
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+  return executeQuery(getTeacherActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const linkStudentAuthRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'LinkStudentAuth', inputVars);
+}
+linkStudentAuthRef.operationName = 'LinkStudentAuth';
+exports.linkStudentAuthRef = linkStudentAuthRef;
+
+exports.linkStudentAuth = function linkStudentAuth(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(linkStudentAuthRef(dcInstance, inputVars));
+}
+;
+
+const unlinkStudentAuthRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UnlinkStudentAuth', inputVars);
+}
+unlinkStudentAuthRef.operationName = 'UnlinkStudentAuth';
+exports.unlinkStudentAuthRef = unlinkStudentAuthRef;
+
+exports.unlinkStudentAuth = function unlinkStudentAuth(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(unlinkStudentAuthRef(dcInstance, inputVars));
 }
 ;
 
@@ -262,5 +290,50 @@ exports.upsertGroupSubmissionAgreementRef = upsertGroupSubmissionAgreementRef;
 exports.upsertGroupSubmissionAgreement = function upsertGroupSubmissionAgreement(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(upsertGroupSubmissionAgreementRef(dcInstance, inputVars));
+}
+;
+
+const getMyStudentRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyStudent');
+}
+getMyStudentRef.operationName = 'GetMyStudent';
+exports.getMyStudentRef = getMyStudentRef;
+
+exports.getMyStudent = function getMyStudent(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyStudentRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listMyStudentActivitiesRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyStudentActivities');
+}
+listMyStudentActivitiesRef.operationName = 'ListMyStudentActivities';
+exports.listMyStudentActivitiesRef = listMyStudentActivitiesRef;
+
+exports.listMyStudentActivities = function listMyStudentActivities(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listMyStudentActivitiesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getMyStudentActivityRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyStudentActivity', inputVars);
+}
+getMyStudentActivityRef.operationName = 'GetMyStudentActivity';
+exports.getMyStudentActivityRef = getMyStudentActivityRef;
+
+exports.getMyStudentActivity = function getMyStudentActivity(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyStudentActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;

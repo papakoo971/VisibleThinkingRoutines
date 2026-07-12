@@ -48,6 +48,7 @@ type SchoolClass @table(name: "school_class", key: "id") {
 type Student @table(name: "student", key: "id") {
   id: String! @col(dataType: "varchar(192)")
   teacherId: String @col(dataType: "varchar(128)")
+  authUid: String @unique @col(dataType: "varchar(128)")
   externalId: String @col(dataType: "varchar(64)")
   schoolClass: SchoolClass!
   studentNumber: String! @col(dataType: "varchar(32)")

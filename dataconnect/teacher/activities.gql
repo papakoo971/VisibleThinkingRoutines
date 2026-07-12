@@ -47,8 +47,8 @@ query ListActivities @auth(level: USER) {
   }
 }
 
-query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype activity detail before Firebase Auth is connected.") {
-  activity(id: $id) {
+query GetTeacherActivity($id: String!) @auth(level: USER) {
+  activities(where: { id: { eq: $id }, teacherId: { eq_expr: "auth.uid" } }, limit: 1) {
     id
     title
     routine
@@ -115,6 +115,30 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
       }
     }
   }
+}
+
+mutation LinkStudentAuth($studentId: String!, $authUid: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
+  student_update(key: { id: $studentId }, data: {
+    authUid: $authUid
+    passwordIssued: true
+  })
+}
+
+mutation UnlinkStudentAuth($studentId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $studentId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
+  student_update(key: { id: $studentId }, data: {
+    authUid: null
+    passwordIssued: false
+  })
 }
 
 mutation UpsertSchoolClass($name: String!) @auth(level: USER) {

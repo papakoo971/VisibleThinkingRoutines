@@ -1,26 +1,22 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { StatusBadge } from "@/components/app-shell";
-import { fetchCreatedActivityPayloads } from "@/lib/local-created-activities";
-import type { Activity } from "@/lib/mock-data";
-
-type DisplayActivity = Omit<Activity, "routine" | "materialType"> & {
+type DisplayActivity = {
+  id: string;
+  title: string;
   routine: string;
+  activityMode: "individual" | "group";
+  subject: string;
+  classes: string[];
+  status: "active" | "closed";
+  code: string;
   materialType: string;
+  activityDate: string;
+  submittedCount: number;
+  targetCount: number;
 };
 
-export function StudentActivityList({ initialActivities }: { initialActivities: Activity[] }) {
-  const [createdActivities, setCreatedActivities] = useState<DisplayActivity[]>([]);
-
-  useEffect(() => {
-    fetchCreatedActivityPayloads().then((payloads) => setCreatedActivities(payloads.map((payload) => payload.activity)));
-  }, []);
-
-  const activities = [...createdActivities, ...initialActivities];
-
+export function StudentActivityList({ activities }: { activities: DisplayActivity[] }) {
   return (
     <div className="divide-y divide-zinc-100">
       {activities.map((activity) => (

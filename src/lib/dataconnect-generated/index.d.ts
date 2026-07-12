@@ -94,8 +94,106 @@ export interface DeleteMyTeacherProfileData {
   teacherProfile_delete?: TeacherProfile_Key | null;
 }
 
-export interface GetActivityData {
-  activity?: {
+export interface GetMyStudentActivityData {
+  activityAttendances: ({
+    activity: {
+      id: string;
+      title: string;
+      routine: string;
+      activityMode: ActivityMode;
+      subject: string;
+      status: ActivityStatus;
+      code: string;
+      materialType: string;
+      activityDate: DateString;
+      submittedCount: number;
+      targetCount: number;
+      activityClasses_on_activity: ({
+        schoolClass: {
+          id: string;
+          name: string;
+        } & SchoolClass_Key;
+      })[];
+      activityAttendances_on_activity: ({
+        status: AttendanceStatus;
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+          studentNumber: string;
+          schoolClass: {
+            id: string;
+            name: string;
+          } & SchoolClass_Key;
+        } & Student_Key;
+      })[];
+      activityGroups_on_activity: ({
+        id: string;
+        name: string;
+        activityGroupMembers_on_activityGroup: ({
+          student: {
+            id: string;
+            externalId?: string | null;
+            name: string;
+            studentNumber: string;
+          } & Student_Key;
+        })[];
+      } & ActivityGroup_Key)[];
+      individualSubmissions_on_activity: ({
+        status: SubmissionStatus;
+        student: {
+          id: string;
+          externalId?: string | null;
+        } & Student_Key;
+      })[];
+      groupSubmissions_on_activity: ({
+        status: SubmissionStatus;
+        activityGroup: {
+          id: string;
+        } & ActivityGroup_Key;
+      })[];
+      groupSubmissionAgreements_on_activity: ({
+        agreed: boolean;
+        activityGroup: {
+          id: string;
+        } & ActivityGroup_Key;
+        student: {
+          id: string;
+          externalId?: string | null;
+        } & Student_Key;
+      })[];
+    } & Activity_Key;
+  })[];
+}
+
+export interface GetMyStudentActivityVariables {
+  id: string;
+}
+
+export interface GetMyStudentData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    studentNumber: string;
+    name: string;
+    schoolClass: {
+      id: string;
+      name: string;
+    } & SchoolClass_Key;
+  } & Student_Key)[];
+}
+
+export interface GetMyTeacherProfileData {
+  teacherProfile?: {
+    id: string;
+    email: string;
+    displayName: string;
+    operationMode: TeacherOperationMode;
+  } & TeacherProfile_Key;
+}
+
+export interface GetTeacherActivityData {
+  activities: ({
     id: string;
     title: string;
     routine: string;
@@ -161,20 +259,11 @@ export interface GetActivityData {
         externalId?: string | null;
       } & Student_Key;
     })[];
-  } & Activity_Key;
+  } & Activity_Key)[];
 }
 
-export interface GetActivityVariables {
+export interface GetTeacherActivityVariables {
   id: string;
-}
-
-export interface GetMyTeacherProfileData {
-  teacherProfile?: {
-    id: string;
-    email: string;
-    displayName: string;
-    operationMode: TeacherOperationMode;
-  } & TeacherProfile_Key;
 }
 
 export interface GroupSubmissionAgreement_Key {
@@ -201,6 +290,15 @@ export interface IndividualSubmission_Key {
   __typename?: 'IndividualSubmission_Key';
 }
 
+export interface LinkStudentAuthData {
+  student_update?: Student_Key | null;
+}
+
+export interface LinkStudentAuthVariables {
+  studentId: string;
+  authUid: string;
+}
+
 export interface ListActivitiesData {
   activities: ({
     id: string;
@@ -223,6 +321,30 @@ export interface ListActivitiesData {
   } & Activity_Key)[];
 }
 
+export interface ListMyStudentActivitiesData {
+  activityAttendances: ({
+    activity: {
+      id: string;
+      title: string;
+      routine: string;
+      activityMode: ActivityMode;
+      subject: string;
+      status: ActivityStatus;
+      code: string;
+      materialType: string;
+      activityDate: DateString;
+      submittedCount: number;
+      targetCount: number;
+      activityClasses_on_activity: ({
+        schoolClass: {
+          id: string;
+          name: string;
+        } & SchoolClass_Key;
+      })[];
+    } & Activity_Key;
+  })[];
+}
+
 export interface SchoolClass_Key {
   id: string;
   __typename?: 'SchoolClass_Key';
@@ -241,6 +363,14 @@ export interface TeacherProfile_Key {
 export interface ThinkingCard_Key {
   id: string;
   __typename?: 'ThinkingCard_Key';
+}
+
+export interface UnlinkStudentAuthData {
+  student_update?: Student_Key | null;
+}
+
+export interface UnlinkStudentAuthVariables {
+  studentId: string;
 }
 
 export interface UpsertActivityAttendanceData {
@@ -390,17 +520,41 @@ export const listActivitiesRef: ListActivitiesRef;
 export function listActivities(options?: ExecuteQueryOptions): QueryPromise<ListActivitiesData, undefined>;
 export function listActivities(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActivitiesData, undefined>;
 
-interface GetActivityRef {
+interface GetTeacherActivityRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: GetActivityVariables): QueryRef<GetActivityData, GetActivityVariables>;
+  (vars: GetTeacherActivityVariables): QueryRef<GetTeacherActivityData, GetTeacherActivityVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetActivityVariables): QueryRef<GetActivityData, GetActivityVariables>;
+  (dc: DataConnect, vars: GetTeacherActivityVariables): QueryRef<GetTeacherActivityData, GetTeacherActivityVariables>;
   operationName: string;
 }
-export const getActivityRef: GetActivityRef;
+export const getTeacherActivityRef: GetTeacherActivityRef;
 
-export function getActivity(vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
-export function getActivity(dc: DataConnect, vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
+export function getTeacherActivity(vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
+export function getTeacherActivity(dc: DataConnect, vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
+
+interface LinkStudentAuthRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: LinkStudentAuthVariables): MutationRef<LinkStudentAuthData, LinkStudentAuthVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: LinkStudentAuthVariables): MutationRef<LinkStudentAuthData, LinkStudentAuthVariables>;
+  operationName: string;
+}
+export const linkStudentAuthRef: LinkStudentAuthRef;
+
+export function linkStudentAuth(vars: LinkStudentAuthVariables): MutationPromise<LinkStudentAuthData, LinkStudentAuthVariables>;
+export function linkStudentAuth(dc: DataConnect, vars: LinkStudentAuthVariables): MutationPromise<LinkStudentAuthData, LinkStudentAuthVariables>;
+
+interface UnlinkStudentAuthRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UnlinkStudentAuthVariables): MutationRef<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UnlinkStudentAuthVariables): MutationRef<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+  operationName: string;
+}
+export const unlinkStudentAuthRef: UnlinkStudentAuthRef;
+
+export function unlinkStudentAuth(vars: UnlinkStudentAuthVariables): MutationPromise<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+export function unlinkStudentAuth(dc: DataConnect, vars: UnlinkStudentAuthVariables): MutationPromise<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
 
 interface UpsertSchoolClassRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -533,4 +687,40 @@ export const upsertGroupSubmissionAgreementRef: UpsertGroupSubmissionAgreementRe
 
 export function upsertGroupSubmissionAgreement(vars: UpsertGroupSubmissionAgreementVariables): MutationPromise<UpsertGroupSubmissionAgreementData, UpsertGroupSubmissionAgreementVariables>;
 export function upsertGroupSubmissionAgreement(dc: DataConnect, vars: UpsertGroupSubmissionAgreementVariables): MutationPromise<UpsertGroupSubmissionAgreementData, UpsertGroupSubmissionAgreementVariables>;
+
+interface GetMyStudentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyStudentData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetMyStudentData, undefined>;
+  operationName: string;
+}
+export const getMyStudentRef: GetMyStudentRef;
+
+export function getMyStudent(options?: ExecuteQueryOptions): QueryPromise<GetMyStudentData, undefined>;
+export function getMyStudent(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentData, undefined>;
+
+interface ListMyStudentActivitiesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListMyStudentActivitiesData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListMyStudentActivitiesData, undefined>;
+  operationName: string;
+}
+export const listMyStudentActivitiesRef: ListMyStudentActivitiesRef;
+
+export function listMyStudentActivities(options?: ExecuteQueryOptions): QueryPromise<ListMyStudentActivitiesData, undefined>;
+export function listMyStudentActivities(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListMyStudentActivitiesData, undefined>;
+
+interface GetMyStudentActivityRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyStudentActivityVariables): QueryRef<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetMyStudentActivityVariables): QueryRef<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+  operationName: string;
+}
+export const getMyStudentActivityRef: GetMyStudentActivityRef;
+
+export function getMyStudentActivity(vars: GetMyStudentActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+export function getMyStudentActivity(dc: DataConnect, vars: GetMyStudentActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentActivityData, GetMyStudentActivityVariables>;
 

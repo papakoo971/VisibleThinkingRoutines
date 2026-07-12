@@ -1,0 +1,115 @@
+query GetMyStudent @auth(level: USER) {
+  students(where: { authUid: { eq_expr: "auth.uid" } }, limit: 1) {
+    id
+    externalId
+    studentNumber
+    name
+    schoolClass {
+      id
+      name
+    }
+  }
+}
+
+query ListMyStudentActivities @auth(level: USER) {
+  activityAttendances(where: {
+    student: { authUid: { eq_expr: "auth.uid" } }
+    status: { eq: PRESENT }
+  }) {
+    activity {
+      id
+      title
+      routine
+      activityMode
+      subject
+      status
+      code
+      materialType
+      activityDate
+      submittedCount
+      targetCount
+      activityClasses_on_activity {
+        schoolClass {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+
+query GetMyStudentActivity($id: String!) @auth(level: USER) {
+  activityAttendances(where: {
+    activity: { id: { eq: $id } }
+    student: { authUid: { eq_expr: "auth.uid" } }
+    status: { eq: PRESENT }
+  }, limit: 1) {
+    activity {
+      id
+      title
+      routine
+      activityMode
+      subject
+      status
+      code
+      materialType
+      activityDate
+      submittedCount
+      targetCount
+      activityClasses_on_activity {
+        schoolClass {
+          id
+          name
+        }
+      }
+      activityAttendances_on_activity {
+        status
+        student {
+          id
+          externalId
+          name
+          studentNumber
+          schoolClass {
+            id
+            name
+          }
+        }
+      }
+      activityGroups_on_activity {
+        id
+        name
+        activityGroupMembers_on_activityGroup {
+          student {
+            id
+            externalId
+            name
+            studentNumber
+          }
+        }
+      }
+      individualSubmissions_on_activity {
+        status
+        student {
+          id
+          externalId
+        }
+      }
+      groupSubmissions_on_activity {
+        status
+        activityGroup {
+          id
+        }
+      }
+      groupSubmissionAgreements_on_activity {
+        agreed
+        activityGroup {
+          id
+        }
+        student {
+          id
+          externalId
+        }
+      }
+    }
+  }
+}

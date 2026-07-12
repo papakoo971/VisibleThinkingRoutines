@@ -39,7 +39,7 @@ export const getMyTeacherProfileRef = (dc) => {
 getMyTeacherProfileRef.operationName = 'GetMyTeacherProfile';
 
 export function getMyTeacherProfile(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(getMyTeacherProfileRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -76,22 +76,46 @@ export const listActivitiesRef = (dc) => {
 listActivitiesRef.operationName = 'ListActivities';
 
 export function listActivities(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listActivitiesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export const getActivityRef = (dcOrVars, vars) => {
+export const getTeacherActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetActivity', inputVars);
+  return queryRef(dcInstance, 'GetTeacherActivity', inputVars);
 }
-getActivityRef.operationName = 'GetActivity';
+getTeacherActivityRef.operationName = 'GetTeacherActivity';
 
-export function getActivity(dcOrVars, varsOrOptions, options) {
-  
+export function getTeacherActivity(dcOrVars, varsOrOptions, options) {
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+  return executeQuery(getTeacherActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const linkStudentAuthRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'LinkStudentAuth', inputVars);
+}
+linkStudentAuthRef.operationName = 'LinkStudentAuth';
+
+export function linkStudentAuth(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(linkStudentAuthRef(dcInstance, inputVars));
+}
+
+export const unlinkStudentAuthRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UnlinkStudentAuth', inputVars);
+}
+unlinkStudentAuthRef.operationName = 'UnlinkStudentAuth';
+
+export function unlinkStudentAuth(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(unlinkStudentAuthRef(dcInstance, inputVars));
 }
 
 export const upsertSchoolClassRef = (dcOrVars, vars) => {
@@ -226,3 +250,41 @@ export function upsertGroupSubmissionAgreement(dcOrVars, vars) {
   return executeMutation(upsertGroupSubmissionAgreementRef(dcInstance, inputVars));
 }
 
+export const getMyStudentRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyStudent');
+}
+getMyStudentRef.operationName = 'GetMyStudent';
+
+export function getMyStudent(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyStudentRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listMyStudentActivitiesRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyStudentActivities');
+}
+listMyStudentActivitiesRef.operationName = 'ListMyStudentActivities';
+
+export function listMyStudentActivities(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listMyStudentActivitiesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getMyStudentActivityRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyStudentActivity', inputVars);
+}
+getMyStudentActivityRef.operationName = 'GetMyStudentActivity';
+
+export function getMyStudentActivity(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyStudentActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}

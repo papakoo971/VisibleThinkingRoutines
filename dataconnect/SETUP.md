@@ -148,4 +148,6 @@ Teacher profile and teacher activity operations require Firebase Authentication 
 
 `SchoolClass` and `Student` writes derive teacher ownership from `auth.uid`. Their storage IDs are UID-scoped so separate teachers can reuse the same class name and external student ID, while API responses restore the external student ID expected by the UI.
 
-`GetActivity` remains a temporary public operation for the unauthenticated student prototype. Add student authentication and assigned-activity authorization before exposing the app publicly.
+Student accounts are linked through nullable, unique `Student.authUid`. `GetMyStudent`, `ListMyStudentActivities`, and `GetMyStudentActivity` require Firebase Authentication and only return activities where the linked student has `PRESENT` attendance. Teacher detail reads use a separate owner-filtered operation.
+
+`LinkStudentAuth` and `UnlinkStudentAuth` provide the ownership-checked connector boundary for the upcoming teacher account-issuance UI. Until that UI is implemented, student Firebase accounts must be provisioned and linked through an administrative workflow.

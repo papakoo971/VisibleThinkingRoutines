@@ -7,7 +7,7 @@ type CreatedActivityGlobal = typeof globalThis & {
 
 export type CreatedActivityStore = {
   list(context: CreatedActivityStoreContext): Promise<CreatedActivityPayload[]>;
-  get(activityId: string): Promise<CreatedActivityPayload | undefined>;
+  get(activityId: string, context: CreatedActivityStoreContext): Promise<CreatedActivityPayload | undefined>;
   upsert(payload: CreatedActivityPayload, context: CreatedActivityStoreContext): Promise<CreatedActivityPayload>;
   remove(activityId: string, context: CreatedActivityStoreContext): Promise<void>;
 };
@@ -27,8 +27,8 @@ const memoryCreatedActivityStore: CreatedActivityStore = {
   async list(context) {
     return getStore().filter((item) => item.teacherId === context.uid).map((item) => item.payload);
   },
-  async get(activityId) {
-    return getStore().find((item) => item.payload.activity.id === activityId)?.payload;
+  async get(activityId, context) {
+    return getStore().find((item) => item.teacherId === context.uid && item.payload.activity.id === activityId)?.payload;
   },
   async upsert(payload, context) {
     const store = getStore();
@@ -54,8 +54,8 @@ export function listCreatedActivityPayloads(context: CreatedActivityStoreContext
   return createdActivityStore.list(context);
 }
 
-export function getCreatedActivityPayload(activityId: string) {
-  return createdActivityStore.get(activityId);
+export function getCreatedActivityPayload(activityId: string, context: CreatedActivityStoreContext) {
+  return createdActivityStore.get(activityId, context);
 }
 
 export function upsertCreatedActivityPayload(payload: CreatedActivityPayload, context: CreatedActivityStoreContext) {

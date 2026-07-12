@@ -77,7 +77,7 @@ npm run check
 
 아직 운영 기능으로 연결되지 않은 범위:
 
-- 학생 인증 및 교사/학생 권한 분리 완성
+- 교사의 학생 계정 일괄 발급·재발급 관리 UI
 - CSV/XLSX 학생 등록과 비밀번호 발급
 - 독립적인 학급/학생/모둠 관리 화면의 CRUD 영속화
 - 이미지/PDF 업로드와 실제 QR 생성
@@ -85,4 +85,4 @@ npm run check
 - 활동 마감, 태그, AI 분석
 - 운영 배포 환경 변수와 인증 기반 SQL Connect 권한
 
-교사 프로필, 활동, 활동에 연결된 학급·학생 데이터는 Firebase Auth UID 소유권으로 격리됩니다. Route Handler는 Firebase ID 토큰을 검증하고 SQL Connect는 `auth.uid`와 트랜잭션 소유권 검사를 다시 평가합니다. 학생 인증이 아직 없으므로 학생 활동 상세 조회는 임시 공개 상태입니다.
+교사 프로필, 활동, 활동에 연결된 학급·학생 데이터는 Firebase Auth UID 소유권으로 격리됩니다. 학생은 교사가 연결한 Firebase 계정으로 로그인하며, 출석 상태가 `PRESENT`인 배정 활동만 조회할 수 있습니다. Route Handler는 Firebase ID 토큰을 검증하고 SQL Connect는 `auth.uid`를 기준으로 교사 소유권 또는 학생 배정을 다시 평가합니다.

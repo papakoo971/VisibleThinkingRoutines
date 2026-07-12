@@ -10,10 +10,15 @@ This README will guide you through the process of using the generated JavaScript
 - [**Queries**](#queries)
   - [*GetMyTeacherProfile*](#getmyteacherprofile)
   - [*ListActivities*](#listactivities)
-  - [*GetActivity*](#getactivity)
+  - [*GetTeacherActivity*](#getteacheractivity)
+  - [*GetMyStudent*](#getmystudent)
+  - [*ListMyStudentActivities*](#listmystudentactivities)
+  - [*GetMyStudentActivity*](#getmystudentactivity)
 - [**Mutations**](#mutations)
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
+  - [*LinkStudentAuth*](#linkstudentauth)
+  - [*UnlinkStudentAuth*](#unlinkstudentauth)
   - [*UpsertSchoolClass*](#upsertschoolclass)
   - [*UpsertStudent*](#upsertstudent)
   - [*CreateActivity*](#createactivity)
@@ -276,50 +281,50 @@ executeQuery(ref).then((response) => {
 });
 ```
 
-## GetActivity
-You can execute the `GetActivity` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+## GetTeacherActivity
+You can execute the `GetTeacherActivity` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-getActivity(vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
+getTeacherActivity(vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
 
-interface GetActivityRef {
+interface GetTeacherActivityRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (vars: GetActivityVariables): QueryRef<GetActivityData, GetActivityVariables>;
+  (vars: GetTeacherActivityVariables): QueryRef<GetTeacherActivityData, GetTeacherActivityVariables>;
 }
-export const getActivityRef: GetActivityRef;
+export const getTeacherActivityRef: GetTeacherActivityRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-getActivity(dc: DataConnect, vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
+getTeacherActivity(dc: DataConnect, vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
 
-interface GetActivityRef {
+interface GetTeacherActivityRef {
   ...
-  (dc: DataConnect, vars: GetActivityVariables): QueryRef<GetActivityData, GetActivityVariables>;
+  (dc: DataConnect, vars: GetTeacherActivityVariables): QueryRef<GetTeacherActivityData, GetTeacherActivityVariables>;
 }
-export const getActivityRef: GetActivityRef;
+export const getTeacherActivityRef: GetTeacherActivityRef;
 ```
 
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getActivityRef:
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getTeacherActivityRef:
 ```typescript
-const name = getActivityRef.operationName;
+const name = getTeacherActivityRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-The `GetActivity` query requires an argument of type `GetActivityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `GetTeacherActivity` query requires an argument of type `GetTeacherActivityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
-export interface GetActivityVariables {
+export interface GetTeacherActivityVariables {
   id: string;
 }
 ```
 ### Return Type
-Recall that executing the `GetActivity` query returns a `QueryPromise` that resolves to an object with a `data` property.
+Recall that executing the `GetTeacherActivity` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
-The `data` property is an object of type `GetActivityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `data` property is an object of type `GetTeacherActivityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
-export interface GetActivityData {
-  activity?: {
+export interface GetTeacherActivityData {
+  activities: ({
     id: string;
     title: string;
     routine: string;
@@ -385,69 +390,457 @@ export interface GetActivityData {
         externalId?: string | null;
       } & Student_Key;
     })[];
-  } & Activity_Key;
+  } & Activity_Key)[];
 }
 ```
-### Using `GetActivity`'s action shortcut function
+### Using `GetTeacherActivity`'s action shortcut function
 
 ```typescript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, getActivity, GetActivityVariables } from '@visible-thinking/dataconnect';
+import { connectorConfig, getTeacherActivity, GetTeacherActivityVariables } from '@visible-thinking/dataconnect';
 
-// The `GetActivity` query requires an argument of type `GetActivityVariables`:
-const getActivityVars: GetActivityVariables = {
-  id: ..., 
+// The `GetTeacherActivity` query requires an argument of type `GetTeacherActivityVariables`:
+const getTeacherActivityVars: GetTeacherActivityVariables = {
+  id: ...,
 };
 
-// Call the `getActivity()` function to execute the query.
+// Call the `getTeacherActivity()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await getActivity(getActivityVars);
+const { data } = await getTeacherActivity(getTeacherActivityVars);
 // Variables can be defined inline as well.
-const { data } = await getActivity({ id: ..., });
+const { data } = await getTeacherActivity({ id: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
-const { data } = await getActivity(dataConnect, getActivityVars);
+const { data } = await getTeacherActivity(dataConnect, getTeacherActivityVars);
 
-console.log(data.activity);
+console.log(data.activities);
 
 // Or, you can use the `Promise` API.
-getActivity(getActivityVars).then((response) => {
+getTeacherActivity(getTeacherActivityVars).then((response) => {
   const data = response.data;
-  console.log(data.activity);
+  console.log(data.activities);
 });
 ```
 
-### Using `GetActivity`'s `QueryRef` function
+### Using `GetTeacherActivity`'s `QueryRef` function
 
 ```typescript
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, getActivityRef, GetActivityVariables } from '@visible-thinking/dataconnect';
+import { connectorConfig, getTeacherActivityRef, GetTeacherActivityVariables } from '@visible-thinking/dataconnect';
 
-// The `GetActivity` query requires an argument of type `GetActivityVariables`:
-const getActivityVars: GetActivityVariables = {
-  id: ..., 
+// The `GetTeacherActivity` query requires an argument of type `GetTeacherActivityVariables`:
+const getTeacherActivityVars: GetTeacherActivityVariables = {
+  id: ...,
 };
 
-// Call the `getActivityRef()` function to get a reference to the query.
-const ref = getActivityRef(getActivityVars);
+// Call the `getTeacherActivityRef()` function to get a reference to the query.
+const ref = getTeacherActivityRef(getTeacherActivityVars);
 // Variables can be defined inline as well.
-const ref = getActivityRef({ id: ..., });
+const ref = getTeacherActivityRef({ id: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
-const ref = getActivityRef(dataConnect, getActivityVars);
+const ref = getTeacherActivityRef(dataConnect, getTeacherActivityVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeQuery(ref);
 
-console.log(data.activity);
+console.log(data.activities);
 
 // Or, you can use the `Promise` API.
 executeQuery(ref).then((response) => {
   const data = response.data;
-  console.log(data.activity);
+  console.log(data.activities);
+});
+```
+
+## GetMyStudent
+You can execute the `GetMyStudent` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getMyStudent(options?: ExecuteQueryOptions): QueryPromise<GetMyStudentData, undefined>;
+
+interface GetMyStudentRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyStudentData, undefined>;
+}
+export const getMyStudentRef: GetMyStudentRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyStudent(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentData, undefined>;
+
+interface GetMyStudentRef {
+  ...
+  (dc: DataConnect): QueryRef<GetMyStudentData, undefined>;
+}
+export const getMyStudentRef: GetMyStudentRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyStudentRef:
+```typescript
+const name = getMyStudentRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyStudent` query has no variables.
+### Return Type
+Recall that executing the `GetMyStudent` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyStudentData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyStudentData {
+  students: ({
+    id: string;
+    externalId?: string | null;
+    studentNumber: string;
+    name: string;
+    schoolClass: {
+      id: string;
+      name: string;
+    } & SchoolClass_Key;
+  } & Student_Key)[];
+}
+```
+### Using `GetMyStudent`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyStudent } from '@visible-thinking/dataconnect';
+
+
+// Call the `getMyStudent()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyStudent();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyStudent(dataConnect);
+
+console.log(data.students);
+
+// Or, you can use the `Promise` API.
+getMyStudent().then((response) => {
+  const data = response.data;
+  console.log(data.students);
+});
+```
+
+### Using `GetMyStudent`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyStudentRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `getMyStudentRef()` function to get a reference to the query.
+const ref = getMyStudentRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyStudentRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.students);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.students);
+});
+```
+
+## ListMyStudentActivities
+You can execute the `ListMyStudentActivities` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyStudentActivities(options?: ExecuteQueryOptions): QueryPromise<ListMyStudentActivitiesData, undefined>;
+
+interface ListMyStudentActivitiesRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListMyStudentActivitiesData, undefined>;
+}
+export const listMyStudentActivitiesRef: ListMyStudentActivitiesRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyStudentActivities(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListMyStudentActivitiesData, undefined>;
+
+interface ListMyStudentActivitiesRef {
+  ...
+  (dc: DataConnect): QueryRef<ListMyStudentActivitiesData, undefined>;
+}
+export const listMyStudentActivitiesRef: ListMyStudentActivitiesRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyStudentActivitiesRef:
+```typescript
+const name = listMyStudentActivitiesRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyStudentActivities` query has no variables.
+### Return Type
+Recall that executing the `ListMyStudentActivities` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyStudentActivitiesData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyStudentActivitiesData {
+  activityAttendances: ({
+    activity: {
+      id: string;
+      title: string;
+      routine: string;
+      activityMode: ActivityMode;
+      subject: string;
+      status: ActivityStatus;
+      code: string;
+      materialType: string;
+      activityDate: DateString;
+      submittedCount: number;
+      targetCount: number;
+      activityClasses_on_activity: ({
+        schoolClass: {
+          id: string;
+          name: string;
+        } & SchoolClass_Key;
+      })[];
+    } & Activity_Key;
+  })[];
+}
+```
+### Using `ListMyStudentActivities`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyStudentActivities } from '@visible-thinking/dataconnect';
+
+
+// Call the `listMyStudentActivities()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyStudentActivities();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyStudentActivities(dataConnect);
+
+console.log(data.activityAttendances);
+
+// Or, you can use the `Promise` API.
+listMyStudentActivities().then((response) => {
+  const data = response.data;
+  console.log(data.activityAttendances);
+});
+```
+
+### Using `ListMyStudentActivities`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyStudentActivitiesRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `listMyStudentActivitiesRef()` function to get a reference to the query.
+const ref = listMyStudentActivitiesRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyStudentActivitiesRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityAttendances);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttendances);
+});
+```
+
+## GetMyStudentActivity
+You can execute the `GetMyStudentActivity` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getMyStudentActivity(vars: GetMyStudentActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+
+interface GetMyStudentActivityRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyStudentActivityVariables): QueryRef<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+}
+export const getMyStudentActivityRef: GetMyStudentActivityRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyStudentActivity(dc: DataConnect, vars: GetMyStudentActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+
+interface GetMyStudentActivityRef {
+  ...
+  (dc: DataConnect, vars: GetMyStudentActivityVariables): QueryRef<GetMyStudentActivityData, GetMyStudentActivityVariables>;
+}
+export const getMyStudentActivityRef: GetMyStudentActivityRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyStudentActivityRef:
+```typescript
+const name = getMyStudentActivityRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyStudentActivity` query requires an argument of type `GetMyStudentActivityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetMyStudentActivityVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that executing the `GetMyStudentActivity` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyStudentActivityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyStudentActivityData {
+  activityAttendances: ({
+    activity: {
+      id: string;
+      title: string;
+      routine: string;
+      activityMode: ActivityMode;
+      subject: string;
+      status: ActivityStatus;
+      code: string;
+      materialType: string;
+      activityDate: DateString;
+      submittedCount: number;
+      targetCount: number;
+      activityClasses_on_activity: ({
+        schoolClass: {
+          id: string;
+          name: string;
+        } & SchoolClass_Key;
+      })[];
+      activityAttendances_on_activity: ({
+        status: AttendanceStatus;
+        student: {
+          id: string;
+          externalId?: string | null;
+          name: string;
+          studentNumber: string;
+          schoolClass: {
+            id: string;
+            name: string;
+          } & SchoolClass_Key;
+        } & Student_Key;
+      })[];
+      activityGroups_on_activity: ({
+        id: string;
+        name: string;
+        activityGroupMembers_on_activityGroup: ({
+          student: {
+            id: string;
+            externalId?: string | null;
+            name: string;
+            studentNumber: string;
+          } & Student_Key;
+        })[];
+      } & ActivityGroup_Key)[];
+      individualSubmissions_on_activity: ({
+        status: SubmissionStatus;
+        student: {
+          id: string;
+          externalId?: string | null;
+        } & Student_Key;
+      })[];
+      groupSubmissions_on_activity: ({
+        status: SubmissionStatus;
+        activityGroup: {
+          id: string;
+        } & ActivityGroup_Key;
+      })[];
+      groupSubmissionAgreements_on_activity: ({
+        agreed: boolean;
+        activityGroup: {
+          id: string;
+        } & ActivityGroup_Key;
+        student: {
+          id: string;
+          externalId?: string | null;
+        } & Student_Key;
+      })[];
+    } & Activity_Key;
+  })[];
+}
+```
+### Using `GetMyStudentActivity`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyStudentActivity, GetMyStudentActivityVariables } from '@visible-thinking/dataconnect';
+
+// The `GetMyStudentActivity` query requires an argument of type `GetMyStudentActivityVariables`:
+const getMyStudentActivityVars: GetMyStudentActivityVariables = {
+  id: ...,
+};
+
+// Call the `getMyStudentActivity()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyStudentActivity(getMyStudentActivityVars);
+// Variables can be defined inline as well.
+const { data } = await getMyStudentActivity({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyStudentActivity(dataConnect, getMyStudentActivityVars);
+
+console.log(data.activityAttendances);
+
+// Or, you can use the `Promise` API.
+getMyStudentActivity(getMyStudentActivityVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttendances);
+});
+```
+
+### Using `GetMyStudentActivity`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyStudentActivityRef, GetMyStudentActivityVariables } from '@visible-thinking/dataconnect';
+
+// The `GetMyStudentActivity` query requires an argument of type `GetMyStudentActivityVariables`:
+const getMyStudentActivityVars: GetMyStudentActivityVariables = {
+  id: ...,
+};
+
+// Call the `getMyStudentActivityRef()` function to get a reference to the query.
+const ref = getMyStudentActivityRef(getMyStudentActivityVars);
+// Variables can be defined inline as well.
+const ref = getMyStudentActivityRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyStudentActivityRef(dataConnect, getMyStudentActivityVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityAttendances);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttendances);
 });
 ```
 
@@ -522,9 +915,9 @@ import { connectorConfig, upsertMyTeacherProfile, UpsertMyTeacherProfileVariable
 
 // The `UpsertMyTeacherProfile` mutation requires an argument of type `UpsertMyTeacherProfileVariables`:
 const upsertMyTeacherProfileVars: UpsertMyTeacherProfileVariables = {
-  email: ..., 
-  displayName: ..., 
-  operationMode: ..., 
+  email: ...,
+  displayName: ...,
+  operationMode: ...,
 };
 
 // Call the `upsertMyTeacherProfile()` function to execute the mutation.
@@ -554,9 +947,9 @@ import { connectorConfig, upsertMyTeacherProfileRef, UpsertMyTeacherProfileVaria
 
 // The `UpsertMyTeacherProfile` mutation requires an argument of type `UpsertMyTeacherProfileVariables`:
 const upsertMyTeacherProfileVars: UpsertMyTeacherProfileVariables = {
-  email: ..., 
-  displayName: ..., 
-  operationMode: ..., 
+  email: ...,
+  displayName: ...,
+  operationMode: ...,
 };
 
 // Call the `upsertMyTeacherProfileRef()` function to get a reference to the mutation.
@@ -672,6 +1065,227 @@ executeMutation(ref).then((response) => {
 });
 ```
 
+## LinkStudentAuth
+You can execute the `LinkStudentAuth` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+linkStudentAuth(vars: LinkStudentAuthVariables): MutationPromise<LinkStudentAuthData, LinkStudentAuthVariables>;
+
+interface LinkStudentAuthRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: LinkStudentAuthVariables): MutationRef<LinkStudentAuthData, LinkStudentAuthVariables>;
+}
+export const linkStudentAuthRef: LinkStudentAuthRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+linkStudentAuth(dc: DataConnect, vars: LinkStudentAuthVariables): MutationPromise<LinkStudentAuthData, LinkStudentAuthVariables>;
+
+interface LinkStudentAuthRef {
+  ...
+  (dc: DataConnect, vars: LinkStudentAuthVariables): MutationRef<LinkStudentAuthData, LinkStudentAuthVariables>;
+}
+export const linkStudentAuthRef: LinkStudentAuthRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the linkStudentAuthRef:
+```typescript
+const name = linkStudentAuthRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `LinkStudentAuth` mutation requires an argument of type `LinkStudentAuthVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface LinkStudentAuthVariables {
+  studentId: string;
+  authUid: string;
+}
+```
+### Return Type
+Recall that executing the `LinkStudentAuth` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `LinkStudentAuthData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface LinkStudentAuthData {
+  student_update?: Student_Key | null;
+}
+```
+### Using `LinkStudentAuth`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, linkStudentAuth, LinkStudentAuthVariables } from '@visible-thinking/dataconnect';
+
+// The `LinkStudentAuth` mutation requires an argument of type `LinkStudentAuthVariables`:
+const linkStudentAuthVars: LinkStudentAuthVariables = {
+  studentId: ...,
+  authUid: ...,
+};
+
+// Call the `linkStudentAuth()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await linkStudentAuth(linkStudentAuthVars);
+// Variables can be defined inline as well.
+const { data } = await linkStudentAuth({ studentId: ..., authUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await linkStudentAuth(dataConnect, linkStudentAuthVars);
+
+console.log(data.student_update);
+
+// Or, you can use the `Promise` API.
+linkStudentAuth(linkStudentAuthVars).then((response) => {
+  const data = response.data;
+  console.log(data.student_update);
+});
+```
+
+### Using `LinkStudentAuth`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, linkStudentAuthRef, LinkStudentAuthVariables } from '@visible-thinking/dataconnect';
+
+// The `LinkStudentAuth` mutation requires an argument of type `LinkStudentAuthVariables`:
+const linkStudentAuthVars: LinkStudentAuthVariables = {
+  studentId: ...,
+  authUid: ...,
+};
+
+// Call the `linkStudentAuthRef()` function to get a reference to the mutation.
+const ref = linkStudentAuthRef(linkStudentAuthVars);
+// Variables can be defined inline as well.
+const ref = linkStudentAuthRef({ studentId: ..., authUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = linkStudentAuthRef(dataConnect, linkStudentAuthVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.student_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.student_update);
+});
+```
+
+## UnlinkStudentAuth
+You can execute the `UnlinkStudentAuth` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+unlinkStudentAuth(vars: UnlinkStudentAuthVariables): MutationPromise<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+
+interface UnlinkStudentAuthRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UnlinkStudentAuthVariables): MutationRef<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+}
+export const unlinkStudentAuthRef: UnlinkStudentAuthRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+unlinkStudentAuth(dc: DataConnect, vars: UnlinkStudentAuthVariables): MutationPromise<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+
+interface UnlinkStudentAuthRef {
+  ...
+  (dc: DataConnect, vars: UnlinkStudentAuthVariables): MutationRef<UnlinkStudentAuthData, UnlinkStudentAuthVariables>;
+}
+export const unlinkStudentAuthRef: UnlinkStudentAuthRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the unlinkStudentAuthRef:
+```typescript
+const name = unlinkStudentAuthRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UnlinkStudentAuth` mutation requires an argument of type `UnlinkStudentAuthVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UnlinkStudentAuthVariables {
+  studentId: string;
+}
+```
+### Return Type
+Recall that executing the `UnlinkStudentAuth` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UnlinkStudentAuthData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UnlinkStudentAuthData {
+  student_update?: Student_Key | null;
+}
+```
+### Using `UnlinkStudentAuth`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, unlinkStudentAuth, UnlinkStudentAuthVariables } from '@visible-thinking/dataconnect';
+
+// The `UnlinkStudentAuth` mutation requires an argument of type `UnlinkStudentAuthVariables`:
+const unlinkStudentAuthVars: UnlinkStudentAuthVariables = {
+  studentId: ...,
+};
+
+// Call the `unlinkStudentAuth()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await unlinkStudentAuth(unlinkStudentAuthVars);
+// Variables can be defined inline as well.
+const { data } = await unlinkStudentAuth({ studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await unlinkStudentAuth(dataConnect, unlinkStudentAuthVars);
+
+console.log(data.student_update);
+
+// Or, you can use the `Promise` API.
+unlinkStudentAuth(unlinkStudentAuthVars).then((response) => {
+  const data = response.data;
+  console.log(data.student_update);
+});
+```
+
+### Using `UnlinkStudentAuth`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, unlinkStudentAuthRef, UnlinkStudentAuthVariables } from '@visible-thinking/dataconnect';
+
+// The `UnlinkStudentAuth` mutation requires an argument of type `UnlinkStudentAuthVariables`:
+const unlinkStudentAuthVars: UnlinkStudentAuthVariables = {
+  studentId: ...,
+};
+
+// Call the `unlinkStudentAuthRef()` function to get a reference to the mutation.
+const ref = unlinkStudentAuthRef(unlinkStudentAuthVars);
+// Variables can be defined inline as well.
+const ref = unlinkStudentAuthRef({ studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = unlinkStudentAuthRef(dataConnect, unlinkStudentAuthVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.student_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.student_update);
+});
+```
+
 ## UpsertSchoolClass
 You can execute the `UpsertSchoolClass` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
@@ -726,7 +1340,7 @@ import { connectorConfig, upsertSchoolClass, UpsertSchoolClassVariables } from '
 
 // The `UpsertSchoolClass` mutation requires an argument of type `UpsertSchoolClassVariables`:
 const upsertSchoolClassVars: UpsertSchoolClassVariables = {
-  name: ..., 
+  name: ...,
 };
 
 // Call the `upsertSchoolClass()` function to execute the mutation.
@@ -756,7 +1370,7 @@ import { connectorConfig, upsertSchoolClassRef, UpsertSchoolClassVariables } fro
 
 // The `UpsertSchoolClass` mutation requires an argument of type `UpsertSchoolClassVariables`:
 const upsertSchoolClassVars: UpsertSchoolClassVariables = {
-  name: ..., 
+  name: ...,
 };
 
 // Call the `upsertSchoolClassRef()` function to get a reference to the mutation.
@@ -966,17 +1580,17 @@ import { connectorConfig, createActivity, CreateActivityVariables } from '@visib
 
 // The `CreateActivity` mutation requires an argument of type `CreateActivityVariables`:
 const createActivityVars: CreateActivityVariables = {
-  id: ..., 
-  title: ..., 
-  routine: ..., 
-  activityMode: ..., 
-  subject: ..., 
-  status: ..., 
-  code: ..., 
-  materialType: ..., 
-  activityDate: ..., 
-  submittedCount: ..., 
-  targetCount: ..., 
+  id: ...,
+  title: ...,
+  routine: ...,
+  activityMode: ...,
+  subject: ...,
+  status: ...,
+  code: ...,
+  materialType: ...,
+  activityDate: ...,
+  submittedCount: ...,
+  targetCount: ...,
 };
 
 // Call the `createActivity()` function to execute the mutation.
@@ -1006,17 +1620,17 @@ import { connectorConfig, createActivityRef, CreateActivityVariables } from '@vi
 
 // The `CreateActivity` mutation requires an argument of type `CreateActivityVariables`:
 const createActivityVars: CreateActivityVariables = {
-  id: ..., 
-  title: ..., 
-  routine: ..., 
-  activityMode: ..., 
-  subject: ..., 
-  status: ..., 
-  code: ..., 
-  materialType: ..., 
-  activityDate: ..., 
-  submittedCount: ..., 
-  targetCount: ..., 
+  id: ...,
+  title: ...,
+  routine: ...,
+  activityMode: ...,
+  subject: ...,
+  status: ...,
+  code: ...,
+  materialType: ...,
+  activityDate: ...,
+  submittedCount: ...,
+  targetCount: ...,
 };
 
 // Call the `createActivityRef()` function to get a reference to the mutation.
@@ -1095,7 +1709,7 @@ import { connectorConfig, deleteActivity, DeleteActivityVariables } from '@visib
 
 // The `DeleteActivity` mutation requires an argument of type `DeleteActivityVariables`:
 const deleteActivityVars: DeleteActivityVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteActivity()` function to execute the mutation.
@@ -1125,7 +1739,7 @@ import { connectorConfig, deleteActivityRef, DeleteActivityVariables } from '@vi
 
 // The `DeleteActivity` mutation requires an argument of type `DeleteActivityVariables`:
 const deleteActivityVars: DeleteActivityVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteActivityRef()` function to get a reference to the mutation.
@@ -1205,8 +1819,8 @@ import { connectorConfig, upsertActivityClass, UpsertActivityClassVariables } fr
 
 // The `UpsertActivityClass` mutation requires an argument of type `UpsertActivityClassVariables`:
 const upsertActivityClassVars: UpsertActivityClassVariables = {
-  activityId: ..., 
-  schoolClassId: ..., 
+  activityId: ...,
+  schoolClassId: ...,
 };
 
 // Call the `upsertActivityClass()` function to execute the mutation.
@@ -1236,8 +1850,8 @@ import { connectorConfig, upsertActivityClassRef, UpsertActivityClassVariables }
 
 // The `UpsertActivityClass` mutation requires an argument of type `UpsertActivityClassVariables`:
 const upsertActivityClassVars: UpsertActivityClassVariables = {
-  activityId: ..., 
-  schoolClassId: ..., 
+  activityId: ...,
+  schoolClassId: ...,
 };
 
 // Call the `upsertActivityClassRef()` function to get a reference to the mutation.
@@ -1318,9 +1932,9 @@ import { connectorConfig, upsertActivityAttendance, UpsertActivityAttendanceVari
 
 // The `UpsertActivityAttendance` mutation requires an argument of type `UpsertActivityAttendanceVariables`:
 const upsertActivityAttendanceVars: UpsertActivityAttendanceVariables = {
-  activityId: ..., 
-  studentId: ..., 
-  status: ..., 
+  activityId: ...,
+  studentId: ...,
+  status: ...,
 };
 
 // Call the `upsertActivityAttendance()` function to execute the mutation.
@@ -1350,9 +1964,9 @@ import { connectorConfig, upsertActivityAttendanceRef, UpsertActivityAttendanceV
 
 // The `UpsertActivityAttendance` mutation requires an argument of type `UpsertActivityAttendanceVariables`:
 const upsertActivityAttendanceVars: UpsertActivityAttendanceVariables = {
-  activityId: ..., 
-  studentId: ..., 
-  status: ..., 
+  activityId: ...,
+  studentId: ...,
+  status: ...,
 };
 
 // Call the `upsertActivityAttendanceRef()` function to get a reference to the mutation.
@@ -1433,9 +2047,9 @@ import { connectorConfig, upsertActivityGroup, UpsertActivityGroupVariables } fr
 
 // The `UpsertActivityGroup` mutation requires an argument of type `UpsertActivityGroupVariables`:
 const upsertActivityGroupVars: UpsertActivityGroupVariables = {
-  id: ..., 
-  activityId: ..., 
-  name: ..., 
+  id: ...,
+  activityId: ...,
+  name: ...,
 };
 
 // Call the `upsertActivityGroup()` function to execute the mutation.
@@ -1465,9 +2079,9 @@ import { connectorConfig, upsertActivityGroupRef, UpsertActivityGroupVariables }
 
 // The `UpsertActivityGroup` mutation requires an argument of type `UpsertActivityGroupVariables`:
 const upsertActivityGroupVars: UpsertActivityGroupVariables = {
-  id: ..., 
-  activityId: ..., 
-  name: ..., 
+  id: ...,
+  activityId: ...,
+  name: ...,
 };
 
 // Call the `upsertActivityGroupRef()` function to get a reference to the mutation.
@@ -1547,8 +2161,8 @@ import { connectorConfig, upsertActivityGroupMember, UpsertActivityGroupMemberVa
 
 // The `UpsertActivityGroupMember` mutation requires an argument of type `UpsertActivityGroupMemberVariables`:
 const upsertActivityGroupMemberVars: UpsertActivityGroupMemberVariables = {
-  activityGroupId: ..., 
-  studentId: ..., 
+  activityGroupId: ...,
+  studentId: ...,
 };
 
 // Call the `upsertActivityGroupMember()` function to execute the mutation.
@@ -1578,8 +2192,8 @@ import { connectorConfig, upsertActivityGroupMemberRef, UpsertActivityGroupMembe
 
 // The `UpsertActivityGroupMember` mutation requires an argument of type `UpsertActivityGroupMemberVariables`:
 const upsertActivityGroupMemberVars: UpsertActivityGroupMemberVariables = {
-  activityGroupId: ..., 
-  studentId: ..., 
+  activityGroupId: ...,
+  studentId: ...,
 };
 
 // Call the `upsertActivityGroupMemberRef()` function to get a reference to the mutation.
@@ -1660,9 +2274,9 @@ import { connectorConfig, upsertIndividualSubmission, UpsertIndividualSubmission
 
 // The `UpsertIndividualSubmission` mutation requires an argument of type `UpsertIndividualSubmissionVariables`:
 const upsertIndividualSubmissionVars: UpsertIndividualSubmissionVariables = {
-  activityId: ..., 
-  studentId: ..., 
-  status: ..., 
+  activityId: ...,
+  studentId: ...,
+  status: ...,
 };
 
 // Call the `upsertIndividualSubmission()` function to execute the mutation.
@@ -1692,9 +2306,9 @@ import { connectorConfig, upsertIndividualSubmissionRef, UpsertIndividualSubmiss
 
 // The `UpsertIndividualSubmission` mutation requires an argument of type `UpsertIndividualSubmissionVariables`:
 const upsertIndividualSubmissionVars: UpsertIndividualSubmissionVariables = {
-  activityId: ..., 
-  studentId: ..., 
-  status: ..., 
+  activityId: ...,
+  studentId: ...,
+  status: ...,
 };
 
 // Call the `upsertIndividualSubmissionRef()` function to get a reference to the mutation.
@@ -1775,9 +2389,9 @@ import { connectorConfig, upsertGroupSubmission, UpsertGroupSubmissionVariables 
 
 // The `UpsertGroupSubmission` mutation requires an argument of type `UpsertGroupSubmissionVariables`:
 const upsertGroupSubmissionVars: UpsertGroupSubmissionVariables = {
-  activityId: ..., 
-  activityGroupId: ..., 
-  status: ..., 
+  activityId: ...,
+  activityGroupId: ...,
+  status: ...,
 };
 
 // Call the `upsertGroupSubmission()` function to execute the mutation.
@@ -1807,9 +2421,9 @@ import { connectorConfig, upsertGroupSubmissionRef, UpsertGroupSubmissionVariabl
 
 // The `UpsertGroupSubmission` mutation requires an argument of type `UpsertGroupSubmissionVariables`:
 const upsertGroupSubmissionVars: UpsertGroupSubmissionVariables = {
-  activityId: ..., 
-  activityGroupId: ..., 
-  status: ..., 
+  activityId: ...,
+  activityGroupId: ...,
+  status: ...,
 };
 
 // Call the `upsertGroupSubmissionRef()` function to get a reference to the mutation.
@@ -1891,10 +2505,10 @@ import { connectorConfig, upsertGroupSubmissionAgreement, UpsertGroupSubmissionA
 
 // The `UpsertGroupSubmissionAgreement` mutation requires an argument of type `UpsertGroupSubmissionAgreementVariables`:
 const upsertGroupSubmissionAgreementVars: UpsertGroupSubmissionAgreementVariables = {
-  activityId: ..., 
-  activityGroupId: ..., 
-  studentId: ..., 
-  agreed: ..., 
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  agreed: ...,
 };
 
 // Call the `upsertGroupSubmissionAgreement()` function to execute the mutation.
@@ -1924,10 +2538,10 @@ import { connectorConfig, upsertGroupSubmissionAgreementRef, UpsertGroupSubmissi
 
 // The `UpsertGroupSubmissionAgreement` mutation requires an argument of type `UpsertGroupSubmissionAgreementVariables`:
 const upsertGroupSubmissionAgreementVars: UpsertGroupSubmissionAgreementVariables = {
-  activityId: ..., 
-  activityGroupId: ..., 
-  studentId: ..., 
-  agreed: ..., 
+  activityId: ...,
+  activityGroupId: ...,
+  studentId: ...,
+  agreed: ...,
 };
 
 // Call the `upsertGroupSubmissionAgreementRef()` function to get a reference to the mutation.

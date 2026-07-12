@@ -34,7 +34,7 @@ const individualInitialCards: LocalCard[] = [
 ];
 
 export function StudentActivityView({ activityId }: { activityId: string }) {
-  const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null>(null);
+  const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null | undefined>(undefined);
   const mockActivity = activities.find((item) => item.id === activityId);
 
   useEffect(() => {
@@ -51,13 +51,22 @@ export function StudentActivityView({ activityId }: { activityId: string }) {
     };
   }, [activityId, mockActivity]);
 
-  const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
+  if (!mockActivity && createdPayload === undefined) {
+    return <main className="min-h-screen bg-stone-50 p-6 text-sm text-zinc-600">배정된 활동을 확인하고 있습니다.</main>;
+  }
+
+  if (!mockActivity && createdPayload === null) {
+    return <main className="min-h-screen bg-stone-50 p-6 text-sm text-zinc-600">이 활동을 볼 권한이 없거나 활동을 찾을 수 없습니다.</main>;
+  }
+
+  const activity = mockActivity ?? createdPayload?.activity;
+  if (!activity) return null;
 
   return (
     <StudentActivityWorkspace
       key={`${activity.id}-${activity.activityMode}`}
       activityId={activityId}
-      createdPayload={createdPayload}
+      createdPayload={createdPayload ?? null}
     />
   );
 }

@@ -1,5 +1,28 @@
 # Implementation Log
 
+## 2026-07-12 Student Authentication And Assigned Activity Access
+
+### Completed
+
+- Added nullable, unique `Student.authUid` for linking Firebase Authentication users without breaking existing student rows or allowing one account to be linked twice.
+- Replaced the public activity detail operation with separate teacher-owner and assigned-student queries.
+- Added authenticated student profile, assigned activity list, and assigned activity detail SQL Connect operations.
+- Limited student activity access to linked students with `PRESENT` attendance.
+- Added ownership-checked student account link and unlink mutations for the account-issuance workflow.
+- Added a bearer-token-protected student session Route Handler and a real Firebase email/password student login screen.
+- Removed the mock activity list from the student portal; authenticated students now see only live assigned activities.
+- Added explicit loading and access-denied states for dynamic student activity pages.
+- Migrated the live PostgreSQL schema and deployed the updated SQL Connect connector.
+- Added `scripts/student-access-smoke.mjs` with automatic activity, account-link, and Firebase Auth cleanup.
+
+### Access Verification
+
+- An assigned student can load their profile, activity list, and activity detail.
+- An authenticated but unassigned user receives `403` for the student session and `404` for activity detail.
+- An anonymous activity detail request receives `401`.
+- A teacher can still read and remove their own activity.
+- The student login page renders without a Next.js error overlay.
+
 ## 2026-07-12 Class And Student Ownership
 
 ### Completed

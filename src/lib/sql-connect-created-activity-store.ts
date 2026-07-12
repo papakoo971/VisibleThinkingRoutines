@@ -1,20 +1,20 @@
-import { QueryFetchPolicy } from "firebase/data-connect";
 import type { CreatedActivityStore } from "@/lib/created-activity-store";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
 import { students } from "@/lib/mock-data";
-import { getVisibleThinkingDataConnect } from "@/lib/firebase-sql-connect";
 import { executeUserMutation, executeUserQuery } from "@/lib/server-sql-connect";
 import {
   ActivityMode,
   ActivityStatus,
   AttendanceStatus,
   SubmissionStatus,
-  getActivity,
 } from "@/lib/dataconnect-generated";
 import type {
   CreateActivityVariables,
   DeleteActivityVariables,
-  GetActivityData,
+  GetMyStudentActivityData,
+  GetMyStudentData,
+  GetTeacherActivityData,
+  ListMyStudentActivitiesData,
   ListActivitiesData,
   UpsertActivityAttendanceVariables,
   UpsertActivityClassVariables,
@@ -106,7 +106,40 @@ function listActivityToPayload(activity: ListActivitiesData["activities"][number
   };
 }
 
-function detailActivityToPayload(activity: NonNullable<GetActivityData["activity"]>): CreatedActivityPayload {
+export type AuthenticatedStudent = {
+  id: string;
+  studentNumber: string;
+  name: string;
+  className: string;
+};
+
+export async function getAuthenticatedStudentSession(context: { idToken: string }) {
+  const [studentData, activityData] = await Promise.all([
+    executeUserQuery<GetMyStudentData, Record<string, never>>("GetMyStudent", {}, context.idToken),
+    executeUserQuery<ListMyStudentActivitiesData, Record<string, never>>(
+      "ListMyStudentActivities",
+      {},
+      context.idToken
+    ),
+  ]);
+  const student = studentData.students[0];
+
+  if (!student) return undefined;
+
+  return {
+    student: {
+      id: studentExternalId(student),
+      studentNumber: student.studentNumber,
+      name: student.name,
+      className: student.schoolClass.name,
+    } satisfies AuthenticatedStudent,
+    activities: activityData.activityAttendances.map((attendance) => listActivityToPayload(attendance.activity)),
+  };
+}
+
+type DetailedActivity = GetTeacherActivityData["activities"][number] | GetMyStudentActivityData["activityAttendances"][number]["activity"];
+
+function detailActivityToPayload(activity: DetailedActivity): CreatedActivityPayload {
   const agreementsByGroup = new Map<string, CreatedActivityPayload["groupSubmissions"][number]["agreements"]>();
 
   for (const agreement of activity.groupSubmissionAgreements_on_activity) {
@@ -207,13 +240,22 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     return data.activities.map(listActivityToPayload);
   },
 
-  async get(activityId) {
-    const { data } = await getActivity(
-      getVisibleThinkingDataConnect(),
+  async get(activityId, context) {
+    const teacherData = await executeUserQuery<GetTeacherActivityData, { id: string }>(
+      "GetTeacherActivity",
       { id: activityId },
-      { fetchPolicy: QueryFetchPolicy.SERVER_ONLY }
+      context.idToken
     );
-    return data.activity ? detailActivityToPayload(data.activity) : undefined;
+    const teacherActivity = teacherData.activities[0];
+    if (teacherActivity) return detailActivityToPayload(teacherActivity);
+
+    const studentData = await executeUserQuery<GetMyStudentActivityData, { id: string }>(
+      "GetMyStudentActivity",
+      { id: activityId },
+      context.idToken
+    );
+    const studentActivity = studentData.activityAttendances[0]?.activity;
+    return studentActivity ? detailActivityToPayload(studentActivity) : undefined;
   },
 
   async upsert(payload, context) {
