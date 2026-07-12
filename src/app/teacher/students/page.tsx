@@ -1,13 +1,12 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 import { Download, FileSpreadsheet, GripVertical, KeyRound, Plus, Trash2, Upload, Users, Workflow } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { classes as initialClasses, groups, students } from "@/lib/mock-data";
 import { getFirebaseAuth } from "@/lib/firebase-auth";
+import { assignStudentToDefaultGroup, createClass, createDefaultGroup, deleteClass, deleteDefaultGroup, fetchClassManagement, randomizeDefaultGroups, type ClassManagement } from "@/lib/class-management";
 
 type GroupAssignment = Record<string, string[]>;
-type ManagedGroup = { id: string; name: string };
 type IssuedCredential = { className: string; studentNumber: string; name: string; email: string; password: string };
 type ImportResult = {
   total: number;
@@ -17,48 +16,58 @@ type ImportResult = {
   errors: Array<{ row: number; message: string }>;
 };
 
-const initialGroupAssignments = groups.reduce<GroupAssignment>((assignment, group) => {
-  assignment[group.id] = group.studentIds;
-  return assignment;
-}, {});
-
 export default function StudentsPage() {
-  const [classList, setClassList] = useState(initialClasses);
-  const [selectedClassName, setSelectedClassName] = useState(initialClasses[0]);
+  const [management, setManagement] = useState<ClassManagement | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [newClassName, setNewClassName] = useState("");
-  const [managedGroups, setManagedGroups] = useState<ManagedGroup[]>(groups.map((group) => ({ id: group.id, name: group.name })));
-  const [groupAssignments, setGroupAssignments] = useState(initialGroupAssignments);
+  const [randomMode, setRandomMode] = useState<"groupSize" | "groupCount">("groupSize");
+  const [randomValue, setRandomValue] = useState(4);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [managementError, setManagementError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedStudents = useMemo(() => [
-    ...students.filter((student) => student.className === selectedClassName),
-    ...(importResult?.credentials ?? []).filter((student) => student.className === selectedClassName).map((student) => ({
-      id: student.studentNumber,
-      className: student.className,
-      studentNumber: student.studentNumber,
-      name: student.name,
-      passwordIssued: true,
-    })),
-  ], [importResult, selectedClassName]);
+  useEffect(() => {
+    let active = true;
+    void fetchClassManagement().then((data) => {
+      if (!active) return;
+      setManagement(data);
+      setSelectedClassId((current) => current || data.classes[0]?.id || "");
+    }).catch((error: unknown) => active && setManagementError(error instanceof Error ? error.message : "학급 정보를 불러오지 못했습니다."));
+    return () => { active = false; };
+  }, []);
+
+  const classList = management?.classes ?? [];
+  const selectedClass = classList.find((item) => item.id === selectedClassId);
+  const selectedClassName = selectedClass?.name ?? "";
+  const students = management?.students ?? [];
+  const managedGroups = (management?.groups ?? []).filter((group) => group.classId === selectedClassId);
+  const groupAssignments = managedGroups.reduce<GroupAssignment>((result, group) => ({ ...result, [group.id]: group.studentIds }), {});
+  const selectedStudents = students.filter((student) => student.classId === selectedClassId);
 
   const assignedStudentIds = new Set(Object.values(groupAssignments).flat());
   const unassignedStudents = selectedStudents.filter((student) => !assignedStudentIds.has(student.id));
 
-  function addClass() {
+  async function addClass() {
     const trimmed = newClassName.trim();
-    if (!trimmed || classList.includes(trimmed)) return;
-    setClassList((current) => [...current, trimmed]);
-    setSelectedClassName(trimmed);
-    setNewClassName("");
+    if (!trimmed || classList.some((item) => item.name === trimmed)) return;
+    try {
+      const next = await createClass(trimmed);
+      setManagement(next);
+      setSelectedClassId(next.classes.find((item) => item.name === trimmed)?.id ?? selectedClassId);
+      setNewClassName("");
+      setManagementError(null);
+    } catch (error) { setManagementError(error instanceof Error ? error.message : "학급을 추가하지 못했습니다."); }
   }
 
-  function deleteClass(className: string) {
-    const nextClasses = classList.filter((item) => item !== className);
-    setClassList(nextClasses);
-    if (selectedClassName === className) setSelectedClassName(nextClasses[0] ?? "");
+  async function removeClass(classId: string) {
+    try {
+      const next = await deleteClass(classId);
+      setManagement(next);
+      if (selectedClassId === classId) setSelectedClassId(next.classes[0]?.id ?? "");
+      setManagementError(null);
+    } catch (error) { setManagementError(error instanceof Error ? error.message : "학급을 삭제하지 못했습니다."); }
   }
 
   function dragStudent(event: DragEvent<HTMLElement>, studentId: string) {
@@ -71,30 +80,22 @@ export default function StudentsPage() {
     const studentId = event.dataTransfer.getData("text/plain");
     if (!studentId) return;
 
-    setGroupAssignments((current) => {
-      const next = Object.fromEntries(
-        Object.entries(current).map(([groupId, studentIds]) => [groupId, studentIds.filter((id) => id !== studentId)])
-      ) as GroupAssignment;
-
-      next[targetGroupId] = [...(next[targetGroupId] ?? []), studentId];
-      return next;
-    });
+    void assignStudentToDefaultGroup(selectedClassId, targetGroupId, studentId).then(setManagement).catch((error: unknown) => setManagementError(error instanceof Error ? error.message : "학생을 이동하지 못했습니다."));
   }
 
   function addGroup() {
+    if (!selectedClassId) return;
     const nextNumber = managedGroups.length + 1;
-    const id = `g-${Date.now()}`;
-    setManagedGroups((current) => [...current, { id, name: `${nextNumber}모둠` }]);
-    setGroupAssignments((current) => ({ ...current, [id]: [] }));
+    void createDefaultGroup(selectedClassId, `${nextNumber}모둠`).then(setManagement).catch((error: unknown) => setManagementError(error instanceof Error ? error.message : "모둠을 추가하지 못했습니다."));
   }
 
-  function deleteGroup(groupId: string) {
-    setManagedGroups((current) => current.filter((group) => group.id !== groupId));
-    setGroupAssignments((current) => {
-      const next = { ...current };
-      delete next[groupId];
-      return next;
-    });
+  function removeGroup(groupId: string) {
+    void deleteDefaultGroup(groupId).then(setManagement).catch((error: unknown) => setManagementError(error instanceof Error ? error.message : "모둠을 삭제하지 못했습니다."));
+  }
+
+  function randomizeGroups() {
+    if (!selectedClassId) return;
+    void randomizeDefaultGroups(selectedClassId, randomMode, randomValue).then(setManagement).catch((error: unknown) => setManagementError(error instanceof Error ? error.message : "자동 배정에 실패했습니다."));
   }
 
   async function importCsv(event: ChangeEvent<HTMLInputElement>) {
@@ -117,9 +118,9 @@ export default function StudentsPage() {
       if (!response.ok) throw new Error(result.message ?? "학생 등록에 실패했습니다.");
       setImportResult(result);
       if (result.credentials[0]) {
-        const nextClasses = Array.from(new Set([...classList, ...result.credentials.map((item) => item.className)]));
-        setClassList(nextClasses);
-        setSelectedClassName(result.credentials[0].className);
+        const next = await fetchClassManagement();
+        setManagement(next);
+        setSelectedClassId(next.classes.find((item) => item.name === result.credentials[0].className)?.id ?? selectedClassId);
       }
     } catch (error) {
       setImportError(error instanceof Error ? error.message : "CSV 파일을 처리하지 못했습니다.");
@@ -146,6 +147,8 @@ export default function StudentsPage() {
         title="학급, 학생, 모둠 관리"
         description="상단에서 학급을 선택하고, 선택한 학급의 학생과 모둠을 한 화면에서 관리합니다."
       />
+      {managementError ? <p role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{managementError}</p> : null}
+      {!management && !managementError ? <p className="mb-4 text-sm text-zinc-500">학급 정보를 불러오는 중...</p> : null}
 
       <section className="rounded-lg border border-zinc-200 bg-white p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -172,23 +175,23 @@ export default function StudentsPage() {
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-4">
-          {classList.map((className) => {
-            const studentCount = students.filter((student) => student.className === className).length;
+          {classList.map((schoolClass) => {
+            const studentCount = students.filter((student) => student.classId === schoolClass.id).length;
 
             return (
               <div
-                key={className}
+                key={schoolClass.id}
                 className={`rounded-lg border p-4 ${
-                  selectedClassName === className ? "border-emerald-300 bg-emerald-50" : "border-zinc-200 bg-stone-50"
+                  selectedClassId === schoolClass.id ? "border-emerald-300 bg-emerald-50" : "border-zinc-200 bg-stone-50"
                 }`}
               >
-                <button type="button" onClick={() => setSelectedClassName(className)} className="block w-full text-left">
-                  <span className="block font-semibold">{className}</span>
+                <button type="button" onClick={() => setSelectedClassId(schoolClass.id)} className="block w-full text-left">
+                  <span className="block font-semibold">{schoolClass.name}</span>
                   <span className="mt-2 block text-sm text-zinc-600">등록 학생 {studentCount}명</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => deleteClass(className)}
+                  onClick={() => void removeClass(schoolClass.id)}
                   className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-600 hover:text-red-600"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -285,23 +288,22 @@ export default function StudentsPage() {
             </div>
             <p className="mt-2 text-sm text-zinc-600">학생 카드를 드래그해서 원하는 모둠 영역에 놓으면 배정됩니다.</p>
           </div>
-          <button
-            type="button"
-            onClick={addGroup}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"
-          >
-            <Plus className="h-4 w-4" />
-            모둠 추가
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <select value={randomMode} onChange={(event) => setRandomMode(event.target.value as "groupSize" | "groupCount")} className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"><option value="groupSize">모둠당 인원</option><option value="groupCount">모둠 수</option></select>
+            <input type="number" min={2} max={20} value={randomValue} onChange={(event) => setRandomValue(Number(event.target.value))} className="h-10 w-20 rounded-md border border-zinc-300 px-3 text-sm" aria-label="자동 배정 기준값" />
+            <button type="button" onClick={randomizeGroups} className="h-10 rounded-md border border-emerald-300 bg-emerald-50 px-3 text-sm font-semibold text-emerald-900">무작위 배정</button>
+            <button type="button" onClick={addGroup} className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"><Plus className="h-4 w-4" />모둠 추가</button>
+          </div>
         </div>
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[280px_1fr]">
           <div className="rounded-lg border border-zinc-200 bg-stone-50 p-4">
             <h3 className="font-semibold">학생 대기 목록</h3>
             <div className="mt-3 grid gap-2">
-              {(unassignedStudents.length > 0 ? unassignedStudents : selectedStudents).map((student) => (
-                <StudentDragCard key={student.id} studentId={student.id} onDragStart={dragStudent} />
+              {unassignedStudents.map((student) => (
+                <StudentDragCard key={student.id} student={student} onDragStart={dragStudent} />
               ))}
+              {unassignedStudents.length === 0 ? <p className="text-sm text-zinc-500">미배정 학생이 없습니다.</p> : null}
             </div>
           </div>
 
@@ -309,7 +311,7 @@ export default function StudentsPage() {
             {managedGroups.map((group) => {
               const groupStudents = (groupAssignments[group.id] ?? [])
                 .map((studentId) => students.find((student) => student.id === studentId))
-                .filter((student) => student?.className === selectedClassName);
+                .filter((student) => student?.classId === selectedClassId);
 
               return (
                 <div
@@ -325,7 +327,7 @@ export default function StudentsPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => deleteGroup(group.id)}
+                      onClick={() => removeGroup(group.id)}
                       className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-600 hover:text-red-600"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -333,9 +335,7 @@ export default function StudentsPage() {
                     </button>
                   </div>
                   <div className="mt-3 grid gap-2">
-                    {groupStudents.map((student) => (
-                      <StudentDragCard key={student?.id} studentId={student?.id ?? ""} onDragStart={dragStudent} />
-                    ))}
+                    {groupStudents.map((student) => student ? <StudentDragCard key={student.id} student={student} onDragStart={dragStudent} /> : null)}
                     {groupStudents.length === 0 ? (
                       <div className="rounded-md border border-zinc-200 bg-white px-3 py-6 text-center text-sm text-zinc-500">
                         여기에 학생을 놓으세요.
@@ -353,15 +353,12 @@ export default function StudentsPage() {
 }
 
 function StudentDragCard({
-  studentId,
+  student,
   onDragStart,
 }: {
-  studentId: string;
+  student: ClassManagement["students"][number];
   onDragStart: (event: DragEvent<HTMLElement>, studentId: string) => void;
 }) {
-  const student = students.find((item) => item.id === studentId);
-  if (!student) return null;
-
   return (
     <div
       draggable

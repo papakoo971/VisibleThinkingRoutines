@@ -365,6 +365,90 @@ mutation UpsertSchoolClass($name: String!) @auth(level: USER) {
   })
 }
 
+query GetClassManagement @auth(level: USER) {
+  schoolClasses(where: { teacherId: { eq_expr: "auth.uid" } }) {
+    id
+    name
+  }
+  students(where: { teacherId: { eq_expr: "auth.uid" } }) {
+    id
+    externalId
+    studentNumber
+    name
+    passwordIssued
+    schoolClass { id name }
+  }
+  defaultGroups(where: { teacherId: { eq_expr: "auth.uid" } }) {
+    id
+    name
+    schoolClass { id }
+    defaultGroupMembers_on_defaultGroup {
+      student { id }
+    }
+  }
+}
+
+mutation RenameSchoolClass($id: String!, $name: String!) @auth(level: USER) @transaction {
+  query @redact {
+    schoolClass(key: { id: $id }) { teacherId @check(expr: "this == auth.uid") }
+  }
+  schoolClass_update(key: { id: $id }, data: { name: $name })
+}
+
+mutation CreateDefaultGroup($id: String!, $schoolClassId: String!, $name: String!) @auth(level: USER) @transaction {
+  query @redact {
+    schoolClass(key: { id: $schoolClassId }) { teacherId @check(expr: "this == auth.uid") }
+  }
+  defaultGroup_insert(data: {
+    id: $id
+    teacherId_expr: "auth.uid"
+    schoolClass: { id: $schoolClassId }
+    name: $name
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation RenameDefaultGroup($id: String!, $name: String!) @auth(level: USER) @transaction {
+  query @redact {
+    defaultGroup(key: { id: $id }) { teacherId @check(expr: "this == auth.uid") }
+  }
+  defaultGroup_update(key: { id: $id }, data: { name: $name, updatedAt_expr: "request.time" })
+}
+
+mutation DeleteDefaultGroup($id: String!) @auth(level: USER) @transaction {
+  query @redact {
+    defaultGroup(key: { id: $id }) { teacherId @check(expr: "this == auth.uid") }
+  }
+  defaultGroup_delete(key: { id: $id })
+}
+
+mutation AssignDefaultGroupMember($defaultGroupId: String!, $studentId: String!, $schoolClassId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    defaultGroup(key: { id: $defaultGroupId }) {
+      teacherId @check(expr: "this == auth.uid")
+      schoolClass { id @check(expr: "this == vars.schoolClassId") }
+    }
+    student(key: { id: $studentId }) {
+      teacherId @check(expr: "this == auth.uid")
+      schoolClass { id @check(expr: "this == vars.schoolClassId") }
+    }
+  }
+  defaultGroupMember_upsert(data: {
+    defaultGroup: { id: $defaultGroupId }
+    student: { id: $studentId }
+  })
+}
+
+mutation RemoveDefaultGroupMember($defaultGroupId: String!, $studentId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    defaultGroup(key: { id: $defaultGroupId }) { teacherId @check(expr: "this == auth.uid") }
+    defaultGroupMember(key: { defaultGroupId: $defaultGroupId, studentId: $studentId }) {
+      student { teacherId @check(expr: "this == auth.uid") }
+    }
+  }
+  defaultGroupMember_delete(key: { defaultGroupId: $defaultGroupId, studentId: $studentId })
+}
+
 mutation UpsertStudent($externalId: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!, $passwordIssued: Boolean!) @auth(level: USER) @transaction {
   query @redact {
     schoolClass(key: { id: $schoolClassId }) {

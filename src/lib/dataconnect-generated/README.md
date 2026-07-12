@@ -13,6 +13,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListActivities*](#listactivities)
   - [*GetTeacherActivity*](#getteacheractivity)
   - [*GetTeacherActivityResults*](#getteacheractivityresults)
+  - [*GetClassManagement*](#getclassmanagement)
   - [*ListMyStudents*](#listmystudents)
   - [*FindActivityByCode*](#findactivitybycode)
   - [*GetMyStudent*](#getmystudent)
@@ -31,6 +32,12 @@ This README will guide you through the process of using the generated JavaScript
   - [*LinkStudentAuth*](#linkstudentauth)
   - [*UnlinkStudentAuth*](#unlinkstudentauth)
   - [*UpsertSchoolClass*](#upsertschoolclass)
+  - [*RenameSchoolClass*](#renameschoolclass)
+  - [*CreateDefaultGroup*](#createdefaultgroup)
+  - [*RenameDefaultGroup*](#renamedefaultgroup)
+  - [*DeleteDefaultGroup*](#deletedefaultgroup)
+  - [*AssignDefaultGroupMember*](#assigndefaultgroupmember)
+  - [*RemoveDefaultGroupMember*](#removedefaultgroupmember)
   - [*UpsertStudent*](#upsertstudent)
   - [*DeleteStudent*](#deletestudent)
   - [*DeleteSchoolClass*](#deleteschoolclass)
@@ -771,6 +778,131 @@ console.log(data.activities);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.activities);
+});
+```
+
+## GetClassManagement
+You can execute the `GetClassManagement` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getClassManagement(options?: ExecuteQueryOptions): QueryPromise<GetClassManagementData, undefined>;
+
+interface GetClassManagementRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetClassManagementData, undefined>;
+}
+export const getClassManagementRef: GetClassManagementRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getClassManagement(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetClassManagementData, undefined>;
+
+interface GetClassManagementRef {
+  ...
+  (dc: DataConnect): QueryRef<GetClassManagementData, undefined>;
+}
+export const getClassManagementRef: GetClassManagementRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getClassManagementRef:
+```typescript
+const name = getClassManagementRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetClassManagement` query has no variables.
+### Return Type
+Recall that executing the `GetClassManagement` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetClassManagementData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetClassManagementData {
+  schoolClasses: ({
+    id: string;
+    name: string;
+  } & SchoolClass_Key)[];
+  students: ({
+    id: string;
+    externalId?: string | null;
+    studentNumber: string;
+    name: string;
+    passwordIssued: boolean;
+    schoolClass: {
+      id: string;
+      name: string;
+    } & SchoolClass_Key;
+  } & Student_Key)[];
+  defaultGroups: ({
+    id: string;
+    name: string;
+    schoolClass: {
+      id: string;
+    } & SchoolClass_Key;
+    defaultGroupMembers_on_defaultGroup: ({
+      student: {
+        id: string;
+      } & Student_Key;
+    })[];
+  } & DefaultGroup_Key)[];
+}
+```
+### Using `GetClassManagement`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getClassManagement } from '@visible-thinking/dataconnect';
+
+
+// Call the `getClassManagement()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getClassManagement();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getClassManagement(dataConnect);
+
+console.log(data.schoolClasses);
+console.log(data.students);
+console.log(data.defaultGroups);
+
+// Or, you can use the `Promise` API.
+getClassManagement().then((response) => {
+  const data = response.data;
+  console.log(data.schoolClasses);
+  console.log(data.students);
+  console.log(data.defaultGroups);
+});
+```
+
+### Using `GetClassManagement`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getClassManagementRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `getClassManagementRef()` function to get a reference to the query.
+const ref = getClassManagementRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getClassManagementRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.schoolClasses);
+console.log(data.students);
+console.log(data.defaultGroups);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.schoolClasses);
+  console.log(data.students);
+  console.log(data.defaultGroups);
 });
 ```
 
@@ -2790,6 +2922,681 @@ console.log(data.schoolClass_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.schoolClass_upsert);
+});
+```
+
+## RenameSchoolClass
+You can execute the `RenameSchoolClass` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+renameSchoolClass(vars: RenameSchoolClassVariables): MutationPromise<RenameSchoolClassData, RenameSchoolClassVariables>;
+
+interface RenameSchoolClassRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RenameSchoolClassVariables): MutationRef<RenameSchoolClassData, RenameSchoolClassVariables>;
+}
+export const renameSchoolClassRef: RenameSchoolClassRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+renameSchoolClass(dc: DataConnect, vars: RenameSchoolClassVariables): MutationPromise<RenameSchoolClassData, RenameSchoolClassVariables>;
+
+interface RenameSchoolClassRef {
+  ...
+  (dc: DataConnect, vars: RenameSchoolClassVariables): MutationRef<RenameSchoolClassData, RenameSchoolClassVariables>;
+}
+export const renameSchoolClassRef: RenameSchoolClassRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the renameSchoolClassRef:
+```typescript
+const name = renameSchoolClassRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `RenameSchoolClass` mutation requires an argument of type `RenameSchoolClassVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface RenameSchoolClassVariables {
+  id: string;
+  name: string;
+}
+```
+### Return Type
+Recall that executing the `RenameSchoolClass` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `RenameSchoolClassData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface RenameSchoolClassData {
+  schoolClass_update?: SchoolClass_Key | null;
+}
+```
+### Using `RenameSchoolClass`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, renameSchoolClass, RenameSchoolClassVariables } from '@visible-thinking/dataconnect';
+
+// The `RenameSchoolClass` mutation requires an argument of type `RenameSchoolClassVariables`:
+const renameSchoolClassVars: RenameSchoolClassVariables = {
+  id: ...,
+  name: ...,
+};
+
+// Call the `renameSchoolClass()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await renameSchoolClass(renameSchoolClassVars);
+// Variables can be defined inline as well.
+const { data } = await renameSchoolClass({ id: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await renameSchoolClass(dataConnect, renameSchoolClassVars);
+
+console.log(data.schoolClass_update);
+
+// Or, you can use the `Promise` API.
+renameSchoolClass(renameSchoolClassVars).then((response) => {
+  const data = response.data;
+  console.log(data.schoolClass_update);
+});
+```
+
+### Using `RenameSchoolClass`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, renameSchoolClassRef, RenameSchoolClassVariables } from '@visible-thinking/dataconnect';
+
+// The `RenameSchoolClass` mutation requires an argument of type `RenameSchoolClassVariables`:
+const renameSchoolClassVars: RenameSchoolClassVariables = {
+  id: ...,
+  name: ...,
+};
+
+// Call the `renameSchoolClassRef()` function to get a reference to the mutation.
+const ref = renameSchoolClassRef(renameSchoolClassVars);
+// Variables can be defined inline as well.
+const ref = renameSchoolClassRef({ id: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = renameSchoolClassRef(dataConnect, renameSchoolClassVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.schoolClass_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.schoolClass_update);
+});
+```
+
+## CreateDefaultGroup
+You can execute the `CreateDefaultGroup` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+createDefaultGroup(vars: CreateDefaultGroupVariables): MutationPromise<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+
+interface CreateDefaultGroupRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateDefaultGroupVariables): MutationRef<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+}
+export const createDefaultGroupRef: CreateDefaultGroupRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createDefaultGroup(dc: DataConnect, vars: CreateDefaultGroupVariables): MutationPromise<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+
+interface CreateDefaultGroupRef {
+  ...
+  (dc: DataConnect, vars: CreateDefaultGroupVariables): MutationRef<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+}
+export const createDefaultGroupRef: CreateDefaultGroupRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createDefaultGroupRef:
+```typescript
+const name = createDefaultGroupRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateDefaultGroup` mutation requires an argument of type `CreateDefaultGroupVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateDefaultGroupVariables {
+  id: string;
+  schoolClassId: string;
+  name: string;
+}
+```
+### Return Type
+Recall that executing the `CreateDefaultGroup` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateDefaultGroupData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateDefaultGroupData {
+  defaultGroup_insert: DefaultGroup_Key;
+}
+```
+### Using `CreateDefaultGroup`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createDefaultGroup, CreateDefaultGroupVariables } from '@visible-thinking/dataconnect';
+
+// The `CreateDefaultGroup` mutation requires an argument of type `CreateDefaultGroupVariables`:
+const createDefaultGroupVars: CreateDefaultGroupVariables = {
+  id: ...,
+  schoolClassId: ...,
+  name: ...,
+};
+
+// Call the `createDefaultGroup()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createDefaultGroup(createDefaultGroupVars);
+// Variables can be defined inline as well.
+const { data } = await createDefaultGroup({ id: ..., schoolClassId: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createDefaultGroup(dataConnect, createDefaultGroupVars);
+
+console.log(data.defaultGroup_insert);
+
+// Or, you can use the `Promise` API.
+createDefaultGroup(createDefaultGroupVars).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroup_insert);
+});
+```
+
+### Using `CreateDefaultGroup`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createDefaultGroupRef, CreateDefaultGroupVariables } from '@visible-thinking/dataconnect';
+
+// The `CreateDefaultGroup` mutation requires an argument of type `CreateDefaultGroupVariables`:
+const createDefaultGroupVars: CreateDefaultGroupVariables = {
+  id: ...,
+  schoolClassId: ...,
+  name: ...,
+};
+
+// Call the `createDefaultGroupRef()` function to get a reference to the mutation.
+const ref = createDefaultGroupRef(createDefaultGroupVars);
+// Variables can be defined inline as well.
+const ref = createDefaultGroupRef({ id: ..., schoolClassId: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createDefaultGroupRef(dataConnect, createDefaultGroupVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.defaultGroup_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroup_insert);
+});
+```
+
+## RenameDefaultGroup
+You can execute the `RenameDefaultGroup` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+renameDefaultGroup(vars: RenameDefaultGroupVariables): MutationPromise<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+
+interface RenameDefaultGroupRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RenameDefaultGroupVariables): MutationRef<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+}
+export const renameDefaultGroupRef: RenameDefaultGroupRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+renameDefaultGroup(dc: DataConnect, vars: RenameDefaultGroupVariables): MutationPromise<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+
+interface RenameDefaultGroupRef {
+  ...
+  (dc: DataConnect, vars: RenameDefaultGroupVariables): MutationRef<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+}
+export const renameDefaultGroupRef: RenameDefaultGroupRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the renameDefaultGroupRef:
+```typescript
+const name = renameDefaultGroupRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `RenameDefaultGroup` mutation requires an argument of type `RenameDefaultGroupVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface RenameDefaultGroupVariables {
+  id: string;
+  name: string;
+}
+```
+### Return Type
+Recall that executing the `RenameDefaultGroup` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `RenameDefaultGroupData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface RenameDefaultGroupData {
+  defaultGroup_update?: DefaultGroup_Key | null;
+}
+```
+### Using `RenameDefaultGroup`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, renameDefaultGroup, RenameDefaultGroupVariables } from '@visible-thinking/dataconnect';
+
+// The `RenameDefaultGroup` mutation requires an argument of type `RenameDefaultGroupVariables`:
+const renameDefaultGroupVars: RenameDefaultGroupVariables = {
+  id: ...,
+  name: ...,
+};
+
+// Call the `renameDefaultGroup()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await renameDefaultGroup(renameDefaultGroupVars);
+// Variables can be defined inline as well.
+const { data } = await renameDefaultGroup({ id: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await renameDefaultGroup(dataConnect, renameDefaultGroupVars);
+
+console.log(data.defaultGroup_update);
+
+// Or, you can use the `Promise` API.
+renameDefaultGroup(renameDefaultGroupVars).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroup_update);
+});
+```
+
+### Using `RenameDefaultGroup`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, renameDefaultGroupRef, RenameDefaultGroupVariables } from '@visible-thinking/dataconnect';
+
+// The `RenameDefaultGroup` mutation requires an argument of type `RenameDefaultGroupVariables`:
+const renameDefaultGroupVars: RenameDefaultGroupVariables = {
+  id: ...,
+  name: ...,
+};
+
+// Call the `renameDefaultGroupRef()` function to get a reference to the mutation.
+const ref = renameDefaultGroupRef(renameDefaultGroupVars);
+// Variables can be defined inline as well.
+const ref = renameDefaultGroupRef({ id: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = renameDefaultGroupRef(dataConnect, renameDefaultGroupVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.defaultGroup_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroup_update);
+});
+```
+
+## DeleteDefaultGroup
+You can execute the `DeleteDefaultGroup` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteDefaultGroup(vars: DeleteDefaultGroupVariables): MutationPromise<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+
+interface DeleteDefaultGroupRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteDefaultGroupVariables): MutationRef<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+}
+export const deleteDefaultGroupRef: DeleteDefaultGroupRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteDefaultGroup(dc: DataConnect, vars: DeleteDefaultGroupVariables): MutationPromise<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+
+interface DeleteDefaultGroupRef {
+  ...
+  (dc: DataConnect, vars: DeleteDefaultGroupVariables): MutationRef<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+}
+export const deleteDefaultGroupRef: DeleteDefaultGroupRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteDefaultGroupRef:
+```typescript
+const name = deleteDefaultGroupRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteDefaultGroup` mutation requires an argument of type `DeleteDefaultGroupVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteDefaultGroupVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteDefaultGroup` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteDefaultGroupData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteDefaultGroupData {
+  defaultGroup_delete?: DefaultGroup_Key | null;
+}
+```
+### Using `DeleteDefaultGroup`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteDefaultGroup, DeleteDefaultGroupVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteDefaultGroup` mutation requires an argument of type `DeleteDefaultGroupVariables`:
+const deleteDefaultGroupVars: DeleteDefaultGroupVariables = {
+  id: ...,
+};
+
+// Call the `deleteDefaultGroup()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteDefaultGroup(deleteDefaultGroupVars);
+// Variables can be defined inline as well.
+const { data } = await deleteDefaultGroup({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteDefaultGroup(dataConnect, deleteDefaultGroupVars);
+
+console.log(data.defaultGroup_delete);
+
+// Or, you can use the `Promise` API.
+deleteDefaultGroup(deleteDefaultGroupVars).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroup_delete);
+});
+```
+
+### Using `DeleteDefaultGroup`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteDefaultGroupRef, DeleteDefaultGroupVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteDefaultGroup` mutation requires an argument of type `DeleteDefaultGroupVariables`:
+const deleteDefaultGroupVars: DeleteDefaultGroupVariables = {
+  id: ...,
+};
+
+// Call the `deleteDefaultGroupRef()` function to get a reference to the mutation.
+const ref = deleteDefaultGroupRef(deleteDefaultGroupVars);
+// Variables can be defined inline as well.
+const ref = deleteDefaultGroupRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteDefaultGroupRef(dataConnect, deleteDefaultGroupVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.defaultGroup_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroup_delete);
+});
+```
+
+## AssignDefaultGroupMember
+You can execute the `AssignDefaultGroupMember` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+assignDefaultGroupMember(vars: AssignDefaultGroupMemberVariables): MutationPromise<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+
+interface AssignDefaultGroupMemberRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: AssignDefaultGroupMemberVariables): MutationRef<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+}
+export const assignDefaultGroupMemberRef: AssignDefaultGroupMemberRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+assignDefaultGroupMember(dc: DataConnect, vars: AssignDefaultGroupMemberVariables): MutationPromise<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+
+interface AssignDefaultGroupMemberRef {
+  ...
+  (dc: DataConnect, vars: AssignDefaultGroupMemberVariables): MutationRef<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+}
+export const assignDefaultGroupMemberRef: AssignDefaultGroupMemberRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the assignDefaultGroupMemberRef:
+```typescript
+const name = assignDefaultGroupMemberRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `AssignDefaultGroupMember` mutation requires an argument of type `AssignDefaultGroupMemberVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface AssignDefaultGroupMemberVariables {
+  defaultGroupId: string;
+  studentId: string;
+  schoolClassId: string;
+}
+```
+### Return Type
+Recall that executing the `AssignDefaultGroupMember` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `AssignDefaultGroupMemberData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface AssignDefaultGroupMemberData {
+  defaultGroupMember_upsert: DefaultGroupMember_Key;
+}
+```
+### Using `AssignDefaultGroupMember`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, assignDefaultGroupMember, AssignDefaultGroupMemberVariables } from '@visible-thinking/dataconnect';
+
+// The `AssignDefaultGroupMember` mutation requires an argument of type `AssignDefaultGroupMemberVariables`:
+const assignDefaultGroupMemberVars: AssignDefaultGroupMemberVariables = {
+  defaultGroupId: ...,
+  studentId: ...,
+  schoolClassId: ...,
+};
+
+// Call the `assignDefaultGroupMember()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await assignDefaultGroupMember(assignDefaultGroupMemberVars);
+// Variables can be defined inline as well.
+const { data } = await assignDefaultGroupMember({ defaultGroupId: ..., studentId: ..., schoolClassId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await assignDefaultGroupMember(dataConnect, assignDefaultGroupMemberVars);
+
+console.log(data.defaultGroupMember_upsert);
+
+// Or, you can use the `Promise` API.
+assignDefaultGroupMember(assignDefaultGroupMemberVars).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroupMember_upsert);
+});
+```
+
+### Using `AssignDefaultGroupMember`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, assignDefaultGroupMemberRef, AssignDefaultGroupMemberVariables } from '@visible-thinking/dataconnect';
+
+// The `AssignDefaultGroupMember` mutation requires an argument of type `AssignDefaultGroupMemberVariables`:
+const assignDefaultGroupMemberVars: AssignDefaultGroupMemberVariables = {
+  defaultGroupId: ...,
+  studentId: ...,
+  schoolClassId: ...,
+};
+
+// Call the `assignDefaultGroupMemberRef()` function to get a reference to the mutation.
+const ref = assignDefaultGroupMemberRef(assignDefaultGroupMemberVars);
+// Variables can be defined inline as well.
+const ref = assignDefaultGroupMemberRef({ defaultGroupId: ..., studentId: ..., schoolClassId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = assignDefaultGroupMemberRef(dataConnect, assignDefaultGroupMemberVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.defaultGroupMember_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroupMember_upsert);
+});
+```
+
+## RemoveDefaultGroupMember
+You can execute the `RemoveDefaultGroupMember` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+removeDefaultGroupMember(vars: RemoveDefaultGroupMemberVariables): MutationPromise<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+
+interface RemoveDefaultGroupMemberRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RemoveDefaultGroupMemberVariables): MutationRef<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+}
+export const removeDefaultGroupMemberRef: RemoveDefaultGroupMemberRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+removeDefaultGroupMember(dc: DataConnect, vars: RemoveDefaultGroupMemberVariables): MutationPromise<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+
+interface RemoveDefaultGroupMemberRef {
+  ...
+  (dc: DataConnect, vars: RemoveDefaultGroupMemberVariables): MutationRef<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+}
+export const removeDefaultGroupMemberRef: RemoveDefaultGroupMemberRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the removeDefaultGroupMemberRef:
+```typescript
+const name = removeDefaultGroupMemberRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `RemoveDefaultGroupMember` mutation requires an argument of type `RemoveDefaultGroupMemberVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface RemoveDefaultGroupMemberVariables {
+  defaultGroupId: string;
+  studentId: string;
+}
+```
+### Return Type
+Recall that executing the `RemoveDefaultGroupMember` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `RemoveDefaultGroupMemberData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface RemoveDefaultGroupMemberData {
+  defaultGroupMember_delete?: DefaultGroupMember_Key | null;
+}
+```
+### Using `RemoveDefaultGroupMember`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, removeDefaultGroupMember, RemoveDefaultGroupMemberVariables } from '@visible-thinking/dataconnect';
+
+// The `RemoveDefaultGroupMember` mutation requires an argument of type `RemoveDefaultGroupMemberVariables`:
+const removeDefaultGroupMemberVars: RemoveDefaultGroupMemberVariables = {
+  defaultGroupId: ...,
+  studentId: ...,
+};
+
+// Call the `removeDefaultGroupMember()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await removeDefaultGroupMember(removeDefaultGroupMemberVars);
+// Variables can be defined inline as well.
+const { data } = await removeDefaultGroupMember({ defaultGroupId: ..., studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await removeDefaultGroupMember(dataConnect, removeDefaultGroupMemberVars);
+
+console.log(data.defaultGroupMember_delete);
+
+// Or, you can use the `Promise` API.
+removeDefaultGroupMember(removeDefaultGroupMemberVars).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroupMember_delete);
+});
+```
+
+### Using `RemoveDefaultGroupMember`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, removeDefaultGroupMemberRef, RemoveDefaultGroupMemberVariables } from '@visible-thinking/dataconnect';
+
+// The `RemoveDefaultGroupMember` mutation requires an argument of type `RemoveDefaultGroupMemberVariables`:
+const removeDefaultGroupMemberVars: RemoveDefaultGroupMemberVariables = {
+  defaultGroupId: ...,
+  studentId: ...,
+};
+
+// Call the `removeDefaultGroupMemberRef()` function to get a reference to the mutation.
+const ref = removeDefaultGroupMemberRef(removeDefaultGroupMemberVars);
+// Variables can be defined inline as well.
+const ref = removeDefaultGroupMemberRef({ defaultGroupId: ..., studentId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = removeDefaultGroupMemberRef(dataConnect, removeDefaultGroupMemberVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.defaultGroupMember_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.defaultGroupMember_delete);
 });
 ```
 

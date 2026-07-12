@@ -75,6 +75,16 @@ export interface AiAnalysis_Key {
   __typename?: 'AiAnalysis_Key';
 }
 
+export interface AssignDefaultGroupMemberData {
+  defaultGroupMember_upsert: DefaultGroupMember_Key;
+}
+
+export interface AssignDefaultGroupMemberVariables {
+  defaultGroupId: string;
+  studentId: string;
+  schoolClassId: string;
+}
+
 export interface CreateActivityData {
   activity_insert: Activity_Key;
 }
@@ -96,11 +106,40 @@ export interface CreateActivityVariables {
   targetCount: number;
 }
 
+export interface CreateDefaultGroupData {
+  defaultGroup_insert: DefaultGroup_Key;
+}
+
+export interface CreateDefaultGroupVariables {
+  id: string;
+  schoolClassId: string;
+  name: string;
+}
+
+export interface DefaultGroupMember_Key {
+  defaultGroupId: string;
+  studentId: string;
+  __typename?: 'DefaultGroupMember_Key';
+}
+
+export interface DefaultGroup_Key {
+  id: string;
+  __typename?: 'DefaultGroup_Key';
+}
+
 export interface DeleteActivityData {
   activity_delete?: Activity_Key | null;
 }
 
 export interface DeleteActivityVariables {
+  id: string;
+}
+
+export interface DeleteDefaultGroupData {
+  defaultGroup_delete?: DefaultGroup_Key | null;
+}
+
+export interface DeleteDefaultGroupVariables {
   id: string;
 }
 
@@ -146,6 +185,36 @@ export interface FindActivityByCodeData {
 
 export interface FindActivityByCodeVariables {
   code: string;
+}
+
+export interface GetClassManagementData {
+  schoolClasses: ({
+    id: string;
+    name: string;
+  } & SchoolClass_Key)[];
+  students: ({
+    id: string;
+    externalId?: string | null;
+    studentNumber: string;
+    name: string;
+    passwordIssued: boolean;
+    schoolClass: {
+      id: string;
+      name: string;
+    } & SchoolClass_Key;
+  } & Student_Key)[];
+  defaultGroups: ({
+    id: string;
+    name: string;
+    schoolClass: {
+      id: string;
+    } & SchoolClass_Key;
+    defaultGroupMembers_on_defaultGroup: ({
+      student: {
+        id: string;
+      } & Student_Key;
+    })[];
+  } & DefaultGroup_Key)[];
 }
 
 export interface GetMyAiCredentialData {
@@ -571,6 +640,33 @@ export interface ListMyStudentsData {
   } & Student_Key)[];
 }
 
+export interface RemoveDefaultGroupMemberData {
+  defaultGroupMember_delete?: DefaultGroupMember_Key | null;
+}
+
+export interface RemoveDefaultGroupMemberVariables {
+  defaultGroupId: string;
+  studentId: string;
+}
+
+export interface RenameDefaultGroupData {
+  defaultGroup_update?: DefaultGroup_Key | null;
+}
+
+export interface RenameDefaultGroupVariables {
+  id: string;
+  name: string;
+}
+
+export interface RenameSchoolClassData {
+  schoolClass_update?: SchoolClass_Key | null;
+}
+
+export interface RenameSchoolClassVariables {
+  id: string;
+  name: string;
+}
+
 export interface SchoolClass_Key {
   id: string;
   __typename?: 'SchoolClass_Key';
@@ -981,6 +1077,90 @@ export const upsertSchoolClassRef: UpsertSchoolClassRef;
 
 export function upsertSchoolClass(vars: UpsertSchoolClassVariables): MutationPromise<UpsertSchoolClassData, UpsertSchoolClassVariables>;
 export function upsertSchoolClass(dc: DataConnect, vars: UpsertSchoolClassVariables): MutationPromise<UpsertSchoolClassData, UpsertSchoolClassVariables>;
+
+interface GetClassManagementRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetClassManagementData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetClassManagementData, undefined>;
+  operationName: string;
+}
+export const getClassManagementRef: GetClassManagementRef;
+
+export function getClassManagement(options?: ExecuteQueryOptions): QueryPromise<GetClassManagementData, undefined>;
+export function getClassManagement(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetClassManagementData, undefined>;
+
+interface RenameSchoolClassRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RenameSchoolClassVariables): MutationRef<RenameSchoolClassData, RenameSchoolClassVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RenameSchoolClassVariables): MutationRef<RenameSchoolClassData, RenameSchoolClassVariables>;
+  operationName: string;
+}
+export const renameSchoolClassRef: RenameSchoolClassRef;
+
+export function renameSchoolClass(vars: RenameSchoolClassVariables): MutationPromise<RenameSchoolClassData, RenameSchoolClassVariables>;
+export function renameSchoolClass(dc: DataConnect, vars: RenameSchoolClassVariables): MutationPromise<RenameSchoolClassData, RenameSchoolClassVariables>;
+
+interface CreateDefaultGroupRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateDefaultGroupVariables): MutationRef<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateDefaultGroupVariables): MutationRef<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+  operationName: string;
+}
+export const createDefaultGroupRef: CreateDefaultGroupRef;
+
+export function createDefaultGroup(vars: CreateDefaultGroupVariables): MutationPromise<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+export function createDefaultGroup(dc: DataConnect, vars: CreateDefaultGroupVariables): MutationPromise<CreateDefaultGroupData, CreateDefaultGroupVariables>;
+
+interface RenameDefaultGroupRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RenameDefaultGroupVariables): MutationRef<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RenameDefaultGroupVariables): MutationRef<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+  operationName: string;
+}
+export const renameDefaultGroupRef: RenameDefaultGroupRef;
+
+export function renameDefaultGroup(vars: RenameDefaultGroupVariables): MutationPromise<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+export function renameDefaultGroup(dc: DataConnect, vars: RenameDefaultGroupVariables): MutationPromise<RenameDefaultGroupData, RenameDefaultGroupVariables>;
+
+interface DeleteDefaultGroupRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteDefaultGroupVariables): MutationRef<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteDefaultGroupVariables): MutationRef<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+  operationName: string;
+}
+export const deleteDefaultGroupRef: DeleteDefaultGroupRef;
+
+export function deleteDefaultGroup(vars: DeleteDefaultGroupVariables): MutationPromise<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+export function deleteDefaultGroup(dc: DataConnect, vars: DeleteDefaultGroupVariables): MutationPromise<DeleteDefaultGroupData, DeleteDefaultGroupVariables>;
+
+interface AssignDefaultGroupMemberRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: AssignDefaultGroupMemberVariables): MutationRef<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: AssignDefaultGroupMemberVariables): MutationRef<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+  operationName: string;
+}
+export const assignDefaultGroupMemberRef: AssignDefaultGroupMemberRef;
+
+export function assignDefaultGroupMember(vars: AssignDefaultGroupMemberVariables): MutationPromise<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+export function assignDefaultGroupMember(dc: DataConnect, vars: AssignDefaultGroupMemberVariables): MutationPromise<AssignDefaultGroupMemberData, AssignDefaultGroupMemberVariables>;
+
+interface RemoveDefaultGroupMemberRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RemoveDefaultGroupMemberVariables): MutationRef<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RemoveDefaultGroupMemberVariables): MutationRef<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+  operationName: string;
+}
+export const removeDefaultGroupMemberRef: RemoveDefaultGroupMemberRef;
+
+export function removeDefaultGroupMember(vars: RemoveDefaultGroupMemberVariables): MutationPromise<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
+export function removeDefaultGroupMember(dc: DataConnect, vars: RemoveDefaultGroupMemberVariables): MutationPromise<RemoveDefaultGroupMemberData, RemoveDefaultGroupMemberVariables>;
 
 interface UpsertStudentRef {
   /* Allow users to create refs without passing in DataConnect */

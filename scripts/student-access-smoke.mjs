@@ -77,6 +77,20 @@ try {
   const create = await api("/api/created-activities", { method: "POST", idToken: teacher.idToken, body: payload() });
   if (create.status !== 201) throw new Error(`Teacher create failed: ${JSON.stringify(create)}`);
   await sqlMutation("LinkStudentAuth", { studentId: `${teacher.uid}:s1`, authUid: assignedStudent.uid }, teacher.idToken);
+  await sqlMutation("UpsertStudent", { externalId: "s2", schoolClassId: `${teacher.uid}:5학년 1반`, studentNumber: `S2-${suffix}`, name: "모둠 검증 학생", passwordIssued: false }, teacher.idToken);
+  const managementPath = "/api/teacher/class-management";
+  const management = await api(managementPath, { idToken: teacher.idToken });
+  const classId = `${teacher.uid}:5학년 1반`;
+  if (management.status !== 200 || !management.result.classes?.some((item) => item.id === classId) || management.result.students?.filter((item) => item.classId === classId).length !== 2) throw new Error("Live class and student management data was incomplete.");
+  const createdGroup = await api(managementPath, { method: "POST", idToken: teacher.idToken, body: { action: "createGroup", classId, name: "검증 모둠" } });
+  const groupId = createdGroup.result.groups?.find((item) => item.name === "검증 모둠")?.id;
+  if (createdGroup.status !== 201 || !groupId) throw new Error("Default group creation failed.");
+  const assignedGroup = await api(managementPath, { method: "PATCH", idToken: teacher.idToken, body: { action: "assignStudent", classId, groupId, studentId: `${teacher.uid}:s1` } });
+  if (!assignedGroup.result.groups?.find((item) => item.id === groupId)?.studentIds.includes(`${teacher.uid}:s1`)) throw new Error("Default group assignment did not persist.");
+  const randomized = await api(managementPath, { method: "POST", idToken: teacher.idToken, body: { action: "randomize", classId, mode: "groupSize", value: 2 } });
+  if (randomized.status !== 201 || randomized.result.groups?.filter((item) => item.classId === classId).length !== 1 || randomized.result.groups.find((item) => item.classId === classId)?.studentIds.length !== 2) throw new Error("Random default group assignment failed.");
+  const foreignGroup = await api(managementPath, { method: "POST", idToken: unassignedStudent.idToken, body: { action: "createGroup", classId, name: "침입 모둠" } });
+  if (foreignGroup.status !== 403) throw new Error(`Non-owner group creation should be 403, got ${foreignGroup.status}.`);
 
   const assignedSession = await api("/api/student/session", { idToken: assignedStudent.idToken });
   if (assignedSession.status !== 200 || assignedSession.result.student?.id !== "s1" || !assignedSession.result.activities?.some((item) => item.activity.id === activityId)) {
@@ -218,12 +232,19 @@ try {
   const removedSettings = await api(aiSettingsPath, { method: "DELETE", idToken: teacher.idToken });
   if (removedSettings.status !== 200) throw new Error("Teacher AI settings deletion failed.");
 
-  console.log("PASS: encrypted AI settings, model routing, teacher-approved student feedback, owner checks, and activity lifecycle all persist.");
+  console.log("PASS: live class/default-group management, encrypted AI settings, teacher-approved feedback, owner checks, and activity lifecycle all persist.");
 } finally {
-  if (teacher) await Promise.allSettled([
-    api("/api/teacher/ai-settings", { method: "DELETE", idToken: teacher.idToken }),
-    sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),
-    api(`/api/created-activities/${activityId}`, { method: "DELETE", idToken: teacher.idToken }),
-  ]);
+  if (teacher) {
+    await Promise.allSettled([
+      api("/api/teacher/ai-settings", { method: "DELETE", idToken: teacher.idToken }),
+      sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),
+      api(`/api/created-activities/${activityId}`, { method: "DELETE", idToken: teacher.idToken }),
+    ]);
+    await Promise.allSettled([
+      sqlMutation("DeleteStudent", { id: `${teacher.uid}:s1` }, teacher.idToken),
+      sqlMutation("DeleteStudent", { id: `${teacher.uid}:s2` }, teacher.idToken),
+    ]);
+    await sqlMutation("DeleteSchoolClass", { id: `${teacher.uid}:5학년 1반` }, teacher.idToken).catch(() => undefined);
+  }
   await Promise.allSettled(idTokens.map(deleteIdentity));
 }

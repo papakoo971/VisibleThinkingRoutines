@@ -234,6 +234,91 @@ export function upsertSchoolClass(dcOrVars, vars) {
   return executeMutation(upsertSchoolClassRef(dcInstance, inputVars));
 }
 
+export const getClassManagementRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetClassManagement');
+}
+getClassManagementRef.operationName = 'GetClassManagement';
+
+export function getClassManagement(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getClassManagementRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const renameSchoolClassRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RenameSchoolClass', inputVars);
+}
+renameSchoolClassRef.operationName = 'RenameSchoolClass';
+
+export function renameSchoolClass(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(renameSchoolClassRef(dcInstance, inputVars));
+}
+
+export const createDefaultGroupRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateDefaultGroup', inputVars);
+}
+createDefaultGroupRef.operationName = 'CreateDefaultGroup';
+
+export function createDefaultGroup(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createDefaultGroupRef(dcInstance, inputVars));
+}
+
+export const renameDefaultGroupRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RenameDefaultGroup', inputVars);
+}
+renameDefaultGroupRef.operationName = 'RenameDefaultGroup';
+
+export function renameDefaultGroup(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(renameDefaultGroupRef(dcInstance, inputVars));
+}
+
+export const deleteDefaultGroupRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteDefaultGroup', inputVars);
+}
+deleteDefaultGroupRef.operationName = 'DeleteDefaultGroup';
+
+export function deleteDefaultGroup(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteDefaultGroupRef(dcInstance, inputVars));
+}
+
+export const assignDefaultGroupMemberRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'AssignDefaultGroupMember', inputVars);
+}
+assignDefaultGroupMemberRef.operationName = 'AssignDefaultGroupMember';
+
+export function assignDefaultGroupMember(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(assignDefaultGroupMemberRef(dcInstance, inputVars));
+}
+
+export const removeDefaultGroupMemberRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RemoveDefaultGroupMember', inputVars);
+}
+removeDefaultGroupMemberRef.operationName = 'RemoveDefaultGroupMember';
+
+export function removeDefaultGroupMember(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(removeDefaultGroupMemberRef(dcInstance, inputVars));
+}
+
 export const upsertStudentRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

@@ -1,5 +1,25 @@
 # Implementation Log
 
+## 2026-07-12 Live Class And Default Group Management
+
+### Completed
+
+- Added persistent teacher-owned default groups and one-group-per-student membership records.
+- Added live class, student, default-group, and assignment queries with transactional ownership checks.
+- Added authenticated class-management APIs for class creation/deletion, group creation/deletion, drag assignment, and random assignment.
+- Added random assignment by group count or students per group using server-side shuffling.
+- Replaced the class-management screen's mock classes, students, groups, and browser-only assignments with live Data Connect data.
+- Consolidated the old standalone mock group page into the live class-management screen.
+- Prevented deletion of classes that still contain students.
+
+### Verification
+
+- Live classes and students load for the owning teacher.
+- Default-group creation and student assignment survive a fresh API read.
+- Random assignment persists every student exactly once.
+- A non-owner receives `403` when attempting to create a group in another teacher's class.
+- Integration-test classes, students, groups, activities, and accounts are cleaned up.
+
 ## 2026-07-12 Teacher-Approved Student AI Feedback
 
 ### Completed
