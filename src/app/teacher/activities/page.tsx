@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, ClipboardList, School } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { activities, classes } from "@/lib/mock-data";
 import { MyActivitiesClient } from "./my-activities-client";
 
 const views = [
@@ -45,7 +44,7 @@ export default async function MyActivitiesPage({
           })}
         </nav>
 
-        <MyActivitiesClient view={view} initialActivities={activities} classes={classes} />
+        <MyActivitiesClient view={view} />
       </section>
     </AppShell>
   );

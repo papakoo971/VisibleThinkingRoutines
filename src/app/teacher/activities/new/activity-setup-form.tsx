@@ -1,9 +1,9 @@
 "use client";
 
-import { DragEvent, useMemo, useState } from "react";
+import { DragEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle2, GripVertical, ImageUp, Plus, QrCode, Trash2, Users, X } from "lucide-react";
-import { classes, groups, students } from "@/lib/mock-data";
+import { fetchClassManagement, type ClassManagement } from "@/lib/class-management";
 import { persistCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
 import { generateActivityCode, generateActivityQr, uploadActivityMaterial } from "@/lib/activity-assets";
@@ -22,33 +22,46 @@ type ManagedGroup = { id: string; name: string };
 type ActivityMode = "individual" | "group";
 type AttendanceStatus = "present" | "absent";
 type GeneratedActivityPreview = CreatedActivityPayload;
-
-const initialGroupAssignments = groups.reduce<GroupAssignment>((assignment, group) => {
-  assignment[group.id] = group.studentIds;
-  return assignment;
-}, {});
+type LiveStudent = ClassManagement["students"][number];
 
 export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: ActivityTemplate }) {
   const [activityMode, setActivityMode] = useState<ActivityMode>("individual");
-  const [targetClasses, setTargetClasses] = useState(classes.filter((className) => className !== "6학년 3반"));
-  const [selectedClassName, setSelectedClassName] = useState(classes[0]);
-  const [managedGroups, setManagedGroups] = useState<ManagedGroup[]>(groups.map((group) => ({ id: group.id, name: group.name })));
-  const [groupAssignments, setGroupAssignments] = useState(initialGroupAssignments);
+  const [management, setManagement] = useState<ClassManagement | null>(null);
+  const [targetClasses, setTargetClasses] = useState<string[]>([]);
+  const [selectedClassName, setSelectedClassName] = useState("");
+  const [managedGroups, setManagedGroups] = useState<ManagedGroup[]>([]);
+  const [groupAssignments, setGroupAssignments] = useState<GroupAssignment>({});
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
   const [attendanceByStudent, setAttendanceByStudent] = useState<Record<string, AttendanceStatus>>(
-    Object.fromEntries(students.map((student) => [student.id, "present"]))
+    {}
   );
   const [generatedPreview, setGeneratedPreview] = useState<GeneratedActivityPreview | null>(null);
   const [materialFile, setMaterialFile] = useState<File | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const classes = management?.classes.map((schoolClass) => schoolClass.name) ?? [];
+  const students = management?.students ?? [];
 
-  const selectedStudents = useMemo(
-    () => students.filter((student) => student.className === selectedClassName),
-    [selectedClassName]
-  );
+  useEffect(() => {
+    let active = true;
+    void fetchClassManagement().then((data) => {
+      if (!active) return;
+      setManagement(data);
+      const classNames = data.classes.map((schoolClass) => schoolClass.name);
+      setTargetClasses(classNames);
+      setSelectedClassName(classNames[0] ?? "");
+      setAttendanceByStudent(Object.fromEntries(data.students.map((student) => [student.id, "present" as const])));
+      const firstClassId = data.classes[0]?.id;
+      const defaults = data.groups.filter((group) => group.classId === firstClassId);
+      setManagedGroups(defaults.map((group) => ({ id: group.id, name: group.name })));
+      setGroupAssignments(Object.fromEntries(defaults.map((group) => [group.id, group.studentIds])));
+    }).catch((error: unknown) => active && setCreateError(error instanceof Error ? error.message : "학급 정보를 불러오지 못했습니다."));
+    return () => { active = false; };
+  }, []);
+
+  const selectedStudents = students.filter((student) => student.className === selectedClassName);
   const absentStudents = selectedStudents.filter((student) => attendanceByStudent[student.id] === "absent");
   const presentStudents = selectedStudents.filter((student) => attendanceByStudent[student.id] !== "absent");
   const assignedStudentIds = new Set(Object.values(groupAssignments).flat());
@@ -93,10 +106,22 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
     setAttendanceByStudent((current) => ({ ...current, [studentId]: status }));
   }
 
+  function applyDefaultGroups(className: string, data = management) {
+    const classId = data?.classes.find((schoolClass) => schoolClass.name === className)?.id;
+    const defaults = data?.groups.filter((group) => group.classId === classId) ?? [];
+    setManagedGroups(defaults.map((group) => ({ id: group.id, name: group.name })));
+    setGroupAssignments(Object.fromEntries(defaults.map((group) => [group.id, group.studentIds])));
+  }
+
+  function selectClass(className: string) {
+    setSelectedClassName(className);
+    applyDefaultGroups(className);
+  }
+
   function toggleTargetClass(className: string) {
     setTargetClasses((current) => {
       const next = current.includes(className) ? current.filter((item) => item !== className) : [...current, className];
-      if (!next.includes(selectedClassName)) setSelectedClassName(next[0] ?? "");
+      if (!next.includes(selectedClassName)) selectClass(next[0] ?? "");
       return next;
     });
   }
@@ -108,7 +133,11 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
     try {
     const material = materialFile ? await uploadActivityMaterial(activityId, materialFile) : null;
     const activityCode = generateActivityCode();
-    const targetStudentIds = students.filter((student) => targetClasses.includes(student.className)).map((student) => student.id);
+    const targetStudents = students.filter((student) => targetClasses.includes(student.className));
+    const targetInternalIds = new Set(targetStudents.map((student) => student.id));
+    const externalIdByInternalId = new Map(targetStudents.map((student) => [student.id, student.externalId ?? student.studentNumber]));
+    const attendanceByExternalId = new Map(targetStudents.map((student) => [student.externalId ?? student.studentNumber, attendanceByStudent[student.id] ?? "present"]));
+    const targetStudentIds = targetStudents.map((student) => student.externalId ?? student.studentNumber);
     const activityGroups =
       activityMode === "group"
         ? managedGroups
@@ -116,14 +145,14 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
               id: `${activityId}-${group.id}`,
               activityId,
               name: group.name,
-              studentIds: (groupAssignments[group.id] ?? []).filter((studentId) => targetStudentIds.includes(studentId)),
+              studentIds: (groupAssignments[group.id] ?? []).filter((studentId) => targetInternalIds.has(studentId)).map((studentId) => externalIdByInternalId.get(studentId)!),
             }))
             .filter((group) => group.studentIds.length > 0)
         : [];
-    const activityAttendance = targetStudentIds.map((studentId) => ({
+    const activityAttendance = targetStudents.map((student) => ({
       activityId,
-      studentId,
-      status: attendanceByStudent[studentId] ?? "present",
+      studentId: student.externalId ?? student.studentNumber,
+      status: attendanceByStudent[student.id] ?? "present",
     }));
     const groupSubmissions =
       activityMode === "group"
@@ -133,7 +162,7 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
             status: "draft",
             cards: [],
             agreements: group.studentIds
-              .filter((studentId) => attendanceByStudent[studentId] !== "absent")
+              .filter((studentId) => attendanceByExternalId.get(studentId) !== "absent")
               .map((studentId) => ({ activityId, groupId: group.id, studentId, agreed: false })),
           }))
         : [];
@@ -235,7 +264,7 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
                 모둠 편성 확인 학급
                 <select
                   value={selectedClassName}
-                  onChange={(event) => setSelectedClassName(event.target.value)}
+                  onChange={(event) => selectClass(event.target.value)}
                   className="mt-1 h-10 w-full rounded-md border border-zinc-300 bg-white px-3"
                 >
                   {targetClasses.map((className) => (
@@ -280,6 +309,7 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
               selectedClassName={selectedClassName}
               managedGroups={managedGroups}
               groupAssignments={groupAssignments}
+              selectedStudents={selectedStudents}
               unassignedStudents={unassignedStudents}
               attendanceByStudent={attendanceByStudent}
               onClose={() => setGroupModalOpen(false)}
@@ -395,7 +425,7 @@ function AttendanceSummary({
 }: {
   selectedClassName: string;
   presentCount: number;
-  absentStudents: typeof students;
+  absentStudents: LiveStudent[];
   onOpenModal: () => void;
 }) {
   return (
@@ -432,7 +462,7 @@ function AttendanceModal({
   onClose,
 }: {
   selectedClassName: string;
-  selectedStudents: typeof students;
+  selectedStudents: LiveStudent[];
   attendanceByStudent: Record<string, AttendanceStatus>;
   onSetAttendance: (studentId: string, status: AttendanceStatus) => void;
   onClose: () => void;
@@ -519,8 +549,8 @@ function GroupSummary({
   selectedClassName: string;
   managedGroups: ManagedGroup[];
   groupAssignments: GroupAssignment;
-  selectedStudents: typeof students;
-  unassignedStudents: typeof students;
+  selectedStudents: LiveStudent[];
+  unassignedStudents: LiveStudent[];
   attendanceByStudent: Record<string, AttendanceStatus>;
   onOpenModal: () => void;
 }) {
@@ -546,7 +576,7 @@ function GroupSummary({
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {managedGroups.map((group) => {
           const groupStudents = (groupAssignments[group.id] ?? [])
-            .map((studentId) => students.find((student) => student.id === studentId))
+            .map((studentId) => selectedStudents.find((student) => student.id === studentId))
             .filter((student) => student?.className === selectedClassName);
           const presentCount = groupStudents.filter((student) => student && attendanceByStudent[student.id] !== "absent").length;
           const absentCount = groupStudents.length - presentCount;
@@ -579,6 +609,7 @@ function GroupSetupModal({
   selectedClassName,
   managedGroups,
   groupAssignments,
+  selectedStudents,
   unassignedStudents,
   attendanceByStudent,
   onAddGroup,
@@ -590,7 +621,8 @@ function GroupSetupModal({
   selectedClassName: string;
   managedGroups: ManagedGroup[];
   groupAssignments: GroupAssignment;
-  unassignedStudents: typeof students;
+  selectedStudents: LiveStudent[];
+  unassignedStudents: LiveStudent[];
   attendanceByStudent: Record<string, AttendanceStatus>;
   onAddGroup: () => void;
   onDeleteGroup: (groupId: string) => void;
@@ -637,7 +669,7 @@ function GroupSetupModal({
                 {unassignedStudents.map((student) => (
                   <StudentDragCard
                     key={student.id}
-                    studentId={student.id}
+                    student={student}
                     absent={attendanceByStudent[student.id] === "absent"}
                     onDragStart={onDragStudent}
                   />
@@ -653,7 +685,7 @@ function GroupSetupModal({
             <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
               {managedGroups.map((group) => {
                 const groupStudents = (groupAssignments[group.id] ?? [])
-                  .map((studentId) => students.find((student) => student.id === studentId))
+                  .map((studentId) => selectedStudents.find((student) => student.id === studentId))
                   .filter((student) => student?.className === selectedClassName);
                 const presentCount = groupStudents.filter((student) => student && attendanceByStudent[student.id] !== "absent").length;
                 const absentCount = groupStudents.length - presentCount;
@@ -683,7 +715,7 @@ function GroupSetupModal({
                       {groupStudents.map((student) => (
                         <StudentDragCard
                           key={student?.id}
-                          studentId={student?.id ?? ""}
+                          student={student!}
                           absent={student ? attendanceByStudent[student.id] === "absent" : false}
                           onDragStart={onDragStudent}
                         />
@@ -712,17 +744,14 @@ function GroupSetupModal({
 }
 
 function StudentDragCard({
-  studentId,
+  student,
   absent = false,
   onDragStart,
 }: {
-  studentId: string;
+  student: LiveStudent;
   absent?: boolean;
   onDragStart: (event: DragEvent<HTMLElement>, studentId: string) => void;
 }) {
-  const student = students.find((item) => item.id === studentId);
-  if (!student) return null;
-
   return (
     <div
       draggable

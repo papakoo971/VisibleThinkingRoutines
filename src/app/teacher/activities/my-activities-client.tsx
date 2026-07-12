@@ -3,33 +3,32 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusBadge } from "@/components/app-shell";
-import { fetchCreatedActivityPayloads } from "@/lib/local-created-activities";
-import type { Activity } from "@/lib/mock-data";
+import { fetchClassManagement } from "@/lib/class-management";
+import { fetchCreatedActivityPayloads, type CreatedActivityPayload } from "@/lib/local-created-activities";
 
-type DisplayActivity = Omit<Activity, "routine" | "materialType"> & {
-  routine: string;
-  materialType: string;
-};
+type DisplayActivity = CreatedActivityPayload["activity"];
 
-export function MyActivitiesClient({
-  view,
-  initialActivities,
-  classes,
-}: {
-  view: string;
-  initialActivities: Activity[];
-  classes: string[];
-}) {
+export function MyActivitiesClient({ view }: { view: string }) {
   const [createdActivities, setCreatedActivities] = useState<DisplayActivity[]>([]);
+  const [classes, setClasses] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "closed">("all");
 
   useEffect(() => {
-    fetchCreatedActivityPayloads().then((payloads) => setCreatedActivities(payloads.map((payload) => payload.activity)));
+    Promise.all([fetchCreatedActivityPayloads(), fetchClassManagement()]).then(([payloads, management]) => {
+      setCreatedActivities(payloads.map((payload) => payload.activity));
+      setClasses(management.classes.map((schoolClass) => schoolClass.name));
+    }).finally(() => setLoading(false));
   }, []);
 
-  const activities = [...createdActivities, ...initialActivities];
+  const activities = statusFilter === "all" ? createdActivities : createdActivities.filter((activity) => activity.status === statusFilter);
+
+  if (loading) return <div className="rounded-lg border border-zinc-200 bg-white p-5 text-sm text-zinc-500">활동을 불러오는 중...</div>;
+  if (!createdActivities.length) return <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center text-sm text-zinc-500">아직 만든 활동이 없습니다.</div>;
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white">
+      <div className="flex gap-2 border-b border-zinc-200 p-4">{(["all", "active", "closed"] as const).map((status) => <button key={status} type="button" onClick={() => setStatusFilter(status)} className={`rounded-md px-3 py-1.5 text-sm font-semibold ${statusFilter === status ? "bg-zinc-950 text-white" : "bg-stone-100 text-zinc-600"}`}>{status === "all" ? "전체" : status === "active" ? "진행 중" : "마감됨"}</button>)}</div>
       {view === "activity" ? (
         <ActivityList activities={activities} />
       ) : view === "date" ? (

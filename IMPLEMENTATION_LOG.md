@@ -1,5 +1,22 @@
 # Implementation Log
 
+## 2026-07-12 Live Teacher Dashboard And Activity Setup
+
+### Completed
+
+- Replaced mock activities and classes on the teacher dashboard with live authenticated activity and class data.
+- Replaced the activity-list sample merge with teacher-owned activities only.
+- Added all, active, and closed activity filters to the live activity list.
+- Replaced activity-setup mock classes, students, attendance initialization, and group templates with live class-management data.
+- Copied each selected class's persistent default groups into editable activity-local group state.
+- Preserved the storage adapter's external student-ID contract while using internal SQL IDs for the setup UI.
+- Added loading and empty states for new teachers without classes or activities.
+
+### Verification
+
+- Dashboard, activity list, and activity setup no longer import `mock-data`.
+- ESLint and TypeScript checks pass after the live-data conversion.
+
 ## 2026-07-12 Live Class And Default Group Management
 
 ### Completed
