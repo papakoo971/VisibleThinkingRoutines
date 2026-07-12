@@ -1,4 +1,4 @@
-const { queryRef, executeQuery, mutationRef, executeMutation, validateArgs } = require('firebase/data-connect');
+const { queryRef, executeQuery, validateArgsWithOptions, mutationRef, executeMutation, validateArgs } = require('firebase/data-connect');
 
 const ActivityMode = {
   INDIVIDUAL: "INDIVIDUAL",
@@ -40,9 +40,12 @@ const listActivitiesRef = (dc) => {
 listActivitiesRef.operationName = 'ListActivities';
 exports.listActivitiesRef = listActivitiesRef;
 
-exports.listActivities = function listActivities(dc) {
-  return executeQuery(listActivitiesRef(dc));
-};
+exports.listActivities = function listActivities(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listActivitiesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
 
 const getActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -52,9 +55,12 @@ const getActivityRef = (dcOrVars, vars) => {
 getActivityRef.operationName = 'GetActivity';
 exports.getActivityRef = getActivityRef;
 
-exports.getActivity = function getActivity(dcOrVars, vars) {
-  return executeQuery(getActivityRef(dcOrVars, vars));
-};
+exports.getActivity = function getActivity(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
 
 const upsertSchoolClassRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -65,8 +71,10 @@ upsertSchoolClassRef.operationName = 'UpsertSchoolClass';
 exports.upsertSchoolClassRef = upsertSchoolClassRef;
 
 exports.upsertSchoolClass = function upsertSchoolClass(dcOrVars, vars) {
-  return executeMutation(upsertSchoolClassRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertSchoolClassRef(dcInstance, inputVars));
+}
+;
 
 const upsertStudentRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -77,8 +85,10 @@ upsertStudentRef.operationName = 'UpsertStudent';
 exports.upsertStudentRef = upsertStudentRef;
 
 exports.upsertStudent = function upsertStudent(dcOrVars, vars) {
-  return executeMutation(upsertStudentRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertStudentRef(dcInstance, inputVars));
+}
+;
 
 const upsertActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -89,8 +99,24 @@ upsertActivityRef.operationName = 'UpsertActivity';
 exports.upsertActivityRef = upsertActivityRef;
 
 exports.upsertActivity = function upsertActivity(dcOrVars, vars) {
-  return executeMutation(upsertActivityRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertActivityRef(dcInstance, inputVars));
+}
+;
+
+const deleteActivityRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteActivity', inputVars);
+}
+deleteActivityRef.operationName = 'DeleteActivity';
+exports.deleteActivityRef = deleteActivityRef;
+
+exports.deleteActivity = function deleteActivity(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteActivityRef(dcInstance, inputVars));
+}
+;
 
 const upsertActivityClassRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -101,8 +127,10 @@ upsertActivityClassRef.operationName = 'UpsertActivityClass';
 exports.upsertActivityClassRef = upsertActivityClassRef;
 
 exports.upsertActivityClass = function upsertActivityClass(dcOrVars, vars) {
-  return executeMutation(upsertActivityClassRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertActivityClassRef(dcInstance, inputVars));
+}
+;
 
 const upsertActivityAttendanceRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -113,8 +141,10 @@ upsertActivityAttendanceRef.operationName = 'UpsertActivityAttendance';
 exports.upsertActivityAttendanceRef = upsertActivityAttendanceRef;
 
 exports.upsertActivityAttendance = function upsertActivityAttendance(dcOrVars, vars) {
-  return executeMutation(upsertActivityAttendanceRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertActivityAttendanceRef(dcInstance, inputVars));
+}
+;
 
 const upsertActivityGroupRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -125,8 +155,10 @@ upsertActivityGroupRef.operationName = 'UpsertActivityGroup';
 exports.upsertActivityGroupRef = upsertActivityGroupRef;
 
 exports.upsertActivityGroup = function upsertActivityGroup(dcOrVars, vars) {
-  return executeMutation(upsertActivityGroupRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertActivityGroupRef(dcInstance, inputVars));
+}
+;
 
 const upsertActivityGroupMemberRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -137,8 +169,10 @@ upsertActivityGroupMemberRef.operationName = 'UpsertActivityGroupMember';
 exports.upsertActivityGroupMemberRef = upsertActivityGroupMemberRef;
 
 exports.upsertActivityGroupMember = function upsertActivityGroupMember(dcOrVars, vars) {
-  return executeMutation(upsertActivityGroupMemberRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertActivityGroupMemberRef(dcInstance, inputVars));
+}
+;
 
 const upsertIndividualSubmissionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -149,8 +183,10 @@ upsertIndividualSubmissionRef.operationName = 'UpsertIndividualSubmission';
 exports.upsertIndividualSubmissionRef = upsertIndividualSubmissionRef;
 
 exports.upsertIndividualSubmission = function upsertIndividualSubmission(dcOrVars, vars) {
-  return executeMutation(upsertIndividualSubmissionRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertIndividualSubmissionRef(dcInstance, inputVars));
+}
+;
 
 const upsertGroupSubmissionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -161,8 +197,10 @@ upsertGroupSubmissionRef.operationName = 'UpsertGroupSubmission';
 exports.upsertGroupSubmissionRef = upsertGroupSubmissionRef;
 
 exports.upsertGroupSubmission = function upsertGroupSubmission(dcOrVars, vars) {
-  return executeMutation(upsertGroupSubmissionRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertGroupSubmissionRef(dcInstance, inputVars));
+}
+;
 
 const upsertGroupSubmissionAgreementRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
@@ -173,5 +211,7 @@ upsertGroupSubmissionAgreementRef.operationName = 'UpsertGroupSubmissionAgreemen
 exports.upsertGroupSubmissionAgreementRef = upsertGroupSubmissionAgreementRef;
 
 exports.upsertGroupSubmissionAgreement = function upsertGroupSubmissionAgreement(dcOrVars, vars) {
-  return executeMutation(upsertGroupSubmissionAgreementRef(dcOrVars, vars));
-};
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertGroupSubmissionAgreementRef(dcInstance, inputVars));
+}
+;

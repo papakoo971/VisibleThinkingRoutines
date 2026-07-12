@@ -15,15 +15,7 @@ export async function GET(_request: Request, context: { params: Promise<{ activi
 
 export async function DELETE(_request: Request, context: { params: Promise<{ activityId: string }> }) {
   const { activityId } = await context.params;
-  try {
-    await deleteCreatedActivityPayload(activityId);
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("not implemented")) {
-      return Response.json({ message: error.message }, { status: 501 });
-    }
-
-    throw error;
-  }
+  await deleteCreatedActivityPayload(activityId);
 
   return Response.json({ ok: true });
 }

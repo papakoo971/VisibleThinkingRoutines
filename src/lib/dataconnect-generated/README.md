@@ -14,6 +14,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertSchoolClass*](#upsertschoolclass)
   - [*UpsertStudent*](#upsertstudent)
   - [*UpsertActivity*](#upsertactivity)
+  - [*DeleteActivity*](#deleteactivity)
   - [*UpsertActivityClass*](#upsertactivityclass)
   - [*UpsertActivityAttendance*](#upsertactivityattendance)
   - [*UpsertActivityGroup*](#upsertactivitygroup)
@@ -70,7 +71,7 @@ Below are examples of how to use the `teacher` connector's generated functions t
 ## ListActivities
 You can execute the `ListActivities` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-listActivities(): QueryPromise<ListActivitiesData, undefined>;
+listActivities(options?: ExecuteQueryOptions): QueryPromise<ListActivitiesData, undefined>;
 
 interface ListActivitiesRef {
   ...
@@ -81,7 +82,7 @@ export const listActivitiesRef: ListActivitiesRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listActivities(dc: DataConnect): QueryPromise<ListActivitiesData, undefined>;
+listActivities(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActivitiesData, undefined>;
 
 interface ListActivitiesRef {
   ...
@@ -179,7 +180,7 @@ executeQuery(ref).then((response) => {
 ## GetActivity
 You can execute the `GetActivity` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-getActivity(vars: GetActivityVariables): QueryPromise<GetActivityData, GetActivityVariables>;
+getActivity(vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
 
 interface GetActivityRef {
   ...
@@ -190,7 +191,7 @@ export const getActivityRef: GetActivityRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-getActivity(dc: DataConnect, vars: GetActivityVariables): QueryPromise<GetActivityData, GetActivityVariables>;
+getActivity(dc: DataConnect, vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
 
 interface GetActivityRef {
   ...
@@ -237,50 +238,50 @@ export interface GetActivityData {
         name: string;
       } & SchoolClass_Key;
     })[];
-      activityAttendances_on_activity: ({
-        status: AttendanceStatus;
+    activityAttendances_on_activity: ({
+      status: AttendanceStatus;
+      student: {
+        id: string;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          id: string;
+          name: string;
+        } & SchoolClass_Key;
+      } & Student_Key;
+    })[];
+    activityGroups_on_activity: ({
+      id: string;
+      name: string;
+      activityGroupMembers_on_activityGroup: ({
         student: {
           id: string;
           name: string;
           studentNumber: string;
-          schoolClass: {
-            id: string;
-            name: string;
-          } & SchoolClass_Key;
         } & Student_Key;
       })[];
-        activityGroups_on_activity: ({
-          id: string;
-          name: string;
-          activityGroupMembers_on_activityGroup: ({
-            student: {
-              id: string;
-              name: string;
-              studentNumber: string;
-            } & Student_Key;
-          })[];
-        } & ActivityGroup_Key)[];
-          individualSubmissions_on_activity: ({
-            status: SubmissionStatus;
-            student: {
-              id: string;
-            } & Student_Key;
-          })[];
-            groupSubmissions_on_activity: ({
-              status: SubmissionStatus;
-              activityGroup: {
-                id: string;
-              } & ActivityGroup_Key;
-            })[];
-              groupSubmissionAgreements_on_activity: ({
-                agreed: boolean;
-                activityGroup: {
-                  id: string;
-                } & ActivityGroup_Key;
-                  student: {
-                    id: string;
-                  } & Student_Key;
-              })[];
+    } & ActivityGroup_Key)[];
+    individualSubmissions_on_activity: ({
+      status: SubmissionStatus;
+      student: {
+        id: string;
+      } & Student_Key;
+    })[];
+    groupSubmissions_on_activity: ({
+      status: SubmissionStatus;
+      activityGroup: {
+        id: string;
+      } & ActivityGroup_Key;
+    })[];
+    groupSubmissionAgreements_on_activity: ({
+      agreed: boolean;
+      activityGroup: {
+        id: string;
+      } & ActivityGroup_Key;
+      student: {
+        id: string;
+      } & Student_Key;
+    })[];
   } & Activity_Key;
 }
 ```
@@ -731,6 +732,115 @@ console.log(data.activity_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.activity_upsert);
+});
+```
+
+## DeleteActivity
+You can execute the `DeleteActivity` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteActivity(vars: DeleteActivityVariables): MutationPromise<DeleteActivityData, DeleteActivityVariables>;
+
+interface DeleteActivityRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteActivityVariables): MutationRef<DeleteActivityData, DeleteActivityVariables>;
+}
+export const deleteActivityRef: DeleteActivityRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteActivity(dc: DataConnect, vars: DeleteActivityVariables): MutationPromise<DeleteActivityData, DeleteActivityVariables>;
+
+interface DeleteActivityRef {
+  ...
+  (dc: DataConnect, vars: DeleteActivityVariables): MutationRef<DeleteActivityData, DeleteActivityVariables>;
+}
+export const deleteActivityRef: DeleteActivityRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteActivityRef:
+```typescript
+const name = deleteActivityRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteActivity` mutation requires an argument of type `DeleteActivityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteActivityVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteActivity` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteActivityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteActivityData {
+  activity_delete?: Activity_Key | null;
+}
+```
+### Using `DeleteActivity`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteActivity, DeleteActivityVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteActivity` mutation requires an argument of type `DeleteActivityVariables`:
+const deleteActivityVars: DeleteActivityVariables = {
+  id: ..., 
+};
+
+// Call the `deleteActivity()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteActivity(deleteActivityVars);
+// Variables can be defined inline as well.
+const { data } = await deleteActivity({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteActivity(dataConnect, deleteActivityVars);
+
+console.log(data.activity_delete);
+
+// Or, you can use the `Promise` API.
+deleteActivity(deleteActivityVars).then((response) => {
+  const data = response.data;
+  console.log(data.activity_delete);
+});
+```
+
+### Using `DeleteActivity`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteActivityRef, DeleteActivityVariables } from '@visible-thinking/dataconnect';
+
+// The `DeleteActivity` mutation requires an argument of type `DeleteActivityVariables`:
+const deleteActivityVars: DeleteActivityVariables = {
+  id: ..., 
+};
+
+// Call the `deleteActivityRef()` function to get a reference to the mutation.
+const ref = deleteActivityRef(deleteActivityVars);
+// Variables can be defined inline as well.
+const ref = deleteActivityRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteActivityRef(dataConnect, deleteActivityVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.activity_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activity_delete);
 });
 ```
 

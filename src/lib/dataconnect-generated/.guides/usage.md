@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { listActivities, getActivity, upsertSchoolClass, upsertStudent, upsertActivity, upsertActivityClass, upsertActivityAttendance, upsertActivityGroup, upsertActivityGroupMember, upsertIndividualSubmission } from '@visible-thinking/dataconnect';
+import { listActivities, getActivity, upsertSchoolClass, upsertStudent, upsertActivity, deleteActivity, upsertActivityClass, upsertActivityAttendance, upsertActivityGroup, upsertActivityGroupMember } from '@visible-thinking/dataconnect';
 
 
 // Operation ListActivities: 
@@ -32,6 +32,9 @@ const { data } = await UpsertStudent(dataConnect, upsertStudentVars);
 // Operation UpsertActivity:  For variables, look at type UpsertActivityVars in ../index.d.ts
 const { data } = await UpsertActivity(dataConnect, upsertActivityVars);
 
+// Operation DeleteActivity:  For variables, look at type DeleteActivityVars in ../index.d.ts
+const { data } = await DeleteActivity(dataConnect, deleteActivityVars);
+
 // Operation UpsertActivityClass:  For variables, look at type UpsertActivityClassVars in ../index.d.ts
 const { data } = await UpsertActivityClass(dataConnect, upsertActivityClassVars);
 
@@ -43,9 +46,6 @@ const { data } = await UpsertActivityGroup(dataConnect, upsertActivityGroupVars)
 
 // Operation UpsertActivityGroupMember:  For variables, look at type UpsertActivityGroupMemberVars in ../index.d.ts
 const { data } = await UpsertActivityGroupMember(dataConnect, upsertActivityGroupMemberVars);
-
-// Operation UpsertIndividualSubmission:  For variables, look at type UpsertIndividualSubmissionVars in ../index.d.ts
-const { data } = await UpsertIndividualSubmission(dataConnect, upsertIndividualSubmissionVars);
 
 
 ```

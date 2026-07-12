@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Brain, CheckCircle2, EyeOff, RefreshCw, Tag, UserRound, Users } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -26,9 +26,43 @@ const columns: { id: RoutineColumn; label: string }[] = [
 ];
 
 export function ActivityResultsView({ activityId }: { activityId: string }) {
+  const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null>(null);
+  const mockActivity = activities.find((item) => item.id === activityId);
+
+  useEffect(() => {
+    let ignore = false;
+
+    if (!mockActivity) {
+      fetchCreatedActivityPayload(activityId).then((payload) => {
+        if (!ignore) setCreatedPayload(payload ?? null);
+      });
+    }
+
+    return () => {
+      ignore = true;
+    };
+  }, [activityId, mockActivity]);
+
+  const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
+
+  return (
+    <ActivityResultsWorkspace
+      key={`${activity.id}-${activity.activityMode}`}
+      activityId={activityId}
+      createdPayload={createdPayload}
+    />
+  );
+}
+
+function ActivityResultsWorkspace({
+  activityId,
+  createdPayload,
+}: {
+  activityId: string;
+  createdPayload: CreatedActivityPayload | null;
+}) {
   const [anonymous, setAnonymous] = useState(false);
   const [tagFilter, setTagFilter] = useState("전체");
-  const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null>(null);
   const mockActivity = activities.find((item) => item.id === activityId);
   const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
   const [resultView, setResultView] = useState<"students" | "groups">(activity.activityMode === "group" ? "groups" : "students");
@@ -51,21 +85,10 @@ export function ActivityResultsView({ activityId }: { activityId: string }) {
       )
     : activityIndividualSubmissions.flatMap((submission) => submission.cards);
 
-  const filteredCards = useMemo(() => {
-    if (tagFilter === "전체") return activityCards;
-    return activityCards.filter((card) => card.tags.includes(tagFilter));
-  }, [activityCards, tagFilter]);
+  const filteredCards = tagFilter === "전체" ? activityCards : activityCards.filter((card) => card.tags.includes(tagFilter));
 
   const participatingStudents = students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id));
   const participatingGroups = allActivityGroups.filter((group) => group.activityId === activity.id);
-
-  useEffect(() => {
-    if (!mockActivity) fetchCreatedActivityPayload(activityId).then((payload) => setCreatedPayload(payload ?? null));
-  }, [activityId, mockActivity]);
-
-  useEffect(() => {
-    setResultView(activity.activityMode === "group" ? "groups" : "students");
-  }, [activity.activityMode]);
 
   return (
     <AppShell>

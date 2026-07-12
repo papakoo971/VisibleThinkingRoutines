@@ -1,4 +1,5 @@
 import { getVisibleThinkingDataConnect } from "@/lib/firebase-sql-connect";
+import { QueryFetchPolicy } from "firebase/data-connect";
 import type { CreatedActivityStore } from "@/lib/created-activity-store";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
 import { students } from "@/lib/mock-data";
@@ -7,6 +8,7 @@ import {
   ActivityStatus,
   AttendanceStatus,
   SubmissionStatus,
+  deleteActivity,
   getActivity,
   listActivities,
   upsertActivity,
@@ -188,13 +190,13 @@ async function upsertPayloadDependencies(payload: CreatedActivityPayload) {
 export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
   async list() {
     const dataConnect = getVisibleThinkingDataConnect();
-    const { data } = await listActivities(dataConnect);
+    const { data } = await listActivities(dataConnect, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY });
     return data.activities.map(listActivityToPayload);
   },
 
   async get(activityId) {
     const dataConnect = getVisibleThinkingDataConnect();
-    const { data } = await getActivity(dataConnect, { id: activityId });
+    const { data } = await getActivity(dataConnect, { id: activityId }, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY });
     return data.activity ? detailActivityToPayload(data.activity) : undefined;
   },
 
@@ -264,7 +266,8 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     return payload;
   },
 
-  async remove() {
-    throw new Error("SQL Connect activity deletion is not implemented until a generated delete mutation is added.");
+  async remove(activityId) {
+    const dataConnect = getVisibleThinkingDataConnect();
+    await deleteActivity(dataConnect, { id: activityId });
   },
 };

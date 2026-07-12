@@ -132,6 +132,10 @@ mutation UpsertActivity(
   })
 }
 
+mutation DeleteActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype delete activity before teacher authentication is connected.") {
+  activity_delete(key: { id: $id })
+}
+
 mutation UpsertActivityClass($activityId: String!, $schoolClassId: String!) @auth(level: PUBLIC, insecureReason: "Prototype create activity before teacher authentication is connected.") {
   activityClass_upsert(data: {
     activity: { id: $activityId }

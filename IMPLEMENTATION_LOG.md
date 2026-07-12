@@ -1,5 +1,52 @@
 # Implementation Log
 
+## 2026-07-12
+
+### Live SQL Connect Activation
+
+- Migrated the live `visible-thinking-sql:visible-thinking` PostgreSQL database to the local SQL Connect schema.
+- Deployed the `teacher` connector and schema to Firebase project `visible-thinking-routines` in `asia-northeast3`.
+- Regenerated the JavaScript SDK and switched local runtime persistence to `CREATED_ACTIVITY_STORE=sql-connect`.
+- Ran live API smoke tests for create, list, detail, update, and delete.
+- Fixed stale activity lists and details by using the Data Connect `SERVER_ONLY` query policy in the server-side store.
+- Added and deployed the generated `DeleteActivity` mutation; cascading foreign keys remove related activity data.
+- Removed the smoke-test activity after verification.
+
+### Verification
+
+- Live SQL Connect create returned `201`, and list/detail returned the persisted payload.
+- Updating the activity was immediately visible from detail reads.
+- Delete returned `200`, the deleted detail returned `404`, and the final list was empty.
+- `npm run check` passed: ESLint, TypeScript, and the Next.js 16.2.7 production build with all 54 static pages.
+
+## 2026-07-11
+
+### Phase 0 Development Baseline
+
+- Resolved all existing ESLint errors and warnings.
+- Split async activity loading from stateful student and teacher result workspaces so state resets use keyed component boundaries instead of synchronous effect updates.
+- Removed unnecessary manual memoization that conflicted with the React compiler lint rules.
+- Excluded the Firebase Data Connect generated SDK from ESLint while keeping the source GraphQL operations in lint scope.
+- Added `typecheck` and combined `check` npm scripts.
+- Replaced build-time Google Fonts downloads with a network-independent system font stack.
+- Replaced the create-next-app README with project-specific setup, verification, route, storage, and limitation documentation.
+
+### Verification
+
+- `npm run lint` passed.
+- `npm run typecheck` passed.
+- `npm run build` passed with Next.js 16.2.7 and generated all 54 static pages plus dynamic routes.
+- The sandboxed build initially hit a Turbopack local port-binding restriction during PostCSS evaluation; the same production build passed outside that restriction.
+
+### Firebase Project Provisioning
+
+- Registered the Firebase project `visible-thinking-routines` as the local default project.
+- Provisioned SQL Connect service `visible-thinking` in `asia-northeast3`.
+- Provisioned Cloud SQL instance `visible-thinking-sql` with PostgreSQL database `visible-thinking`.
+- Added the Firebase CLI as a project development dependency.
+- Logged in with Firebase CLI, confirmed the live SQL Connect service, and successfully compiled the local schema and connector.
+- Kept `CREATED_ACTIVITY_STORE=memory` until migration, connector deployment, and API smoke testing are complete.
+
 ## 2026-06-20
 
 ### Context

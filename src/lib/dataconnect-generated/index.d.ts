@@ -1,4 +1,4 @@
-import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, MutationRef, MutationPromise } from 'firebase/data-connect';
+import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, ExecuteQueryOptions, MutationRef, MutationPromise } from 'firebase/data-connect';
 
 export const connectorConfig: ConnectorConfig;
 
@@ -59,6 +59,14 @@ export interface Activity_Key {
   __typename?: 'Activity_Key';
 }
 
+export interface DeleteActivityData {
+  activity_delete?: Activity_Key | null;
+}
+
+export interface DeleteActivityVariables {
+  id: string;
+}
+
 export interface GetActivityData {
   activity?: {
     id: string;
@@ -78,50 +86,50 @@ export interface GetActivityData {
         name: string;
       } & SchoolClass_Key;
     })[];
-      activityAttendances_on_activity: ({
-        status: AttendanceStatus;
+    activityAttendances_on_activity: ({
+      status: AttendanceStatus;
+      student: {
+        id: string;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          id: string;
+          name: string;
+        } & SchoolClass_Key;
+      } & Student_Key;
+    })[];
+    activityGroups_on_activity: ({
+      id: string;
+      name: string;
+      activityGroupMembers_on_activityGroup: ({
         student: {
           id: string;
           name: string;
           studentNumber: string;
-          schoolClass: {
-            id: string;
-            name: string;
-          } & SchoolClass_Key;
         } & Student_Key;
       })[];
-        activityGroups_on_activity: ({
-          id: string;
-          name: string;
-          activityGroupMembers_on_activityGroup: ({
-            student: {
-              id: string;
-              name: string;
-              studentNumber: string;
-            } & Student_Key;
-          })[];
-        } & ActivityGroup_Key)[];
-          individualSubmissions_on_activity: ({
-            status: SubmissionStatus;
-            student: {
-              id: string;
-            } & Student_Key;
-          })[];
-            groupSubmissions_on_activity: ({
-              status: SubmissionStatus;
-              activityGroup: {
-                id: string;
-              } & ActivityGroup_Key;
-            })[];
-              groupSubmissionAgreements_on_activity: ({
-                agreed: boolean;
-                activityGroup: {
-                  id: string;
-                } & ActivityGroup_Key;
-                  student: {
-                    id: string;
-                  } & Student_Key;
-              })[];
+    } & ActivityGroup_Key)[];
+    individualSubmissions_on_activity: ({
+      status: SubmissionStatus;
+      student: {
+        id: string;
+      } & Student_Key;
+    })[];
+    groupSubmissions_on_activity: ({
+      status: SubmissionStatus;
+      activityGroup: {
+        id: string;
+      } & ActivityGroup_Key;
+    })[];
+    groupSubmissionAgreements_on_activity: ({
+      agreed: boolean;
+      activityGroup: {
+        id: string;
+      } & ActivityGroup_Key;
+      student: {
+        id: string;
+      } & Student_Key;
+    })[];
   } & Activity_Key;
 }
 
@@ -307,8 +315,8 @@ interface ListActivitiesRef {
 }
 export const listActivitiesRef: ListActivitiesRef;
 
-export function listActivities(): QueryPromise<ListActivitiesData, undefined>;
-export function listActivities(dc: DataConnect): QueryPromise<ListActivitiesData, undefined>;
+export function listActivities(options?: ExecuteQueryOptions): QueryPromise<ListActivitiesData, undefined>;
+export function listActivities(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActivitiesData, undefined>;
 
 interface GetActivityRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -319,8 +327,8 @@ interface GetActivityRef {
 }
 export const getActivityRef: GetActivityRef;
 
-export function getActivity(vars: GetActivityVariables): QueryPromise<GetActivityData, GetActivityVariables>;
-export function getActivity(dc: DataConnect, vars: GetActivityVariables): QueryPromise<GetActivityData, GetActivityVariables>;
+export function getActivity(vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
+export function getActivity(dc: DataConnect, vars: GetActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityData, GetActivityVariables>;
 
 interface UpsertSchoolClassRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -357,6 +365,18 @@ export const upsertActivityRef: UpsertActivityRef;
 
 export function upsertActivity(vars: UpsertActivityVariables): MutationPromise<UpsertActivityData, UpsertActivityVariables>;
 export function upsertActivity(dc: DataConnect, vars: UpsertActivityVariables): MutationPromise<UpsertActivityData, UpsertActivityVariables>;
+
+interface DeleteActivityRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteActivityVariables): MutationRef<DeleteActivityData, DeleteActivityVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteActivityVariables): MutationRef<DeleteActivityData, DeleteActivityVariables>;
+  operationName: string;
+}
+export const deleteActivityRef: DeleteActivityRef;
+
+export function deleteActivity(vars: DeleteActivityVariables): MutationPromise<DeleteActivityData, DeleteActivityVariables>;
+export function deleteActivity(dc: DataConnect, vars: DeleteActivityVariables): MutationPromise<DeleteActivityData, DeleteActivityVariables>;
 
 interface UpsertActivityClassRef {
   /* Allow users to create refs without passing in DataConnect */

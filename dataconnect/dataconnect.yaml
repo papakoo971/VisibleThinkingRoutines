@@ -6,7 +6,7 @@ schema:
   source: ./schema
   datasource:
     postgresql:
-      database: visible_thinking
+      database: visible-thinking
       cloudSql:
         instanceId: visible-thinking-sql
         schemaValidation: COMPATIBLE

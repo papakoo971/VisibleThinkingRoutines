@@ -36,6 +36,40 @@ const individualInitialCards: LocalCard[] = [
 export function StudentActivityView({ activityId }: { activityId: string }) {
   const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null>(null);
   const mockActivity = activities.find((item) => item.id === activityId);
+
+  useEffect(() => {
+    let ignore = false;
+
+    if (!mockActivity) {
+      fetchCreatedActivityPayload(activityId).then((payload) => {
+        if (!ignore) setCreatedPayload(payload ?? null);
+      });
+    }
+
+    return () => {
+      ignore = true;
+    };
+  }, [activityId, mockActivity]);
+
+  const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
+
+  return (
+    <StudentActivityWorkspace
+      key={`${activity.id}-${activity.activityMode}`}
+      activityId={activityId}
+      createdPayload={createdPayload}
+    />
+  );
+}
+
+function StudentActivityWorkspace({
+  activityId,
+  createdPayload,
+}: {
+  activityId: string;
+  createdPayload: CreatedActivityPayload | null;
+}) {
+  const mockActivity = activities.find((item) => item.id === activityId);
   const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
   const allActivityAttendance = [...activityAttendance, ...(createdPayload?.activityAttendance ?? [])];
   const allActivityGroups = [...activityGroups, ...(createdPayload?.activityGroups ?? [])];
@@ -58,17 +92,6 @@ export function StudentActivityView({ activityId }: { activityId: string }) {
       (groupSubmission?.agreements ?? []).map((agreement) => [agreement.studentId, agreement.agreed])
     )
   );
-
-  useEffect(() => {
-    if (!mockActivity) fetchCreatedActivityPayload(activityId).then((payload) => setCreatedPayload(payload ?? null));
-  }, [activityId, mockActivity]);
-
-  useEffect(() => {
-    setCards(initialCards);
-    setAgreements(Object.fromEntries((groupSubmission?.agreements ?? []).map((agreement) => [agreement.studentId, agreement.agreed])));
-    setSubmitted(false);
-    setModifiedAfterSubmit(false);
-  }, [activity.id, currentGroup?.id, groupSubmission?.groupId, individualSubmission?.studentId]);
 
   const groupMembers = useMemo(() => {
     if (!currentGroup) return [];

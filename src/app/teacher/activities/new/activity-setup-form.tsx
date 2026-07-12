@@ -260,7 +260,6 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
               selectedClassName={selectedClassName}
               managedGroups={managedGroups}
               groupAssignments={groupAssignments}
-              selectedStudents={selectedStudents}
               unassignedStudents={unassignedStudents}
               attendanceByStudent={attendanceByStudent}
               onClose={() => setGroupModalOpen(false)}
@@ -552,7 +551,6 @@ function GroupSetupModal({
   selectedClassName,
   managedGroups,
   groupAssignments,
-  selectedStudents,
   unassignedStudents,
   attendanceByStudent,
   onAddGroup,
@@ -564,7 +562,6 @@ function GroupSetupModal({
   selectedClassName: string;
   managedGroups: ManagedGroup[];
   groupAssignments: GroupAssignment;
-  selectedStudents: typeof students;
   unassignedStudents: typeof students;
   attendanceByStudent: Record<string, AttendanceStatus>;
   onAddGroup: () => void;

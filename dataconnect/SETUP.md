@@ -23,7 +23,7 @@ schema:
   source: ./schema
   datasource:
     postgresql:
-      database: visible_thinking
+      database: visible-thinking
       cloudSql:
         instanceId: visible-thinking-sql
         schemaValidation: COMPATIBLE
@@ -90,6 +90,8 @@ firebase login
 firebase use --add
 ```
 
+This repository is currently linked to the Firebase project `visible-thinking-routines` through `.firebaserc`.
+
 8. Validate the local schema and connector:
 
 ```bash
@@ -134,7 +136,9 @@ It currently writes activities, class assignments, attendance, activity groups, 
 src/lib/dataconnect-generated
 ```
 
-The default remains `CREATED_ACTIVITY_STORE=memory` until the Firebase project is provisioned and migrated. Activity deletion still requires a generated delete mutation before it can be enabled for the SQL-backed store.
+The live Firebase project has been provisioned, migrated, and smoke-tested. Local development now uses `CREATED_ACTIVITY_STORE=sql-connect`; keep `memory` available as an offline fallback.
+
+SQL-backed activity deletion is implemented through the generated `DeleteActivity` mutation. Related activity rows are removed through the schema's cascading foreign keys.
 
 ## Current prototype caveat
 
