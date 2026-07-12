@@ -11,6 +11,8 @@ This project uses Firebase SQL Connect as the target persistent store, backed by
 - `dataconnect/teacher/activities.gql` defines the first teacher-facing queries and mutations.
 - `src/lib/dataconnect-generated/` contains the generated SDK from the current schema and connector.
 - `src/lib/firebase-client.ts` and `src/lib/firebase-sql-connect.ts` initialize Firebase and SQL Connect.
+- `firebase.json` enables the Firebase Authentication email/password provider.
+- `TeacherProfile` stores the authenticated teacher's name and default operation mode using the Firebase Auth UID as its key.
 
 ## Values to replace
 
@@ -142,4 +144,4 @@ SQL-backed activity deletion is implemented through the generated `DeleteActivit
 
 ## Current prototype caveat
 
-The operations in `dataconnect/teacher/activities.gql` still use prototype `@auth(level: PUBLIC)` directives. Tighten those directives after Firebase Auth teacher/student flows are implemented.
+Teacher profile operations require Firebase Authentication and derive ownership from `auth.uid`. Activity operations still use prototype `@auth(level: PUBLIC)` directives. Add `teacherId` ownership filters and server-side Firebase token verification before tightening those operations and exposing the app publicly.

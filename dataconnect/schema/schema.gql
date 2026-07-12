@@ -25,6 +25,20 @@ enum RoutineColumn {
   WONDER
 }
 
+enum TeacherOperationMode {
+  CLASS_FIRST
+  SUBJECT_FIRST
+}
+
+type TeacherProfile @table(name: "teacher_profile", key: "id") {
+  id: String! @col(dataType: "varchar(128)")
+  email: String! @col(dataType: "varchar(320)")
+  displayName: String! @col(dataType: "varchar(80)")
+  operationMode: TeacherOperationMode!
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
 type SchoolClass @table(name: "school_class", key: "id") {
   id: String! @col(dataType: "varchar(64)")
   name: String! @col(dataType: "varchar(80)")

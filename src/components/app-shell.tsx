@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ReactNode, useState } from "react";
-import { BookOpenCheck, ClipboardList, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Users } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { BookOpenCheck, ClipboardList, LayoutDashboard, LogOut, PanelLeftClose, PanelLeftOpen, Users } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
+import { getFirebaseAuth } from "@/lib/firebase-auth";
 
 const navItems = [
   { href: "/teacher", label: "대시보드", icon: LayoutDashboard },
@@ -13,6 +17,13 @@ const navItems = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { profile } = useAuth();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await signOut(getFirebaseAuth());
+    router.replace("/login");
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 text-zinc-950">
@@ -55,11 +66,25 @@ export function AppShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          {sidebarCollapsed ? null : (
-            <div className="border-t border-zinc-200 px-6 py-4 text-xs text-zinc-500">
-              Firebase SQL Connect와 Gemini API 연결 전 목업 환경
-            </div>
-          )}
+          <div className={`border-t border-zinc-200 py-4 ${sidebarCollapsed ? "px-3" : "px-5"}`}>
+            {sidebarCollapsed ? null : (
+              <div className="mb-3 min-w-0">
+                <p className="truncate text-sm font-semibold text-zinc-900">{profile?.displayName}</p>
+                <p className="mt-1 truncate text-xs text-zinc-500">{profile?.email}</p>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className={`flex h-10 w-full items-center rounded-md text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 ${
+                sidebarCollapsed ? "justify-center" : "gap-3 px-3"
+              }`}
+              title="로그아웃"
+            >
+              <LogOut className="h-4 w-4" />
+              {sidebarCollapsed ? <span className="sr-only">로그아웃</span> : "로그아웃"}
+            </button>
+          </div>
         </div>
       </aside>
       <div className={`transition-[padding] ${sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"}`}>

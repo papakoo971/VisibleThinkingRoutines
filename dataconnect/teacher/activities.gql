@@ -1,3 +1,30 @@
+query GetMyTeacherProfile @auth(level: USER) {
+  teacherProfile(key: { id_expr: "auth.uid" }) {
+    id
+    email
+    displayName
+    operationMode
+  }
+}
+
+mutation UpsertMyTeacherProfile(
+  $email: String!
+  $displayName: String!
+  $operationMode: TeacherOperationMode!
+) @auth(level: USER) {
+  teacherProfile_upsert(data: {
+    id_expr: "auth.uid"
+    email: $email
+    displayName: $displayName
+    operationMode: $operationMode
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation DeleteMyTeacherProfile @auth(level: USER) {
+  teacherProfile_delete(key: { id_expr: "auth.uid" })
+}
+
 query ListActivities @auth(level: PUBLIC, insecureReason: "Prototype teacher activity list before Firebase Auth is connected.") {
   activities {
     id

@@ -14,8 +14,17 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { listActivities, getActivity, upsertSchoolClass, upsertStudent, upsertActivity, deleteActivity, upsertActivityClass, upsertActivityAttendance, upsertActivityGroup, upsertActivityGroupMember } from '@visible-thinking/dataconnect';
+import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getActivity, upsertSchoolClass, upsertStudent, upsertActivity, deleteActivity, upsertActivityClass } from '@visible-thinking/dataconnect';
 
+
+// Operation GetMyTeacherProfile: 
+const { data } = await GetMyTeacherProfile(dataConnect);
+
+// Operation UpsertMyTeacherProfile:  For variables, look at type UpsertMyTeacherProfileVars in ../index.d.ts
+const { data } = await UpsertMyTeacherProfile(dataConnect, upsertMyTeacherProfileVars);
+
+// Operation DeleteMyTeacherProfile: 
+const { data } = await DeleteMyTeacherProfile(dataConnect);
 
 // Operation ListActivities: 
 const { data } = await ListActivities(dataConnect);
@@ -37,15 +46,6 @@ const { data } = await DeleteActivity(dataConnect, deleteActivityVars);
 
 // Operation UpsertActivityClass:  For variables, look at type UpsertActivityClassVars in ../index.d.ts
 const { data } = await UpsertActivityClass(dataConnect, upsertActivityClassVars);
-
-// Operation UpsertActivityAttendance:  For variables, look at type UpsertActivityAttendanceVars in ../index.d.ts
-const { data } = await UpsertActivityAttendance(dataConnect, upsertActivityAttendanceVars);
-
-// Operation UpsertActivityGroup:  For variables, look at type UpsertActivityGroupVars in ../index.d.ts
-const { data } = await UpsertActivityGroup(dataConnect, upsertActivityGroupVars);
-
-// Operation UpsertActivityGroupMember:  For variables, look at type UpsertActivityGroupMemberVars in ../index.d.ts
-const { data } = await UpsertActivityGroupMember(dataConnect, upsertActivityGroupMemberVars);
 
 
 ```

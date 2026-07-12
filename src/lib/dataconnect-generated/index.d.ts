@@ -29,6 +29,11 @@ export enum SubmissionStatus {
   MODIFIED = "MODIFIED",
 };
 
+export enum TeacherOperationMode {
+  CLASS_FIRST = "CLASS_FIRST",
+  SUBJECT_FIRST = "SUBJECT_FIRST",
+};
+
 
 
 export interface ActivityAttendance_Key {
@@ -65,6 +70,10 @@ export interface DeleteActivityData {
 
 export interface DeleteActivityVariables {
   id: string;
+}
+
+export interface DeleteMyTeacherProfileData {
+  teacherProfile_delete?: TeacherProfile_Key | null;
 }
 
 export interface GetActivityData {
@@ -137,6 +146,15 @@ export interface GetActivityVariables {
   id: string;
 }
 
+export interface GetMyTeacherProfileData {
+  teacherProfile?: {
+    id: string;
+    email: string;
+    displayName: string;
+    operationMode: TeacherOperationMode;
+  } & TeacherProfile_Key;
+}
+
 export interface GroupSubmissionAgreement_Key {
   activityId: string;
   activityGroupId: string;
@@ -191,6 +209,11 @@ export interface SchoolClass_Key {
 export interface Student_Key {
   id: string;
   __typename?: 'Student_Key';
+}
+
+export interface TeacherProfile_Key {
+  id: string;
+  __typename?: 'TeacherProfile_Key';
 }
 
 export interface ThinkingCard_Key {
@@ -285,6 +308,16 @@ export interface UpsertIndividualSubmissionVariables {
   status: SubmissionStatus;
 }
 
+export interface UpsertMyTeacherProfileData {
+  teacherProfile_upsert: TeacherProfile_Key;
+}
+
+export interface UpsertMyTeacherProfileVariables {
+  email: string;
+  displayName: string;
+  operationMode: TeacherOperationMode;
+}
+
 export interface UpsertSchoolClassData {
   schoolClass_upsert: SchoolClass_Key;
 }
@@ -305,6 +338,42 @@ export interface UpsertStudentVariables {
   name: string;
   passwordIssued: boolean;
 }
+
+interface GetMyTeacherProfileRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyTeacherProfileData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetMyTeacherProfileData, undefined>;
+  operationName: string;
+}
+export const getMyTeacherProfileRef: GetMyTeacherProfileRef;
+
+export function getMyTeacherProfile(options?: ExecuteQueryOptions): QueryPromise<GetMyTeacherProfileData, undefined>;
+export function getMyTeacherProfile(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyTeacherProfileData, undefined>;
+
+interface UpsertMyTeacherProfileRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyTeacherProfileVariables): MutationRef<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertMyTeacherProfileVariables): MutationRef<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+  operationName: string;
+}
+export const upsertMyTeacherProfileRef: UpsertMyTeacherProfileRef;
+
+export function upsertMyTeacherProfile(vars: UpsertMyTeacherProfileVariables): MutationPromise<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+export function upsertMyTeacherProfile(dc: DataConnect, vars: UpsertMyTeacherProfileVariables): MutationPromise<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+
+interface DeleteMyTeacherProfileRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<DeleteMyTeacherProfileData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): MutationRef<DeleteMyTeacherProfileData, undefined>;
+  operationName: string;
+}
+export const deleteMyTeacherProfileRef: DeleteMyTeacherProfileRef;
+
+export function deleteMyTeacherProfile(): MutationPromise<DeleteMyTeacherProfileData, undefined>;
+export function deleteMyTeacherProfile(dc: DataConnect): MutationPromise<DeleteMyTeacherProfileData, undefined>;
 
 interface ListActivitiesRef {
   /* Allow users to create refs without passing in DataConnect */

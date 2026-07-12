@@ -1,5 +1,10 @@
 {
   "dataconnect": {
     "source": "dataconnect"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true
+    }
   }
 }

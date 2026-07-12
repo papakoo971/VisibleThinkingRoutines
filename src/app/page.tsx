@@ -3,7 +3,7 @@ import { ArrowRight, BookOpenCheck, QrCode, UserCheck } from "lucide-react";
 
 const entryPoints = [
   {
-    href: "/teacher",
+    href: "/login",
     title: "교사 대시보드",
     description: "학급, 학생, 모둠, 활동을 관리하고 제출 결과를 확인합니다.",
     icon: BookOpenCheck,
@@ -45,8 +45,8 @@ export default function Home() {
               교사의 수업 운영과 학생의 사고 기록을 한 화면 흐름으로 연결합니다.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600">
-              이 초기 구현은 Firebase 연결 전 단계에서도 작동 가능한 화면 골격입니다. 학생 등록, 모둠 관리, 활동 생성,
-              학생 작성, 교사 결과 조회의 핵심 인터페이스를 먼저 확인할 수 있습니다.
+              Firebase 기반 교사 계정과 SQL Connect 저장소를 중심으로 학생 등록, 모둠 관리, 활동 생성, 학생 작성,
+              교사 결과 조회의 핵심 흐름을 단계적으로 연결하고 있습니다.
             </p>
           </div>
 

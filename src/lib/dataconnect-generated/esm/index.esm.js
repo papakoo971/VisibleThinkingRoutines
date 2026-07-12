@@ -21,11 +21,53 @@ export const SubmissionStatus = {
   MODIFIED: "MODIFIED",
 }
 
+export const TeacherOperationMode = {
+  CLASS_FIRST: "CLASS_FIRST",
+  SUBJECT_FIRST: "SUBJECT_FIRST",
+}
+
 export const connectorConfig = {
   connector: 'teacher',
   service: 'visible-thinking',
   location: 'asia-northeast3'
 };
+export const getMyTeacherProfileRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyTeacherProfile');
+}
+getMyTeacherProfileRef.operationName = 'GetMyTeacherProfile';
+
+export function getMyTeacherProfile(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyTeacherProfileRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const upsertMyTeacherProfileRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertMyTeacherProfile', inputVars);
+}
+upsertMyTeacherProfileRef.operationName = 'UpsertMyTeacherProfile';
+
+export function upsertMyTeacherProfile(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertMyTeacherProfileRef(dcInstance, inputVars));
+}
+
+export const deleteMyTeacherProfileRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteMyTeacherProfile');
+}
+deleteMyTeacherProfileRef.operationName = 'DeleteMyTeacherProfile';
+
+export function deleteMyTeacherProfile(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(deleteMyTeacherProfileRef(dcInstance, inputVars));
+}
+
 export const listActivitiesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

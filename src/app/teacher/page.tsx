@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { AppShell, PageHeader, PrimaryLink, StatusBadge } from "@/components/app-shell";
-import { activities, classes, teacherProfile } from "@/lib/mock-data";
+import { StatusBadge } from "@/components/app-shell";
+import { DashboardModeSync } from "@/components/dashboard-mode-sync";
+import { TeacherDashboardShell } from "@/components/teacher-dashboard-header";
+import { activities, classes } from "@/lib/mock-data";
 import type { Activity } from "@/lib/mock-data";
 
 export default async function TeacherDashboard({
@@ -9,7 +11,8 @@ export default async function TeacherDashboard({
 }: {
   searchParams: Promise<{ view?: string; subject?: string; className?: string }>;
 }) {
-  const { view = "subject", subject, className } = await searchParams;
+  const params = await searchParams;
+  const { view = "subject", subject, className } = params;
   const subjects = Array.from(new Set(activities.map((activity) => activity.subject)));
   const selectedSubject = subject ?? subjects[0];
   const subjectClasses = classes.filter((item) =>
@@ -23,13 +26,8 @@ export default async function TeacherDashboard({
   const selectedClassSubject = subject && classSubjects.includes(subject) ? subject : classSubjects[0];
 
   return (
-    <AppShell>
-      <PageHeader
-        eyebrow={teacherProfile.schoolLabel}
-        title={`${teacherProfile.name}의 수업 운영`}
-        description="학급, 학생, 모둠, 활동을 관리하고 사고 루틴 결과를 확인합니다."
-        action={<PrimaryLink href="/teacher/activities/new">활동 만들기</PrimaryLink>}
-      />
+    <TeacherDashboardShell>
+      <DashboardModeSync hasExplicitView={Boolean(params.view)} />
 
       <section>
         <div className="rounded-lg border border-zinc-200 bg-white">
@@ -73,7 +71,7 @@ export default async function TeacherDashboard({
           </div>
         </div>
       </section>
-    </AppShell>
+    </TeacherDashboardShell>
   );
 }
 

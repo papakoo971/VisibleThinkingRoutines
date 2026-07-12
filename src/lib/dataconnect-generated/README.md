@@ -8,9 +8,12 @@ This README will guide you through the process of using the generated JavaScript
 - [**Accessing the connector**](#accessing-the-connector)
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
+  - [*GetMyTeacherProfile*](#getmyteacherprofile)
   - [*ListActivities*](#listactivities)
   - [*GetActivity*](#getactivity)
 - [**Mutations**](#mutations)
+  - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
+  - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
   - [*UpsertSchoolClass*](#upsertschoolclass)
   - [*UpsertStudent*](#upsertstudent)
   - [*UpsertActivity*](#upsertactivity)
@@ -67,6 +70,102 @@ The following is true for both the action shortcut function and the `QueryRef` f
 - Both functions can be called with or without passing in a `DataConnect` instance as an argument. If no `DataConnect` argument is passed in, then the generated SDK will call `getDataConnect(connectorConfig)` behind the scenes for you.
 
 Below are examples of how to use the `teacher` connector's generated functions to execute each query. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-queries).
+
+## GetMyTeacherProfile
+You can execute the `GetMyTeacherProfile` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getMyTeacherProfile(options?: ExecuteQueryOptions): QueryPromise<GetMyTeacherProfileData, undefined>;
+
+interface GetMyTeacherProfileRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyTeacherProfileData, undefined>;
+}
+export const getMyTeacherProfileRef: GetMyTeacherProfileRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyTeacherProfile(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyTeacherProfileData, undefined>;
+
+interface GetMyTeacherProfileRef {
+  ...
+  (dc: DataConnect): QueryRef<GetMyTeacherProfileData, undefined>;
+}
+export const getMyTeacherProfileRef: GetMyTeacherProfileRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyTeacherProfileRef:
+```typescript
+const name = getMyTeacherProfileRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyTeacherProfile` query has no variables.
+### Return Type
+Recall that executing the `GetMyTeacherProfile` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyTeacherProfileData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyTeacherProfileData {
+  teacherProfile?: {
+    id: string;
+    email: string;
+    displayName: string;
+    operationMode: TeacherOperationMode;
+  } & TeacherProfile_Key;
+}
+```
+### Using `GetMyTeacherProfile`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyTeacherProfile } from '@visible-thinking/dataconnect';
+
+
+// Call the `getMyTeacherProfile()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyTeacherProfile();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyTeacherProfile(dataConnect);
+
+console.log(data.teacherProfile);
+
+// Or, you can use the `Promise` API.
+getMyTeacherProfile().then((response) => {
+  const data = response.data;
+  console.log(data.teacherProfile);
+});
+```
+
+### Using `GetMyTeacherProfile`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyTeacherProfileRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `getMyTeacherProfileRef()` function to get a reference to the query.
+const ref = getMyTeacherProfileRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyTeacherProfileRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.teacherProfile);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teacherProfile);
+});
+```
 
 ## ListActivities
 You can execute the `ListActivities` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
@@ -362,6 +461,212 @@ The following is true for both the action shortcut function and the `MutationRef
 - Both functions can be called with or without passing in a `DataConnect` instance as an argument. If no `DataConnect` argument is passed in, then the generated SDK will call `getDataConnect(connectorConfig)` behind the scenes for you.
 
 Below are examples of how to use the `teacher` connector's generated functions to execute each mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-mutations).
+
+## UpsertMyTeacherProfile
+You can execute the `UpsertMyTeacherProfile` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertMyTeacherProfile(vars: UpsertMyTeacherProfileVariables): MutationPromise<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+
+interface UpsertMyTeacherProfileRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyTeacherProfileVariables): MutationRef<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+}
+export const upsertMyTeacherProfileRef: UpsertMyTeacherProfileRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertMyTeacherProfile(dc: DataConnect, vars: UpsertMyTeacherProfileVariables): MutationPromise<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+
+interface UpsertMyTeacherProfileRef {
+  ...
+  (dc: DataConnect, vars: UpsertMyTeacherProfileVariables): MutationRef<UpsertMyTeacherProfileData, UpsertMyTeacherProfileVariables>;
+}
+export const upsertMyTeacherProfileRef: UpsertMyTeacherProfileRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertMyTeacherProfileRef:
+```typescript
+const name = upsertMyTeacherProfileRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertMyTeacherProfile` mutation requires an argument of type `UpsertMyTeacherProfileVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertMyTeacherProfileVariables {
+  email: string;
+  displayName: string;
+  operationMode: TeacherOperationMode;
+}
+```
+### Return Type
+Recall that executing the `UpsertMyTeacherProfile` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertMyTeacherProfileData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertMyTeacherProfileData {
+  teacherProfile_upsert: TeacherProfile_Key;
+}
+```
+### Using `UpsertMyTeacherProfile`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertMyTeacherProfile, UpsertMyTeacherProfileVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyTeacherProfile` mutation requires an argument of type `UpsertMyTeacherProfileVariables`:
+const upsertMyTeacherProfileVars: UpsertMyTeacherProfileVariables = {
+  email: ..., 
+  displayName: ..., 
+  operationMode: ..., 
+};
+
+// Call the `upsertMyTeacherProfile()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertMyTeacherProfile(upsertMyTeacherProfileVars);
+// Variables can be defined inline as well.
+const { data } = await upsertMyTeacherProfile({ email: ..., displayName: ..., operationMode: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertMyTeacherProfile(dataConnect, upsertMyTeacherProfileVars);
+
+console.log(data.teacherProfile_upsert);
+
+// Or, you can use the `Promise` API.
+upsertMyTeacherProfile(upsertMyTeacherProfileVars).then((response) => {
+  const data = response.data;
+  console.log(data.teacherProfile_upsert);
+});
+```
+
+### Using `UpsertMyTeacherProfile`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertMyTeacherProfileRef, UpsertMyTeacherProfileVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyTeacherProfile` mutation requires an argument of type `UpsertMyTeacherProfileVariables`:
+const upsertMyTeacherProfileVars: UpsertMyTeacherProfileVariables = {
+  email: ..., 
+  displayName: ..., 
+  operationMode: ..., 
+};
+
+// Call the `upsertMyTeacherProfileRef()` function to get a reference to the mutation.
+const ref = upsertMyTeacherProfileRef(upsertMyTeacherProfileVars);
+// Variables can be defined inline as well.
+const ref = upsertMyTeacherProfileRef({ email: ..., displayName: ..., operationMode: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertMyTeacherProfileRef(dataConnect, upsertMyTeacherProfileVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.teacherProfile_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teacherProfile_upsert);
+});
+```
+
+## DeleteMyTeacherProfile
+You can execute the `DeleteMyTeacherProfile` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteMyTeacherProfile(): MutationPromise<DeleteMyTeacherProfileData, undefined>;
+
+interface DeleteMyTeacherProfileRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<DeleteMyTeacherProfileData, undefined>;
+}
+export const deleteMyTeacherProfileRef: DeleteMyTeacherProfileRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteMyTeacherProfile(dc: DataConnect): MutationPromise<DeleteMyTeacherProfileData, undefined>;
+
+interface DeleteMyTeacherProfileRef {
+  ...
+  (dc: DataConnect): MutationRef<DeleteMyTeacherProfileData, undefined>;
+}
+export const deleteMyTeacherProfileRef: DeleteMyTeacherProfileRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteMyTeacherProfileRef:
+```typescript
+const name = deleteMyTeacherProfileRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteMyTeacherProfile` mutation has no variables.
+### Return Type
+Recall that executing the `DeleteMyTeacherProfile` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteMyTeacherProfileData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteMyTeacherProfileData {
+  teacherProfile_delete?: TeacherProfile_Key | null;
+}
+```
+### Using `DeleteMyTeacherProfile`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteMyTeacherProfile } from '@visible-thinking/dataconnect';
+
+
+// Call the `deleteMyTeacherProfile()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteMyTeacherProfile();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteMyTeacherProfile(dataConnect);
+
+console.log(data.teacherProfile_delete);
+
+// Or, you can use the `Promise` API.
+deleteMyTeacherProfile().then((response) => {
+  const data = response.data;
+  console.log(data.teacherProfile_delete);
+});
+```
+
+### Using `DeleteMyTeacherProfile`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteMyTeacherProfileRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `deleteMyTeacherProfileRef()` function to get a reference to the mutation.
+const ref = deleteMyTeacherProfileRef();
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteMyTeacherProfileRef(dataConnect);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.teacherProfile_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teacherProfile_delete);
+});
+```
 
 ## UpsertSchoolClass
 You can execute the `UpsertSchoolClass` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):

@@ -17,7 +17,26 @@
 - Live SQL Connect create returned `201`, and list/detail returned the persisted payload.
 - Updating the activity was immediately visible from detail reads.
 - Delete returned `200`, the deleted detail returned `404`, and the final list was empty.
-- `npm run check` passed: ESLint, TypeScript, and the Next.js 16.2.7 production build with all 54 static pages.
+- `npm run check` passed: ESLint, TypeScript, and the Next.js 16.2.7 production build with all 57 static pages/routes.
+
+### Teacher Authentication And Onboarding
+
+- Enabled the Firebase Authentication email/password provider through project configuration.
+- Added the SQL Connect `TeacherProfile` model keyed by Firebase Auth UID.
+- Added authenticated profile read, upsert, and self-delete operations using `auth.uid` server expressions.
+- Added teacher signup and login routes with Korean validation and Firebase error messages.
+- Added a shared Firebase auth state provider and protected the `/teacher` route tree.
+- Added first-login onboarding for class-first or subject-first operation mode.
+- Applied the saved operation mode to the teacher dashboard default view.
+- Added authenticated teacher identity and logout to the teacher sidebar.
+- Replaced the dashboard mock teacher name with the authenticated profile name.
+
+### Authentication Verification
+
+- Verified the home, signup, onboarding, and teacher dashboard screens in a real browser with no Next.js error overlay.
+- Verified live Firebase signup, profile creation, class-first dashboard routing, refresh persistence, logout, unauthorized route redirect, and returning-user login.
+- Removed the smoke-test teacher profile and Firebase Auth account after verification.
+- Kept activity operations public until activity ownership and server-side token verification are implemented together.
 
 ## 2026-07-11
 

@@ -25,12 +25,61 @@ const SubmissionStatus = {
 }
 exports.SubmissionStatus = SubmissionStatus;
 
+const TeacherOperationMode = {
+  CLASS_FIRST: "CLASS_FIRST",
+  SUBJECT_FIRST: "SUBJECT_FIRST",
+}
+exports.TeacherOperationMode = TeacherOperationMode;
+
 const connectorConfig = {
   connector: 'teacher',
   service: 'visible-thinking',
   location: 'asia-northeast3'
 };
 exports.connectorConfig = connectorConfig;
+
+const getMyTeacherProfileRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyTeacherProfile');
+}
+getMyTeacherProfileRef.operationName = 'GetMyTeacherProfile';
+exports.getMyTeacherProfileRef = getMyTeacherProfileRef;
+
+exports.getMyTeacherProfile = function getMyTeacherProfile(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyTeacherProfileRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const upsertMyTeacherProfileRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertMyTeacherProfile', inputVars);
+}
+upsertMyTeacherProfileRef.operationName = 'UpsertMyTeacherProfile';
+exports.upsertMyTeacherProfileRef = upsertMyTeacherProfileRef;
+
+exports.upsertMyTeacherProfile = function upsertMyTeacherProfile(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertMyTeacherProfileRef(dcInstance, inputVars));
+}
+;
+
+const deleteMyTeacherProfileRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteMyTeacherProfile');
+}
+deleteMyTeacherProfileRef.operationName = 'DeleteMyTeacherProfile';
+exports.deleteMyTeacherProfileRef = deleteMyTeacherProfileRef;
+
+exports.deleteMyTeacherProfile = function deleteMyTeacherProfile(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(deleteMyTeacherProfileRef(dcInstance, inputVars));
+}
+;
 
 const listActivitiesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
