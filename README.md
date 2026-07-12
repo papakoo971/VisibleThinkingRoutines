@@ -85,4 +85,4 @@ npm run check
 - 활동 마감, 태그, AI 분석
 - 운영 배포 환경 변수와 인증 기반 SQL Connect 권한
 
-교사 프로필 Data Connect 작업은 Firebase Auth UID 소유권으로 보호됩니다. 기존 활동 저장 API와 활동 Data Connect 작업은 아직 프로토타입용 공개 권한을 사용하므로, 활동에 `teacherId` 소유권과 서버 토큰 검증이 추가되기 전에는 공개 배포 환경에서 사용하면 안 됩니다.
+교사 프로필과 교사용 활동 목록·생성·삭제는 Firebase Auth UID 소유권으로 보호됩니다. Route Handler는 Firebase ID 토큰을 검증하고 SQL Connect는 `auth.uid`와 트랜잭션 소유권 검사를 다시 평가합니다. 학생 인증이 아직 없으므로 학생 활동 상세 조회는 임시 공개 상태이며, 학급과 학생 데이터도 아직 교사별로 분리되지 않았습니다.

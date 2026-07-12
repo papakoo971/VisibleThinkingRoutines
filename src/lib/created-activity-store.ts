@@ -6,10 +6,15 @@ type CreatedActivityGlobal = typeof globalThis & {
 };
 
 export type CreatedActivityStore = {
-  list(teacherId: string): Promise<CreatedActivityPayload[]>;
+  list(context: CreatedActivityStoreContext): Promise<CreatedActivityPayload[]>;
   get(activityId: string): Promise<CreatedActivityPayload | undefined>;
-  upsert(payload: CreatedActivityPayload, teacherId: string): Promise<CreatedActivityPayload>;
-  remove(activityId: string, teacherId: string): Promise<void>;
+  upsert(payload: CreatedActivityPayload, context: CreatedActivityStoreContext): Promise<CreatedActivityPayload>;
+  remove(activityId: string, context: CreatedActivityStoreContext): Promise<void>;
+};
+
+export type CreatedActivityStoreContext = {
+  uid: string;
+  idToken: string;
 };
 
 function getStore() {
@@ -19,25 +24,25 @@ function getStore() {
 }
 
 const memoryCreatedActivityStore: CreatedActivityStore = {
-  async list(teacherId) {
-    return getStore().filter((item) => item.teacherId === teacherId).map((item) => item.payload);
+  async list(context) {
+    return getStore().filter((item) => item.teacherId === context.uid).map((item) => item.payload);
   },
   async get(activityId) {
     return getStore().find((item) => item.payload.activity.id === activityId)?.payload;
   },
-  async upsert(payload, teacherId) {
+  async upsert(payload, context) {
     const store = getStore();
     const next = [
-      { teacherId, payload },
-      ...store.filter((item) => item.teacherId !== teacherId || item.payload.activity.id !== payload.activity.id),
+      { teacherId: context.uid, payload },
+      ...store.filter((item) => item.teacherId !== context.uid || item.payload.activity.id !== payload.activity.id),
     ];
     (globalThis as CreatedActivityGlobal).__visibleThinkingCreatedActivities = next;
     return payload;
   },
-  async remove(activityId, teacherId) {
+  async remove(activityId, context) {
     const store = getStore();
     (globalThis as CreatedActivityGlobal).__visibleThinkingCreatedActivities = store.filter(
-      (item) => item.teacherId !== teacherId || item.payload.activity.id !== activityId
+      (item) => item.teacherId !== context.uid || item.payload.activity.id !== activityId
     );
   },
 };
@@ -45,18 +50,18 @@ const memoryCreatedActivityStore: CreatedActivityStore = {
 const createdActivityStore =
   process.env.CREATED_ACTIVITY_STORE === "sql-connect" ? sqlConnectCreatedActivityStore : memoryCreatedActivityStore;
 
-export function listCreatedActivityPayloads(teacherId: string) {
-  return createdActivityStore.list(teacherId);
+export function listCreatedActivityPayloads(context: CreatedActivityStoreContext) {
+  return createdActivityStore.list(context);
 }
 
 export function getCreatedActivityPayload(activityId: string) {
   return createdActivityStore.get(activityId);
 }
 
-export function upsertCreatedActivityPayload(payload: CreatedActivityPayload, teacherId: string) {
-  return createdActivityStore.upsert(payload, teacherId);
+export function upsertCreatedActivityPayload(payload: CreatedActivityPayload, context: CreatedActivityStoreContext) {
+  return createdActivityStore.upsert(payload, context);
 }
 
-export function deleteCreatedActivityPayload(activityId: string, teacherId: string) {
-  return createdActivityStore.remove(activityId, teacherId);
+export function deleteCreatedActivityPayload(activityId: string, context: CreatedActivityStoreContext) {
+  return createdActivityStore.remove(activityId, context);
 }

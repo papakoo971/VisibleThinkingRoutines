@@ -8,14 +8,22 @@ export class UnauthorizedError extends Error {
   }
 }
 
-export async function requireFirebaseUser(request: Request): Promise<DecodedIdToken> {
+export type VerifiedFirebaseUser = {
+  claims: DecodedIdToken;
+  idToken: string;
+};
+
+export async function requireFirebaseUser(request: Request): Promise<VerifiedFirebaseUser> {
   const authorization = request.headers.get("authorization");
   const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
 
   if (!token) throw new UnauthorizedError();
 
   try {
-    return await getFirebaseAdminAuth().verifyIdToken(token);
+    return {
+      claims: await getFirebaseAdminAuth().verifyIdToken(token),
+      idToken: token,
+    };
   } catch {
     throw new UnauthorizedError();
   }

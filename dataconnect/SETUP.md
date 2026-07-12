@@ -144,4 +144,6 @@ SQL-backed activity deletion is implemented through the generated `DeleteActivit
 
 ## Current prototype caveat
 
-Teacher profile operations require Firebase Authentication and derive ownership from `auth.uid`. Activity operations still use prototype `@auth(level: PUBLIC)` directives. Add `teacherId` ownership filters and server-side Firebase token verification before tightening those operations and exposing the app publicly.
+Teacher profile and teacher activity operations require Firebase Authentication and derive ownership from `auth.uid`. The Next.js Route Handlers verify bearer ID tokens and forward the verified token to SQL Connect, where transactional ownership checks protect dependent writes and deletion.
+
+`GetActivity` remains a temporary public operation for the unauthenticated student prototype. Add student authentication and assigned-activity authorization before exposing the app publicly. `SchoolClass` and `Student` also remain shared prototype records until their teacher ownership migration is complete.

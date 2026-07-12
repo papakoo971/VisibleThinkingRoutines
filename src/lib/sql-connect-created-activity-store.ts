@@ -2,8 +2,8 @@ import { QueryFetchPolicy } from "firebase/data-connect";
 import type { CreatedActivityStore } from "@/lib/created-activity-store";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
 import { students } from "@/lib/mock-data";
-import { getVisibleThinkingAdminDataConnect } from "@/lib/firebase-admin";
 import { getVisibleThinkingDataConnect } from "@/lib/firebase-sql-connect";
+import { executeUserMutation, executeUserQuery } from "@/lib/server-sql-connect";
 import {
   ActivityMode,
   ActivityStatus,
@@ -152,11 +152,11 @@ function detailActivityToPayload(activity: NonNullable<GetActivityData["activity
   };
 }
 
-async function executeMutation<Variables>(name: string, variables: Variables) {
-  await getVisibleThinkingAdminDataConnect().executeMutation<unknown, Variables>(name, variables);
+async function executeMutation<Variables>(name: string, variables: Variables, idToken: string) {
+  await executeUserMutation<unknown, Variables>(name, variables, idToken);
 }
 
-async function upsertPayloadDependencies(payload: CreatedActivityPayload) {
+async function upsertPayloadDependencies(payload: CreatedActivityPayload, idToken: string) {
   const studentIds = new Set([
     ...payload.activityAttendance.map((attendance) => attendance.studentId),
     ...payload.activityGroups.flatMap((group) => group.studentIds),
@@ -167,24 +167,31 @@ async function upsertPayloadDependencies(payload: CreatedActivityPayload) {
   const classNames = new Set([...payload.activity.classes, ...payloadStudents.map((student) => student.className)]);
 
   for (const name of classNames) {
-    await executeMutation<UpsertSchoolClassVariables>("UpsertSchoolClass", { id: name, name });
+    await executeMutation<UpsertSchoolClassVariables>("UpsertSchoolClass", { id: name, name }, idToken);
   }
 
   for (const student of payloadStudents) {
-    await executeMutation<UpsertStudentVariables>("UpsertStudent", {
-      id: student.id,
-      schoolClassId: student.className,
-      studentNumber: student.studentNumber,
-      name: student.name,
-      passwordIssued: student.passwordIssued,
-    });
+    await executeMutation<UpsertStudentVariables>(
+      "UpsertStudent",
+      {
+        id: student.id,
+        schoolClassId: student.className,
+        studentNumber: student.studentNumber,
+        name: student.name,
+        passwordIssued: student.passwordIssued,
+      },
+      idToken
+    );
   }
 }
 
 export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
-  async list(teacherId) {
-    void teacherId;
-    const { data } = await getVisibleThinkingAdminDataConnect().executeQuery<ListActivitiesData>("ListActivities");
+  async list(context) {
+    const data = await executeUserQuery<ListActivitiesData, Record<string, never>>(
+      "ListActivities",
+      {},
+      context.idToken
+    );
     return data.activities.map(listActivityToPayload);
   },
 
@@ -197,30 +204,33 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     return data.activity ? detailActivityToPayload(data.activity) : undefined;
   },
 
-  async upsert(payload, teacherId) {
-    void teacherId;
-    await upsertPayloadDependencies(payload);
+  async upsert(payload, context) {
+    await upsertPayloadDependencies(payload, context.idToken);
     const { activity } = payload;
 
-    await executeMutation<CreateActivityVariables>("CreateActivity", {
-      id: activity.id,
-      title: activity.title,
-      routine: activity.routine,
-      activityMode: toActivityMode(activity.activityMode),
-      subject: activity.subject,
-      status: toActivityStatus(activity.status),
-      code: activity.code,
-      materialType: activity.materialType,
-      activityDate: activity.activityDate,
-      submittedCount: activity.submittedCount,
-      targetCount: activity.targetCount,
-    });
+    await executeMutation<CreateActivityVariables>(
+      "CreateActivity",
+      {
+        id: activity.id,
+        title: activity.title,
+        routine: activity.routine,
+        activityMode: toActivityMode(activity.activityMode),
+        subject: activity.subject,
+        status: toActivityStatus(activity.status),
+        code: activity.code,
+        materialType: activity.materialType,
+        activityDate: activity.activityDate,
+        submittedCount: activity.submittedCount,
+        targetCount: activity.targetCount,
+      },
+      context.idToken
+    );
 
     for (const className of activity.classes) {
       await executeMutation<UpsertActivityClassVariables>("UpsertActivityClass", {
         activityId: activity.id,
         schoolClassId: className,
-      });
+      }, context.idToken);
     }
 
     for (const attendance of payload.activityAttendance) {
@@ -228,7 +238,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
         activityId: attendance.activityId,
         studentId: attendance.studentId,
         status: toAttendanceStatus(attendance.status),
-      });
+      }, context.idToken);
     }
 
     for (const group of payload.activityGroups) {
@@ -236,13 +246,13 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
         id: group.id,
         activityId: group.activityId,
         name: group.name,
-      });
+      }, context.idToken);
 
       for (const studentId of group.studentIds) {
         await executeMutation<UpsertActivityGroupMemberVariables>("UpsertActivityGroupMember", {
           activityGroupId: group.id,
           studentId,
-        });
+        }, context.idToken);
       }
     }
 
@@ -251,7 +261,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
         activityId: submission.activityId,
         studentId: submission.studentId,
         status: toSubmissionStatus(submission.status),
-      });
+      }, context.idToken);
     }
 
     for (const submission of payload.groupSubmissions) {
@@ -259,7 +269,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
         activityId: submission.activityId,
         activityGroupId: submission.groupId,
         status: toSubmissionStatus(submission.status),
-      });
+      }, context.idToken);
 
       for (const agreement of submission.agreements) {
         await executeMutation<UpsertGroupSubmissionAgreementVariables>("UpsertGroupSubmissionAgreement", {
@@ -267,15 +277,14 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
           activityGroupId: agreement.groupId,
           studentId: agreement.studentId,
           agreed: agreement.agreed,
-        });
+        }, context.idToken);
       }
     }
 
     return payload;
   },
 
-  async remove(activityId, teacherId) {
-    void teacherId;
-    await executeMutation<DeleteActivityVariables>("DeleteActivity", { id: activityId });
+  async remove(activityId, context) {
+    await executeMutation<DeleteActivityVariables>("DeleteActivity", { id: activityId }, context.idToken);
   },
 };

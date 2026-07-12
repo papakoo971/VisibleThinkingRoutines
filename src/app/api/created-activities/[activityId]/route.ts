@@ -1,5 +1,6 @@
 import { deleteCreatedActivityPayload, getCreatedActivityPayload } from "@/lib/created-activity-store";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
+import { SqlConnectAuthorizationError } from "@/lib/server-sql-connect";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +19,14 @@ export async function DELETE(request: Request, context: { params: Promise<{ acti
   try {
     const user = await requireFirebaseUser(request);
     const { activityId } = await context.params;
-    await deleteCreatedActivityPayload(activityId, user.uid);
+    await deleteCreatedActivityPayload(activityId, { uid: user.claims.uid, idToken: user.idToken });
 
     return Response.json({ ok: true });
   } catch (error) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();
+    if (error instanceof SqlConnectAuthorizationError) {
+      return Response.json({ message: "You do not own this activity" }, { status: 403 });
+    }
     throw error;
   }
 }

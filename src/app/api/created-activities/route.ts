@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
     const user = await requireFirebaseUser(request);
-    return Response.json({ activities: await listCreatedActivityPayloads(user.uid) });
+    return Response.json({ activities: await listCreatedActivityPayloads({ uid: user.claims.uid, idToken: user.idToken }) });
   } catch (error) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();
     throw error;
@@ -23,7 +23,10 @@ export async function POST(request: Request) {
       return Response.json({ message: "activity.id is required" }, { status: 400 });
     }
 
-    return Response.json({ activity: await upsertCreatedActivityPayload(payload, user.uid) }, { status: 201 });
+    return Response.json(
+      { activity: await upsertCreatedActivityPayload(payload, { uid: user.claims.uid, idToken: user.idToken }) },
+      { status: 201 }
+    );
   } catch (error) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();
     throw error;

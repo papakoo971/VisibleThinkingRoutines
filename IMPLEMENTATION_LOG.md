@@ -1,8 +1,8 @@
 # Implementation Log
 
-## 2026-07-12 Activity Ownership Checkpoint
+## 2026-07-12 Activity Ownership
 
-### Work In Progress
+### Completed
 
 - Added `teacherId` to the SQL Connect `Activity` model.
 - Replaced the unsafe activity upsert operation with an authenticated create operation that assigns `teacherId` from `auth.uid`.
@@ -10,14 +10,20 @@
 - Added transactional `@check` and `@redact` ownership checks before activity deletion and dependent activity writes.
 - Added Firebase ID token forwarding from browser API calls and UID-scoped local storage keys.
 - Added Route Handler bearer-token validation boundaries for teacher activity list, create, and delete requests.
-- Added the Firebase Admin SDK dependency and lazy server initialization helpers.
+- Added Firebase Admin Auth ID-token verification with lazy server initialization.
+- Forwarded the verified ID token to SQL Connect REST operations so `auth.uid` is evaluated in the original user context.
+- Added `403 Forbidden` responses for cross-owner activity deletion attempts.
+- Migrated the live `Activity` table and deployed the ownership-aware `teacher` connector.
 
-### Important Resume Point
+### Ownership Verification
 
-- The connector compiles locally, but these ownership changes have **not** been migrated or deployed to the live SQL Connect service.
-- The server SQL Connect store still needs to forward the verified Firebase ID token to SQL Connect so `auth.uid` is evaluated in the user context. Its current Admin SDK call path would bypass user auth evaluation and must not be deployed as-is.
-- Resume by replacing the Admin Data Connect operation calls in `src/lib/sql-connect-created-activity-store.ts` with authenticated SQL Connect REST calls (or Admin SDK impersonation with verified claims), then run authenticated two-teacher isolation tests before migration/deployment.
-- `SchoolClass` and `Student` are still shared prototype records; their teacher ownership migration remains a later follow-up.
+- Unauthenticated teacher activity list requests return `401`.
+- Teacher A can create, list, and delete its own activity.
+- Teacher B receives an empty owned activity list and a `403` response when deleting Teacher A's activity.
+- A denied cross-owner delete leaves the activity intact.
+- Direct cross-owner `UpsertActivityClass` connector calls fail with `PERMISSION_DENIED` and roll back.
+- All smoke-test activities and Firebase Auth accounts were removed after verification.
+- `SchoolClass` and `Student` remain shared prototype records; their teacher ownership migration is the next data-isolation follow-up.
 
 ## 2026-07-12
 
