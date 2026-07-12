@@ -16,7 +16,7 @@
     "@ai-sdk/openai": "^3.0.84",
     "ai": "^6.0.224",
     "firebase": "^12.14.0",
-    "firebase-admin": "^14.1.0",
+    "firebase-admin": "13.10.0",
     "lucide-react": "^1.17.0",
     "next": "16.2.7",
     "qrcode": "^1.5.4",
