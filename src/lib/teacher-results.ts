@@ -7,7 +7,15 @@ export type TeacherActivityResults = {
   submissions: Array<{
     studentId: string;
     status: "draft" | "submitted" | "modified";
-    cards: Array<{ id: string; studentId: string; column: RoutineColumn; content: string; tags: string[]; tagsPublic: boolean }>;
+    sourceFingerprint: string;
+    cards: Array<{ id: string; studentId: string; column: RoutineColumn; content: string; tags: string[]; tagsPublic: boolean; updatedAt: string }>;
+  }>;
+  sourceFingerprint: string;
+  analyses: Array<{
+    id: string; scope: string; studentId?: string | null; status: string; model: string; summary?: string | null;
+    strengths: string[]; misconceptions: string[]; nextQuestions: string[]; recommendations: string[];
+    sourceFingerprint?: string | null; inputTokens?: number | null; outputTokens?: number | null; totalTokens?: number | null;
+    errorMessage?: string | null; updatedAt: string;
   }>;
 };
 
@@ -39,4 +47,15 @@ export async function updateTeacherCardTags(activityId: string, cardId: string, 
     body: JSON.stringify({ cardId, tags, tagsPublic }),
   });
   if (!response.ok) throw new Error("카드 태그를 저장하지 못했습니다.");
+}
+
+export async function generateTeacherAnalysis(activityId: string, scope: "class" | "student", studentId?: string) {
+  const response = await fetch(`/api/teacher/activities/${activityId}/analysis`, {
+    method: "POST",
+    headers: await headers(true),
+    body: JSON.stringify({ scope, studentId }),
+  });
+  const result = (await response.json()) as { message?: string };
+  if (!response.ok) throw new Error(result.message === "AI Gateway credentials are not configured" ? "AI Gateway 자격증명이 필요합니다." : "AI 분석을 생성하지 못했습니다.");
+  return result;
 }

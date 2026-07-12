@@ -100,6 +100,18 @@ export function getTeacherActivity(dcOrVars, varsOrOptions, options) {
   return executeQuery(getTeacherActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
+export const upsertAiAnalysisRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertAiAnalysis', inputVars);
+}
+upsertAiAnalysisRef.operationName = 'UpsertAiAnalysis';
+
+export function upsertAiAnalysis(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertAiAnalysisRef(dcInstance, inputVars));
+}
+
 export const getTeacherActivityResultsRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

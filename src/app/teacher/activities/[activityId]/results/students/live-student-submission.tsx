@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { fetchTeacherActivityResults, type TeacherActivityResults } from "@/lib/teacher-results";
+import { fetchTeacherActivityResults, generateTeacherAnalysis, type TeacherActivityResults } from "@/lib/teacher-results";
 import type { RoutineColumn } from "@/lib/mock-data";
 
 const columns: Array<{ id: RoutineColumn; label: string }> = [
@@ -15,6 +15,8 @@ const columns: Array<{ id: RoutineColumn; label: string }> = [
 
 export function LiveStudentSubmission({ activityId, studentId }: { activityId: string; studentId: string }) {
   const [results, setResults] = useState<TeacherActivityResults | null | undefined>(undefined);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -30,6 +32,8 @@ export function LiveStudentSubmission({ activityId, studentId }: { activityId: s
   const student = results?.students.find((item) => item.id === studentId);
   const submission = results?.submissions.find((item) => item.studentId === studentId);
   if (!results || !student) return <main className="min-h-screen bg-stone-50 p-6 text-sm text-zinc-600">학생 제출 내용을 찾을 수 없습니다.</main>;
+  const analysis = results.analyses.filter((item) => item.scope === "student" && item.studentId === studentId && item.status === "complete").sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+  const stale = Boolean(analysis && analysis.sourceFingerprint !== submission?.sourceFingerprint);
 
   return (
     <AppShell>
@@ -55,6 +59,13 @@ export function LiveStudentSubmission({ activityId, studentId }: { activityId: s
             </div>
           );
         })}
+      </section>
+      <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div><h2 className="font-semibold">개인 AI 분석</h2><p className="mt-2 text-sm leading-6 text-zinc-600">{analysis?.summary ?? "학생 카드가 준비되면 개인 분석을 실행할 수 있습니다."}</p>{stale ? <p className="mt-2 text-sm font-semibold text-amber-700">카드 변경으로 갱신이 필요합니다.</p> : null}{analysisError ? <p role="alert" className="mt-2 text-sm text-red-700">{analysisError}</p> : null}</div>
+          <button type="button" disabled={analyzing || !submission?.cards.length} onClick={async () => { setAnalyzing(true); setAnalysisError(null); try { await generateTeacherAnalysis(activityId, "student", studentId); setResults(await fetchTeacherActivityResults(activityId)); } catch (error) { setAnalysisError(error instanceof Error ? error.message : "AI 분석에 실패했습니다."); } finally { setAnalyzing(false); } }} className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white disabled:bg-zinc-400">{analyzing ? "분석 중..." : analysis ? "분석 갱신" : "개인 분석 실행"}</button>
+        </div>
+        {analysis ? <div className="mt-4 grid gap-3 md:grid-cols-2"><p className="rounded-md bg-stone-50 p-3 text-sm"><strong>강점:</strong> {analysis.strengths.join(" · ")}</p><p className="rounded-md bg-stone-50 p-3 text-sm"><strong>다음 발문:</strong> {analysis.nextQuestions.join(" · ")}</p></div> : null}
       </section>
     </AppShell>
   );

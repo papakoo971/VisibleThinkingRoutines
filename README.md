@@ -13,6 +13,7 @@
 - Firebase SDK
 - Firebase Data Connect / Cloud SQL for PostgreSQL 준비 구조
 - Firebase Authentication (교사 이메일/비밀번호)
+- AI SDK 6 / Vercel AI Gateway
 
 프로젝트 규칙상 Next.js 코드를 변경하기 전에 설치된 버전의 문서인 `node_modules/next/dist/docs/`를 확인해야 합니다.
 
@@ -80,13 +81,14 @@ npm run check
 - 활동별 안내문·자료 메타데이터, 짧은 코드, 내부 생성 QR 접속 흐름
 - Firebase Storage 자료 업로드와 교사 UID 경로 보안 규칙
 - 기본·사용자 정의 카드 태그, 결과 필터, 학생 공개 설정
+- 개인·학급 AI 분석 생성, 결과·모델·토큰 사용량 영속화, 카드 변경 감지
 
 아직 운영 기능으로 연결되지 않은 범위:
 
 - XLSX 학생 등록과 기존 학생 비밀번호 재발급
 - 독립적인 학급/학생/모둠 관리 화면의 CRUD 영속화
 - 모둠 공동 카드 자동 저장과 제출 영속화
-- 개인·학급 AI 분석
+- AI Gateway 자격 증명을 사용한 실제 모델 호출 운영 검증
 - 운영 배포 환경 변수와 인증 기반 SQL Connect 권한
 
 교사 프로필, 활동, 활동에 연결된 학급·학생 데이터는 Firebase Auth UID 소유권으로 격리됩니다. 학생은 교사가 연결한 Firebase 계정으로 로그인하며, 출석 상태가 `PRESENT`인 배정 활동만 조회할 수 있습니다. Route Handler는 Firebase ID 토큰을 검증하고 SQL Connect는 `auth.uid`를 기준으로 교사 소유권 또는 학생 배정을 다시 평가합니다.

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   ActivityMode,
   ActivityStatus,
@@ -44,6 +45,7 @@ export async function GET(request: Request, context: { params: Promise<{ activit
       className: attendance.student.schoolClass.name,
       attendance: attendance.status === AttendanceStatus.ABSENT ? "absent" : "present",
     }]));
+    const sourceFingerprint = createHash("sha256").update(JSON.stringify(activity.thinkingCards_on_activity.map((card) => [card.id, card.updatedAt, card.content]))).digest("hex");
 
     return Response.json({
       activity: {
@@ -58,6 +60,7 @@ export async function GET(request: Request, context: { params: Promise<{ activit
       submissions: activity.individualSubmissions_on_activity.map((submission) => ({
         studentId: externalStudentId(submission.student),
         status: submissionName(submission.status),
+        sourceFingerprint: createHash("sha256").update(JSON.stringify(activity.thinkingCards_on_activity.filter((card) => card.student.id === submission.student.id).map((card) => [card.id, card.updatedAt, card.content]))).digest("hex"),
         cards: activity.thinkingCards_on_activity.filter((card) => card.student.id === submission.student.id).map((card) => ({
           id: card.id,
           studentId: externalStudentId(card.student),
@@ -65,7 +68,27 @@ export async function GET(request: Request, context: { params: Promise<{ activit
           content: card.content,
           tags: card.tags ?? [],
           tagsPublic: card.tagsPublic,
+          updatedAt: card.updatedAt,
         })),
+      })),
+      sourceFingerprint,
+      analyses: activity.aiAnalyses_on_activity.map((analysis) => ({
+        id: analysis.id,
+        scope: analysis.scope,
+        studentId: analysis.studentExternalId,
+        status: analysis.status,
+        model: analysis.model,
+        summary: analysis.summary,
+        strengths: analysis.strengths ?? [],
+        misconceptions: analysis.misconceptions ?? [],
+        nextQuestions: analysis.nextQuestions ?? [],
+        recommendations: analysis.recommendations ?? [],
+        sourceFingerprint: analysis.sourceFingerprint,
+        inputTokens: analysis.inputTokens,
+        outputTokens: analysis.outputTokens,
+        totalTokens: analysis.totalTokens,
+        errorMessage: analysis.errorMessage,
+        updatedAt: analysis.updatedAt,
       })),
     });
   } catch (error) {

@@ -142,3 +142,24 @@ type GroupSubmissionAgreement @table(name: "group_submission_agreement", key: ["
   agreed: Boolean! @default(value: false)
   updatedAt: Timestamp! @default(expr: "request.time")
 }
+
+type AiAnalysis @table(name: "ai_analysis", key: "id") {
+  id: String! @col(dataType: "varchar(160)")
+  activity: Activity!
+  scope: String! @col(dataType: "varchar(20)")
+  studentExternalId: String @col(dataType: "varchar(64)")
+  status: String! @col(dataType: "varchar(20)")
+  model: String! @col(dataType: "varchar(120)")
+  summary: String
+  strengths: [String]
+  misconceptions: [String]
+  nextQuestions: [String]
+  recommendations: [String]
+  sourceFingerprint: String @col(dataType: "varchar(64)")
+  inputTokens: Int
+  outputTokens: Int
+  totalTokens: Int
+  errorMessage: String
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}

@@ -18,7 +18,7 @@ import {
 import type { RoutineColumn, ThinkingCard } from "@/lib/mock-data";
 import { fetchCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
-import { fetchTeacherActivityResults, updateTeacherActivityStatus, updateTeacherCardTags, type TeacherActivityResults } from "@/lib/teacher-results";
+import { fetchTeacherActivityResults, generateTeacherAnalysis, updateTeacherActivityStatus, updateTeacherCardTags, type TeacherActivityResults } from "@/lib/teacher-results";
 
 const columns: { id: RoutineColumn; label: string }[] = [
   { id: "see", label: "See" },
@@ -49,6 +49,9 @@ export function ActivityResultsView({ activityId }: { activityId: string }) {
   }, [activityId, mockActivity]);
 
   const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
+  async function refreshLiveResults() {
+    setLiveResults(await fetchTeacherActivityResults(activityId));
+  }
 
   return (
     <ActivityResultsWorkspace
@@ -67,6 +70,7 @@ export function ActivityResultsView({ activityId }: { activityId: string }) {
           })),
         } : current);
       }}
+      onRefreshResults={refreshLiveResults}
     />
   );
 }
@@ -77,16 +81,20 @@ function ActivityResultsWorkspace({
   liveResults,
   onStatusChange,
   onCardTagsChange,
+  onRefreshResults,
 }: {
   activityId: string;
   createdPayload: CreatedActivityPayload | null;
   liveResults: TeacherActivityResults | null;
   onStatusChange: (status: "active" | "closed") => void;
   onCardTagsChange: (cardId: string, tags: string[], tagsPublic: boolean) => Promise<void>;
+  onRefreshResults: () => Promise<void>;
 }) {
   const [anonymous, setAnonymous] = useState(false);
   const [tagFilter, setTagFilter] = useState("전체");
   const [changingStatus, setChangingStatus] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const mockActivity = activities.find((item) => item.id === activityId);
   const baseActivity = mockActivity ?? createdPayload?.activity ?? activities[0];
   const activity = liveResults ? { ...baseActivity, status: liveResults.activity.status } : baseActivity;
@@ -119,6 +127,8 @@ function ActivityResultsWorkspace({
     ? liveResults.students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id))
     : students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id));
   const participatingGroups = allActivityGroups.filter((group) => group.activityId === activity.id);
+  const classAnalysis = liveResults?.analyses.filter((analysis) => analysis.scope === "class" && analysis.status === "complete").sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+  const analysisStale = Boolean(classAnalysis && classAnalysis.sourceFingerprint !== liveResults?.sourceFingerprint);
 
   return (
     <AppShell>
@@ -161,20 +171,19 @@ function ActivityResultsWorkspace({
               <Brain className="h-5 w-5 text-emerald-700" />
               <h2 className="font-semibold">학급 AI 분석 보고서</h2>
             </div>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
-              제출률 6/7명, 86%. 많이 나온 관찰은 도로, 건물, 공원이며 흥미로운 질문은 보행 안전과 환경 변화에
-              집중되어 있습니다.
-            </p>
+            <p className="mt-2 text-sm leading-6 text-zinc-600">{classAnalysis?.summary ?? "학생 카드가 준비되면 학급 분석을 실행할 수 있습니다."}</p>
+            {analysisStale ? <p className="mt-2 text-sm font-semibold text-amber-700">카드가 변경되어 분석 갱신이 필요합니다.</p> : null}
+            {analysisError ? <p role="alert" className="mt-2 text-sm text-red-700">{analysisError}</p> : null}
           </div>
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-200 px-3 text-sm font-semibold">
+          <button type="button" disabled={analyzing || !liveResults?.submissions.some((submission) => submission.cards.length)} onClick={async () => { setAnalyzing(true); setAnalysisError(null); try { await generateTeacherAnalysis(activity.id, "class"); await onRefreshResults(); } catch (error) { setAnalysisError(error instanceof Error ? error.message : "AI 분석에 실패했습니다."); } finally { setAnalyzing(false); } }} className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-200 px-3 text-sm font-semibold disabled:text-zinc-400">
             <RefreshCw className="h-4 w-4" />
-            분석 갱신
+            {analyzing ? "분석 중..." : classAnalysis ? "분석 갱신" : "학급 분석 실행"}
           </button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <ReportItem title="오개념 가능성" body="공장이 생기면 항상 도시가 더 나빠진다는 단정적 표현이 일부 보입니다." />
-          <ReportItem title="다음 발문" body="도시 개발이 사람과 자연에 주는 이익과 부담을 어떻게 비교할 수 있을까요?" />
-          <ReportItem title="추천 루틴" body="다음 활동은 Claim-Support-Question으로 주장과 근거를 연결하는 흐름을 추천합니다." />
+          <ReportItem title="강점" body={classAnalysis?.strengths.join(" · ") || "분석 전입니다."} />
+          <ReportItem title="오개념 가능성" body={classAnalysis?.misconceptions.join(" · ") || "분석 전입니다."} />
+          <ReportItem title="다음 발문·추천" body={[...(classAnalysis?.nextQuestions ?? []), ...(classAnalysis?.recommendations ?? [])].join(" · ") || "분석 전입니다."} />
         </div>
       </section>
 

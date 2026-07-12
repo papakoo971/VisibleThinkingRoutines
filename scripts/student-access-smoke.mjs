@@ -96,6 +96,35 @@ try {
   const resultsPath = `/api/teacher/activities/${activityId}/results`;
   const teacherResults = await api(resultsPath, { idToken: teacher.idToken });
   if (teacherResults.status !== 200 || teacherResults.result.submissions?.[0]?.cards?.[0]?.content !== "자동 저장 검증 카드") throw new Error("Teacher results did not include the saved student card.");
+  const analysisPath = `/api/teacher/activities/${activityId}/analysis`;
+  const missingCredentials = await api(analysisPath, { method: "POST", idToken: teacher.idToken, body: { scope: "class" } });
+  if (missingCredentials.status !== 503) throw new Error(`AI analysis without credentials should be 503, got ${missingCredentials.status}.`);
+  const foreignAnalysis = await api(analysisPath, { method: "POST", idToken: unassignedStudent.idToken, body: { scope: "class" } });
+  if (foreignAnalysis.status !== 404) throw new Error(`Non-owner AI analysis should be 404, got ${foreignAnalysis.status}.`);
+  const analysisId = `${activityId}:class:smoke`;
+  await sqlMutation("UpsertAiAnalysis", {
+    id: analysisId,
+    activityId,
+    scope: "class",
+    studentExternalId: null,
+    status: "complete",
+    model: "smoke/model",
+    summary: "검증 요약",
+    strengths: ["강점"],
+    misconceptions: [],
+    nextQuestions: ["질문"],
+    recommendations: ["추천"],
+    sourceFingerprint: teacherResults.result.sourceFingerprint,
+    inputTokens: 10,
+    outputTokens: 20,
+    totalTokens: 30,
+    errorMessage: null,
+  }, teacher.idToken);
+  const resultsWithAnalysis = await api(resultsPath, { idToken: teacher.idToken });
+  const savedAnalysis = resultsWithAnalysis.result.analyses?.find((analysis) => analysis.id === analysisId);
+  if (savedAnalysis?.summary !== "검증 요약" || savedAnalysis.totalTokens !== 30 || savedAnalysis.sourceFingerprint !== teacherResults.result.sourceFingerprint) {
+    throw new Error(`Persisted AI analysis was not returned correctly: ${JSON.stringify(savedAnalysis)}`);
+  }
   const cardId = teacherResults.result.submissions[0].cards[0].id;
   const tagged = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { cardId, tags: ["좋은 관찰", "사용자 태그"], tagsPublic: true } });
   if (tagged.status !== 200) throw new Error("Teacher card tag update failed.");
@@ -129,6 +158,8 @@ try {
   if (submitted.status !== 200) throw new Error("Student submission failed.");
   const restored = await api(workPath, { idToken: assignedStudent.idToken });
   if (restored.result.status !== "submitted" || restored.result.cards?.[0]?.column !== "think") throw new Error("Submitted work was not restored.");
+  const changedResults = await api(resultsPath, { idToken: teacher.idToken });
+  if (changedResults.result.sourceFingerprint === savedAnalysis.sourceFingerprint) throw new Error("Changed cards did not invalidate the saved AI analysis fingerprint.");
   const deleted = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: { cards: [], status: "modified" } });
   if (deleted.status !== 200) throw new Error("Student card deletion failed.");
   const afterDelete = await api(workPath, { idToken: assignedStudent.idToken });
@@ -143,7 +174,7 @@ try {
   const anonymousDetail = await api(`/api/created-activities/${activityId}`);
   if (anonymousDetail.status !== 401) throw new Error(`Anonymous detail should be 401, got ${anonymousDetail.status}.`);
 
-  console.log("PASS: teacher tags persist with owner checks, public tags reach students, private tags stay hidden, and activity lifecycle persists.");
+  console.log("PASS: teacher tags, AI analysis persistence and staleness, owner checks, student visibility, and activity lifecycle all persist.");
 } finally {
   if (teacher) await Promise.allSettled([
     sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),

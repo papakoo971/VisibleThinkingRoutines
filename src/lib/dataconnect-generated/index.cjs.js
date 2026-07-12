@@ -118,6 +118,20 @@ exports.getTeacherActivity = function getTeacherActivity(dcOrVars, varsOrOptions
 }
 ;
 
+const upsertAiAnalysisRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertAiAnalysis', inputVars);
+}
+upsertAiAnalysisRef.operationName = 'UpsertAiAnalysis';
+exports.upsertAiAnalysisRef = upsertAiAnalysisRef;
+
+exports.upsertAiAnalysis = function upsertAiAnalysis(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertAiAnalysisRef(dcInstance, inputVars));
+}
+;
+
 const getTeacherActivityResultsRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

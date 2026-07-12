@@ -1,5 +1,23 @@
 # Implementation Log
 
+## 2026-07-12 Persistent Individual And Class AI Analysis
+
+### Completed
+
+- Added AI SDK 6 structured generation for Korean, evidence-based thinking-routine analysis.
+- Added class-wide and individual-student analysis endpoints with teacher ownership checks.
+- Persisted each generation under a unique ID with pending, complete, or error status before and after model execution.
+- Stored the selected model, structured findings, source fingerprint, token usage, timestamps, and failure details in PostgreSQL.
+- Added class and student analysis controls, results, error feedback, and refresh-needed indicators when source cards change.
+- Deployed the `ai_analysis` table and owner-protected upsert operation to Firebase Data Connect.
+- Added explicit local AI Gateway configuration and a safe `503` response when credentials are unavailable.
+
+### Verification
+
+- ESLint and TypeScript checks pass after the API, generated SDK, and UI changes.
+- Firebase Data Connect compiled and deployed the schema, migration, and connector successfully.
+- Live model generation remains to be verified after an AI Gateway API key or Vercel OIDC token is configured locally.
+
 ## 2026-07-12 Card Tags Filtering And Student Visibility
 
 ### Completed

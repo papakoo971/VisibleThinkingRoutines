@@ -70,6 +70,11 @@ export interface Activity_Key {
   __typename?: 'Activity_Key';
 }
 
+export interface AiAnalysis_Key {
+  id: string;
+  __typename?: 'AiAnalysis_Key';
+}
+
 export interface CreateActivityData {
   activity_insert: Activity_Key;
 }
@@ -337,6 +342,24 @@ export interface GetTeacherActivityData {
         externalId?: string | null;
       } & Student_Key;
     })[];
+    aiAnalyses_on_activity: ({
+      id: string;
+      scope: string;
+      studentExternalId?: string | null;
+      status: string;
+      model: string;
+      summary?: string | null;
+      strengths?: string[] | null;
+      misconceptions?: string[] | null;
+      nextQuestions?: string[] | null;
+      recommendations?: string[] | null;
+      sourceFingerprint?: string | null;
+      inputTokens?: number | null;
+      outputTokens?: number | null;
+      totalTokens?: number | null;
+      errorMessage?: string | null;
+      updatedAt: TimestampString;
+    } & AiAnalysis_Key)[];
   } & Activity_Key)[];
 }
 
@@ -354,6 +377,7 @@ export interface GetTeacherActivityResultsData {
       content: string;
       tags?: string[] | null;
       tagsPublic: boolean;
+      updatedAt: TimestampString;
       student: {
         id: string;
         externalId?: string | null;
@@ -389,6 +413,24 @@ export interface GetTeacherActivityResultsData {
         };
       } & Student_Key;
     })[];
+    aiAnalyses_on_activity: ({
+      id: string;
+      scope: string;
+      studentExternalId?: string | null;
+      status: string;
+      model: string;
+      summary?: string | null;
+      strengths?: string[] | null;
+      misconceptions?: string[] | null;
+      nextQuestions?: string[] | null;
+      recommendations?: string[] | null;
+      sourceFingerprint?: string | null;
+      inputTokens?: number | null;
+      outputTokens?: number | null;
+      totalTokens?: number | null;
+      errorMessage?: string | null;
+      updatedAt: TimestampString;
+    } & AiAnalysis_Key)[];
   } & Activity_Key)[];
 }
 
@@ -595,6 +637,29 @@ export interface UpsertActivityGroupVariables {
   name: string;
 }
 
+export interface UpsertAiAnalysisData {
+  aiAnalysis_upsert: AiAnalysis_Key;
+}
+
+export interface UpsertAiAnalysisVariables {
+  id: string;
+  activityId: string;
+  scope: string;
+  studentExternalId?: string | null;
+  status: string;
+  model: string;
+  summary?: string | null;
+  strengths?: string[] | null;
+  misconceptions?: string[] | null;
+  nextQuestions?: string[] | null;
+  recommendations?: string[] | null;
+  sourceFingerprint?: string | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
+  errorMessage?: string | null;
+}
+
 export interface UpsertGroupSubmissionAgreementData {
   groupSubmissionAgreement_upsert: GroupSubmissionAgreement_Key;
 }
@@ -727,6 +792,18 @@ export const getTeacherActivityRef: GetTeacherActivityRef;
 
 export function getTeacherActivity(vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
 export function getTeacherActivity(dc: DataConnect, vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
+
+interface UpsertAiAnalysisRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertAiAnalysisVariables): MutationRef<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertAiAnalysisVariables): MutationRef<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+  operationName: string;
+}
+export const upsertAiAnalysisRef: UpsertAiAnalysisRef;
+
+export function upsertAiAnalysis(vars: UpsertAiAnalysisVariables): MutationPromise<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+export function upsertAiAnalysis(dc: DataConnect, vars: UpsertAiAnalysisVariables): MutationPromise<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
 
 interface GetTeacherActivityResultsRef {
   /* Allow users to create refs without passing in DataConnect */

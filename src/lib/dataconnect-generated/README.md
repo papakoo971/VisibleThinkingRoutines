@@ -21,6 +21,7 @@ This README will guide you through the process of using the generated JavaScript
 - [**Mutations**](#mutations)
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
+  - [*UpsertAiAnalysis*](#upsertaianalysis)
   - [*SetActivityStatus*](#setactivitystatus)
   - [*UpdateThinkingCardTags*](#updatethinkingcardtags)
   - [*LinkStudentAuth*](#linkstudentauth)
@@ -407,6 +408,24 @@ export interface GetTeacherActivityData {
         externalId?: string | null;
       } & Student_Key;
     })[];
+    aiAnalyses_on_activity: ({
+      id: string;
+      scope: string;
+      studentExternalId?: string | null;
+      status: string;
+      model: string;
+      summary?: string | null;
+      strengths?: string[] | null;
+      misconceptions?: string[] | null;
+      nextQuestions?: string[] | null;
+      recommendations?: string[] | null;
+      sourceFingerprint?: string | null;
+      inputTokens?: number | null;
+      outputTokens?: number | null;
+      totalTokens?: number | null;
+      errorMessage?: string | null;
+      updatedAt: TimestampString;
+    } & AiAnalysis_Key)[];
   } & Activity_Key)[];
 }
 ```
@@ -529,6 +548,7 @@ export interface GetTeacherActivityResultsData {
       content: string;
       tags?: string[] | null;
       tagsPublic: boolean;
+      updatedAt: TimestampString;
       student: {
         id: string;
         externalId?: string | null;
@@ -564,6 +584,24 @@ export interface GetTeacherActivityResultsData {
         };
       } & Student_Key;
     })[];
+    aiAnalyses_on_activity: ({
+      id: string;
+      scope: string;
+      studentExternalId?: string | null;
+      status: string;
+      model: string;
+      summary?: string | null;
+      strengths?: string[] | null;
+      misconceptions?: string[] | null;
+      nextQuestions?: string[] | null;
+      recommendations?: string[] | null;
+      sourceFingerprint?: string | null;
+      inputTokens?: number | null;
+      outputTokens?: number | null;
+      totalTokens?: number | null;
+      errorMessage?: string | null;
+      updatedAt: TimestampString;
+    } & AiAnalysis_Key)[];
   } & Activity_Key)[];
 }
 ```
@@ -1591,6 +1629,160 @@ console.log(data.teacherProfile_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.teacherProfile_delete);
+});
+```
+
+## UpsertAiAnalysis
+You can execute the `UpsertAiAnalysis` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertAiAnalysis(vars: UpsertAiAnalysisVariables): MutationPromise<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+
+interface UpsertAiAnalysisRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertAiAnalysisVariables): MutationRef<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+}
+export const upsertAiAnalysisRef: UpsertAiAnalysisRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertAiAnalysis(dc: DataConnect, vars: UpsertAiAnalysisVariables): MutationPromise<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+
+interface UpsertAiAnalysisRef {
+  ...
+  (dc: DataConnect, vars: UpsertAiAnalysisVariables): MutationRef<UpsertAiAnalysisData, UpsertAiAnalysisVariables>;
+}
+export const upsertAiAnalysisRef: UpsertAiAnalysisRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertAiAnalysisRef:
+```typescript
+const name = upsertAiAnalysisRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertAiAnalysis` mutation requires an argument of type `UpsertAiAnalysisVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertAiAnalysisVariables {
+  id: string;
+  activityId: string;
+  scope: string;
+  studentExternalId?: string | null;
+  status: string;
+  model: string;
+  summary?: string | null;
+  strengths?: string[] | null;
+  misconceptions?: string[] | null;
+  nextQuestions?: string[] | null;
+  recommendations?: string[] | null;
+  sourceFingerprint?: string | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
+  errorMessage?: string | null;
+}
+```
+### Return Type
+Recall that executing the `UpsertAiAnalysis` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertAiAnalysisData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertAiAnalysisData {
+  aiAnalysis_upsert: AiAnalysis_Key;
+}
+```
+### Using `UpsertAiAnalysis`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertAiAnalysis, UpsertAiAnalysisVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertAiAnalysis` mutation requires an argument of type `UpsertAiAnalysisVariables`:
+const upsertAiAnalysisVars: UpsertAiAnalysisVariables = {
+  id: ...,
+  activityId: ...,
+  scope: ...,
+  studentExternalId: ..., // optional
+  status: ...,
+  model: ...,
+  summary: ..., // optional
+  strengths: ..., // optional
+  misconceptions: ..., // optional
+  nextQuestions: ..., // optional
+  recommendations: ..., // optional
+  sourceFingerprint: ..., // optional
+  inputTokens: ..., // optional
+  outputTokens: ..., // optional
+  totalTokens: ..., // optional
+  errorMessage: ..., // optional
+};
+
+// Call the `upsertAiAnalysis()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertAiAnalysis(upsertAiAnalysisVars);
+// Variables can be defined inline as well.
+const { data } = await upsertAiAnalysis({ id: ..., activityId: ..., scope: ..., studentExternalId: ..., status: ..., model: ..., summary: ..., strengths: ..., misconceptions: ..., nextQuestions: ..., recommendations: ..., sourceFingerprint: ..., inputTokens: ..., outputTokens: ..., totalTokens: ..., errorMessage: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertAiAnalysis(dataConnect, upsertAiAnalysisVars);
+
+console.log(data.aiAnalysis_upsert);
+
+// Or, you can use the `Promise` API.
+upsertAiAnalysis(upsertAiAnalysisVars).then((response) => {
+  const data = response.data;
+  console.log(data.aiAnalysis_upsert);
+});
+```
+
+### Using `UpsertAiAnalysis`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertAiAnalysisRef, UpsertAiAnalysisVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertAiAnalysis` mutation requires an argument of type `UpsertAiAnalysisVariables`:
+const upsertAiAnalysisVars: UpsertAiAnalysisVariables = {
+  id: ...,
+  activityId: ...,
+  scope: ...,
+  studentExternalId: ..., // optional
+  status: ...,
+  model: ...,
+  summary: ..., // optional
+  strengths: ..., // optional
+  misconceptions: ..., // optional
+  nextQuestions: ..., // optional
+  recommendations: ..., // optional
+  sourceFingerprint: ..., // optional
+  inputTokens: ..., // optional
+  outputTokens: ..., // optional
+  totalTokens: ..., // optional
+  errorMessage: ..., // optional
+};
+
+// Call the `upsertAiAnalysisRef()` function to get a reference to the mutation.
+const ref = upsertAiAnalysisRef(upsertAiAnalysisVars);
+// Variables can be defined inline as well.
+const ref = upsertAiAnalysisRef({ id: ..., activityId: ..., scope: ..., studentExternalId: ..., status: ..., model: ..., summary: ..., strengths: ..., misconceptions: ..., nextQuestions: ..., recommendations: ..., sourceFingerprint: ..., inputTokens: ..., outputTokens: ..., totalTokens: ..., errorMessage: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertAiAnalysisRef(dataConnect, upsertAiAnalysisVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.aiAnalysis_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.aiAnalysis_upsert);
 });
 ```
 

@@ -55,6 +55,15 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 
 Keep `.env.local` uncommitted. It is ignored by `.gitignore`.
 
+For local AI analysis, add a Vercel AI Gateway key and optionally override the model:
+
+```text
+AI_GATEWAY_API_KEY=
+AI_ANALYSIS_MODEL=openai/gpt-5.4
+```
+
+On Vercel, `VERCEL_OIDC_TOKEN` can be used instead of a long-lived Gateway API key. Never expose either credential through a `NEXT_PUBLIC_` variable.
+
 For local SQL Connect emulator work, set:
 
 ```text

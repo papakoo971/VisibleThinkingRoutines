@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, getTeacherActivityResults, setActivityStatus, updateThinkingCardTags, linkStudentAuth, unlinkStudentAuth } from '@visible-thinking/dataconnect';
+import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, upsertAiAnalysis, getTeacherActivityResults, setActivityStatus, updateThinkingCardTags, linkStudentAuth } from '@visible-thinking/dataconnect';
 
 
 // Operation GetMyTeacherProfile:
@@ -32,6 +32,9 @@ const { data } = await ListActivities(dataConnect);
 // Operation GetTeacherActivity:  For variables, look at type GetTeacherActivityVars in ../index.d.ts
 const { data } = await GetTeacherActivity(dataConnect, getTeacherActivityVars);
 
+// Operation UpsertAiAnalysis:  For variables, look at type UpsertAiAnalysisVars in ../index.d.ts
+const { data } = await UpsertAiAnalysis(dataConnect, upsertAiAnalysisVars);
+
 // Operation GetTeacherActivityResults:  For variables, look at type GetTeacherActivityResultsVars in ../index.d.ts
 const { data } = await GetTeacherActivityResults(dataConnect, getTeacherActivityResultsVars);
 
@@ -43,9 +46,6 @@ const { data } = await UpdateThinkingCardTags(dataConnect, updateThinkingCardTag
 
 // Operation LinkStudentAuth:  For variables, look at type LinkStudentAuthVars in ../index.d.ts
 const { data } = await LinkStudentAuth(dataConnect, linkStudentAuthVars);
-
-// Operation UnlinkStudentAuth:  For variables, look at type UnlinkStudentAuthVars in ../index.d.ts
-const { data } = await UnlinkStudentAuth(dataConnect, unlinkStudentAuthVars);
 
 
 ```

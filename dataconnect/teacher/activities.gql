@@ -120,7 +120,69 @@ query GetTeacherActivity($id: String!) @auth(level: USER) {
         externalId
       }
     }
+    aiAnalyses_on_activity {
+      id
+      scope
+      studentExternalId
+      status
+      model
+      summary
+      strengths
+      misconceptions
+      nextQuestions
+      recommendations
+      sourceFingerprint
+      inputTokens
+      outputTokens
+      totalTokens
+      errorMessage
+      updatedAt
+    }
   }
+}
+
+mutation UpsertAiAnalysis(
+  $id: String!
+  $activityId: String!
+  $scope: String!
+  $studentExternalId: String
+  $status: String!
+  $model: String!
+  $summary: String
+  $strengths: [String!]
+  $misconceptions: [String!]
+  $nextQuestions: [String!]
+  $recommendations: [String!]
+  $sourceFingerprint: String
+  $inputTokens: Int
+  $outputTokens: Int
+  $totalTokens: Int
+  $errorMessage: String
+) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
+  aiAnalysis_upsert(data: {
+    id: $id
+    activity: { id: $activityId }
+    scope: $scope
+    studentExternalId: $studentExternalId
+    status: $status
+    model: $model
+    summary: $summary
+    strengths: $strengths
+    misconceptions: $misconceptions
+    nextQuestions: $nextQuestions
+    recommendations: $recommendations
+    sourceFingerprint: $sourceFingerprint
+    inputTokens: $inputTokens
+    outputTokens: $outputTokens
+    totalTokens: $totalTokens
+    errorMessage: $errorMessage
+    updatedAt_expr: "request.time"
+  })
 }
 
 query GetTeacherActivityResults($id: String!) @auth(level: USER) {
@@ -137,6 +199,7 @@ query GetTeacherActivityResults($id: String!) @auth(level: USER) {
       content
       tags
       tagsPublic
+      updatedAt
       student {
         id
         externalId
@@ -165,6 +228,24 @@ query GetTeacherActivityResults($id: String!) @auth(level: USER) {
         studentNumber
         schoolClass { name }
       }
+    }
+    aiAnalyses_on_activity {
+      id
+      scope
+      studentExternalId
+      status
+      model
+      summary
+      strengths
+      misconceptions
+      nextQuestions
+      recommendations
+      sourceFingerprint
+      inputTokens
+      outputTokens
+      totalTokens
+      errorMessage
+      updatedAt
     }
   }
 }
