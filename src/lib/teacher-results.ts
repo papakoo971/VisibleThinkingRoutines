@@ -12,7 +12,7 @@ export type TeacherActivityResults = {
   }>;
   sourceFingerprint: string;
   analyses: Array<{
-    id: string; scope: string; studentId?: string | null; status: string; model: string; summary?: string | null;
+    id: string; scope: string; studentId?: string | null; studentVisible: boolean; status: string; model: string; summary?: string | null;
     strengths: string[]; misconceptions: string[]; nextQuestions: string[]; recommendations: string[];
     sourceFingerprint?: string | null; inputTokens?: number | null; outputTokens?: number | null; totalTokens?: number | null;
     errorMessage?: string | null; updatedAt: string;
@@ -47,6 +47,15 @@ export async function updateTeacherCardTags(activityId: string, cardId: string, 
     body: JSON.stringify({ cardId, tags, tagsPublic }),
   });
   if (!response.ok) throw new Error("카드 태그를 저장하지 못했습니다.");
+}
+
+export async function updateAnalysisVisibility(activityId: string, analysisId: string, studentVisible: boolean) {
+  const response = await fetch(`/api/teacher/activities/${activityId}/results`, {
+    method: "PATCH",
+    headers: await headers(true),
+    body: JSON.stringify({ analysisId, studentVisible }),
+  });
+  if (!response.ok) throw new Error("AI 피드백 공개 설정을 변경하지 못했습니다.");
 }
 
 export async function generateTeacherAnalysis(activityId: string, scope: "class" | "student", studentId?: string) {

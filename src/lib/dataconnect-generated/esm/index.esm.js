@@ -186,6 +186,18 @@ export function updateThinkingCardTags(dcOrVars, vars) {
   return executeMutation(updateThinkingCardTagsRef(dcInstance, inputVars));
 }
 
+export const setAiAnalysisVisibilityRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetAiAnalysisVisibility', inputVars);
+}
+setAiAnalysisVisibilityRef.operationName = 'SetAiAnalysisVisibility';
+
+export function setAiAnalysisVisibility(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setAiAnalysisVisibilityRef(dcInstance, inputVars));
+}
+
 export const linkStudentAuthRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

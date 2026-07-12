@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { fetchTeacherActivityResults, generateTeacherAnalysis, type TeacherActivityResults } from "@/lib/teacher-results";
+import { fetchTeacherActivityResults, generateTeacherAnalysis, updateAnalysisVisibility, type TeacherActivityResults } from "@/lib/teacher-results";
 import type { RoutineColumn } from "@/lib/mock-data";
 
 const columns: Array<{ id: RoutineColumn; label: string }> = [
@@ -16,6 +16,7 @@ const columns: Array<{ id: RoutineColumn; label: string }> = [
 export function LiveStudentSubmission({ activityId, studentId }: { activityId: string; studentId: string }) {
   const [results, setResults] = useState<TeacherActivityResults | null | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export function LiveStudentSubmission({ activityId, studentId }: { activityId: s
           <div><h2 className="font-semibold">개인 AI 분석</h2><p className="mt-2 text-sm leading-6 text-zinc-600">{analysis?.summary ?? "학생 카드가 준비되면 개인 분석을 실행할 수 있습니다."}</p>{stale ? <p className="mt-2 text-sm font-semibold text-amber-700">카드 변경으로 갱신이 필요합니다.</p> : null}{analysisError ? <p role="alert" className="mt-2 text-sm text-red-700">{analysisError}</p> : null}</div>
           <button type="button" disabled={analyzing || !submission?.cards.length} onClick={async () => { setAnalyzing(true); setAnalysisError(null); try { await generateTeacherAnalysis(activityId, "student", studentId); setResults(await fetchTeacherActivityResults(activityId)); } catch (error) { setAnalysisError(error instanceof Error ? error.message : "AI 분석에 실패했습니다."); } finally { setAnalyzing(false); } }} className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white disabled:bg-zinc-400">{analyzing ? "분석 중..." : analysis ? "분석 갱신" : "개인 분석 실행"}</button>
         </div>
-        {analysis ? <div className="mt-4 grid gap-3 md:grid-cols-2"><p className="rounded-md bg-stone-50 p-3 text-sm"><strong>강점:</strong> {analysis.strengths.join(" · ")}</p><p className="rounded-md bg-stone-50 p-3 text-sm"><strong>다음 발문:</strong> {analysis.nextQuestions.join(" · ")}</p></div> : null}
+        {analysis ? <><div className="mt-4 grid gap-3 md:grid-cols-2"><p className="rounded-md bg-stone-50 p-3 text-sm"><strong>강점:</strong> {analysis.strengths.join(" · ")}</p><p className="rounded-md bg-stone-50 p-3 text-sm"><strong>다음 발문:</strong> {analysis.nextQuestions.join(" · ")}</p></div><div className="mt-4 flex flex-col gap-2 rounded-md border border-zinc-200 bg-stone-50 p-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-semibold text-zinc-900">학생 피드백 공개</p><p className="mt-1 text-xs text-zinc-500">공개하면 이 학생의 활동 화면에 요약, 강점, 다음 발문과 추천이 표시됩니다.</p></div><button type="button" disabled={updatingVisibility} onClick={async () => { setUpdatingVisibility(true); setAnalysisError(null); try { await updateAnalysisVisibility(activityId, analysis.id, !analysis.studentVisible); setResults(await fetchTeacherActivityResults(activityId)); } catch (error) { setAnalysisError(error instanceof Error ? error.message : "공개 설정 변경에 실패했습니다."); } finally { setUpdatingVisibility(false); } }} className={`h-9 shrink-0 rounded-md px-3 text-sm font-semibold ${analysis.studentVisible ? "border border-zinc-300 bg-white text-zinc-700" : "bg-emerald-700 text-white"}`}>{updatingVisibility ? "변경 중..." : analysis.studentVisible ? "학생에게 비공개" : "학생에게 공개"}</button></div></> : null}
       </section>
     </AppShell>
   );

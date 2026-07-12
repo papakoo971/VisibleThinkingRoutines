@@ -27,6 +27,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertAiAnalysis*](#upsertaianalysis)
   - [*SetActivityStatus*](#setactivitystatus)
   - [*UpdateThinkingCardTags*](#updatethinkingcardtags)
+  - [*SetAiAnalysisVisibility*](#setaianalysisvisibility)
   - [*LinkStudentAuth*](#linkstudentauth)
   - [*UnlinkStudentAuth*](#unlinkstudentauth)
   - [*UpsertSchoolClass*](#upsertschoolclass)
@@ -514,6 +515,7 @@ export interface GetTeacherActivityData {
       id: string;
       scope: string;
       studentExternalId?: string | null;
+      studentVisible: boolean;
       status: string;
       model: string;
       summary?: string | null;
@@ -654,6 +656,7 @@ export interface GetTeacherActivityResultsData {
       student: {
         id: string;
         externalId?: string | null;
+        authUid?: string | null;
         name: string;
         studentNumber: string;
         schoolClass: {
@@ -690,6 +693,7 @@ export interface GetTeacherActivityResultsData {
       id: string;
       scope: string;
       studentExternalId?: string | null;
+      studentVisible: boolean;
       status: string;
       model: string;
       summary?: string | null;
@@ -1440,6 +1444,16 @@ export interface GetMyStudentWorkData {
     status: SubmissionStatus;
     updatedAt: TimestampString;
   })[];
+  aiAnalyses: ({
+    id: string;
+    model: string;
+    summary?: string | null;
+    strengths?: string[] | null;
+    nextQuestions?: string[] | null;
+    recommendations?: string[] | null;
+    sourceFingerprint?: string | null;
+    updatedAt: TimestampString;
+  } & AiAnalysis_Key)[];
 }
 ```
 ### Using `GetMyStudentWork`'s action shortcut function
@@ -1466,6 +1480,7 @@ const { data } = await getMyStudentWork(dataConnect, getMyStudentWorkVars);
 console.log(data.students);
 console.log(data.thinkingCards);
 console.log(data.individualSubmissions);
+console.log(data.aiAnalyses);
 
 // Or, you can use the `Promise` API.
 getMyStudentWork(getMyStudentWorkVars).then((response) => {
@@ -1473,6 +1488,7 @@ getMyStudentWork(getMyStudentWorkVars).then((response) => {
   console.log(data.students);
   console.log(data.thinkingCards);
   console.log(data.individualSubmissions);
+  console.log(data.aiAnalyses);
 });
 ```
 
@@ -1503,6 +1519,7 @@ const { data } = await executeQuery(ref);
 console.log(data.students);
 console.log(data.thinkingCards);
 console.log(data.individualSubmissions);
+console.log(data.aiAnalyses);
 
 // Or, you can use the `Promise` API.
 executeQuery(ref).then((response) => {
@@ -1510,6 +1527,7 @@ executeQuery(ref).then((response) => {
   console.log(data.students);
   console.log(data.thinkingCards);
   console.log(data.individualSubmissions);
+  console.log(data.aiAnalyses);
 });
 ```
 
@@ -1987,6 +2005,7 @@ export interface UpsertAiAnalysisVariables {
   activityId: string;
   scope: string;
   studentExternalId?: string | null;
+  studentAuthUid?: string | null;
   status: string;
   model: string;
   summary?: string | null;
@@ -2022,6 +2041,7 @@ const upsertAiAnalysisVars: UpsertAiAnalysisVariables = {
   activityId: ...,
   scope: ...,
   studentExternalId: ..., // optional
+  studentAuthUid: ..., // optional
   status: ...,
   model: ...,
   summary: ..., // optional
@@ -2040,7 +2060,7 @@ const upsertAiAnalysisVars: UpsertAiAnalysisVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await upsertAiAnalysis(upsertAiAnalysisVars);
 // Variables can be defined inline as well.
-const { data } = await upsertAiAnalysis({ id: ..., activityId: ..., scope: ..., studentExternalId: ..., status: ..., model: ..., summary: ..., strengths: ..., misconceptions: ..., nextQuestions: ..., recommendations: ..., sourceFingerprint: ..., inputTokens: ..., outputTokens: ..., totalTokens: ..., errorMessage: ..., });
+const { data } = await upsertAiAnalysis({ id: ..., activityId: ..., scope: ..., studentExternalId: ..., studentAuthUid: ..., status: ..., model: ..., summary: ..., strengths: ..., misconceptions: ..., nextQuestions: ..., recommendations: ..., sourceFingerprint: ..., inputTokens: ..., outputTokens: ..., totalTokens: ..., errorMessage: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2067,6 +2087,7 @@ const upsertAiAnalysisVars: UpsertAiAnalysisVariables = {
   activityId: ...,
   scope: ...,
   studentExternalId: ..., // optional
+  studentAuthUid: ..., // optional
   status: ...,
   model: ...,
   summary: ..., // optional
@@ -2084,7 +2105,7 @@ const upsertAiAnalysisVars: UpsertAiAnalysisVariables = {
 // Call the `upsertAiAnalysisRef()` function to get a reference to the mutation.
 const ref = upsertAiAnalysisRef(upsertAiAnalysisVars);
 // Variables can be defined inline as well.
-const ref = upsertAiAnalysisRef({ id: ..., activityId: ..., scope: ..., studentExternalId: ..., status: ..., model: ..., summary: ..., strengths: ..., misconceptions: ..., nextQuestions: ..., recommendations: ..., sourceFingerprint: ..., inputTokens: ..., outputTokens: ..., totalTokens: ..., errorMessage: ..., });
+const ref = upsertAiAnalysisRef({ id: ..., activityId: ..., scope: ..., studentExternalId: ..., studentAuthUid: ..., status: ..., model: ..., summary: ..., strengths: ..., misconceptions: ..., nextQuestions: ..., recommendations: ..., sourceFingerprint: ..., inputTokens: ..., outputTokens: ..., totalTokens: ..., errorMessage: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2327,6 +2348,118 @@ console.log(data.thinkingCard_update);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.thinkingCard_update);
+});
+```
+
+## SetAiAnalysisVisibility
+You can execute the `SetAiAnalysisVisibility` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+setAiAnalysisVisibility(vars: SetAiAnalysisVisibilityVariables): MutationPromise<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+
+interface SetAiAnalysisVisibilityRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetAiAnalysisVisibilityVariables): MutationRef<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+}
+export const setAiAnalysisVisibilityRef: SetAiAnalysisVisibilityRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setAiAnalysisVisibility(dc: DataConnect, vars: SetAiAnalysisVisibilityVariables): MutationPromise<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+
+interface SetAiAnalysisVisibilityRef {
+  ...
+  (dc: DataConnect, vars: SetAiAnalysisVisibilityVariables): MutationRef<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+}
+export const setAiAnalysisVisibilityRef: SetAiAnalysisVisibilityRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setAiAnalysisVisibilityRef:
+```typescript
+const name = setAiAnalysisVisibilityRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetAiAnalysisVisibility` mutation requires an argument of type `SetAiAnalysisVisibilityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetAiAnalysisVisibilityVariables {
+  id: string;
+  studentVisible: boolean;
+}
+```
+### Return Type
+Recall that executing the `SetAiAnalysisVisibility` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetAiAnalysisVisibilityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetAiAnalysisVisibilityData {
+  aiAnalysis_update?: AiAnalysis_Key | null;
+}
+```
+### Using `SetAiAnalysisVisibility`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setAiAnalysisVisibility, SetAiAnalysisVisibilityVariables } from '@visible-thinking/dataconnect';
+
+// The `SetAiAnalysisVisibility` mutation requires an argument of type `SetAiAnalysisVisibilityVariables`:
+const setAiAnalysisVisibilityVars: SetAiAnalysisVisibilityVariables = {
+  id: ...,
+  studentVisible: ...,
+};
+
+// Call the `setAiAnalysisVisibility()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setAiAnalysisVisibility(setAiAnalysisVisibilityVars);
+// Variables can be defined inline as well.
+const { data } = await setAiAnalysisVisibility({ id: ..., studentVisible: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setAiAnalysisVisibility(dataConnect, setAiAnalysisVisibilityVars);
+
+console.log(data.aiAnalysis_update);
+
+// Or, you can use the `Promise` API.
+setAiAnalysisVisibility(setAiAnalysisVisibilityVars).then((response) => {
+  const data = response.data;
+  console.log(data.aiAnalysis_update);
+});
+```
+
+### Using `SetAiAnalysisVisibility`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setAiAnalysisVisibilityRef, SetAiAnalysisVisibilityVariables } from '@visible-thinking/dataconnect';
+
+// The `SetAiAnalysisVisibility` mutation requires an argument of type `SetAiAnalysisVisibilityVariables`:
+const setAiAnalysisVisibilityVars: SetAiAnalysisVisibilityVariables = {
+  id: ...,
+  studentVisible: ...,
+};
+
+// Call the `setAiAnalysisVisibilityRef()` function to get a reference to the mutation.
+const ref = setAiAnalysisVisibilityRef(setAiAnalysisVisibilityVars);
+// Variables can be defined inline as well.
+const ref = setAiAnalysisVisibilityRef({ id: ..., studentVisible: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setAiAnalysisVisibilityRef(dataConnect, setAiAnalysisVisibilityVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.aiAnalysis_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.aiAnalysis_update);
 });
 ```
 

@@ -7,6 +7,7 @@ import {
   SubmissionStatus,
   type GetTeacherActivityResultsData,
   type SetActivityStatusVariables,
+  type SetAiAnalysisVisibilityVariables,
   type UpdateThinkingCardTagsVariables,
 } from "@/lib/dataconnect-generated";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
@@ -76,6 +77,7 @@ export async function GET(request: Request, context: { params: Promise<{ activit
         id: analysis.id,
         scope: analysis.scope,
         studentId: analysis.studentExternalId,
+        studentVisible: analysis.studentVisible,
         status: analysis.status,
         model: analysis.model,
         summary: analysis.summary,
@@ -102,6 +104,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ activ
     const user = await requireFirebaseUser(request);
     const { activityId } = await context.params;
     const body = (await request.json()) as { status?: unknown };
+    const analysisBody = body as { analysisId?: unknown; studentVisible?: unknown };
+    if (typeof analysisBody.analysisId === "string") {
+      if (typeof analysisBody.studentVisible !== "boolean") return Response.json({ message: "Invalid analysis visibility" }, { status: 400 });
+      await executeUserMutation<unknown, SetAiAnalysisVisibilityVariables>("SetAiAnalysisVisibility", {
+        id: analysisBody.analysisId,
+        studentVisible: analysisBody.studentVisible,
+      }, user.idToken);
+      return Response.json({ analysisId: analysisBody.analysisId, studentVisible: analysisBody.studentVisible });
+    }
     const tagBody = body as { cardId?: unknown; tags?: unknown; tagsPublic?: unknown };
     if (typeof tagBody.cardId === "string") {
       if (!Array.isArray(tagBody.tags) || tagBody.tags.length > 8 || tagBody.tags.some((tag) => typeof tag !== "string" || !tag.trim() || tag.trim().length > 30) || typeof tagBody.tagsPublic !== "boolean") {

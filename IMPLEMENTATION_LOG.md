@@ -1,5 +1,23 @@
 # Implementation Log
 
+## 2026-07-12 Teacher-Approved Student AI Feedback
+
+### Completed
+
+- Added a teacher-controlled public/private state to individual AI analyses.
+- Bound generated individual analyses to the assigned student's Firebase UID without exposing that UID in result DTOs.
+- Added an owner-checked visibility mutation limited to student-scope analyses.
+- Added publish/hide controls to the live individual submission result screen.
+- Returned only published, completed feedback matching the signed-in student's UID and activity.
+- Displayed the latest published summary, strengths, next questions, and recommendations in the student activity screen.
+- Kept misconception analysis teacher-only even when feedback is published.
+
+### Verification
+
+- Private feedback is absent from the student work response.
+- The owner can publish and hide feedback; a non-owner receives `403`.
+- Published feedback reaches only the assigned student and omits teacher-only misconception fields.
+
 ## 2026-07-12 Per-Teacher AI Model Selection
 
 ### Completed

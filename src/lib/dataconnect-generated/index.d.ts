@@ -273,6 +273,16 @@ export interface GetMyStudentWorkData {
     status: SubmissionStatus;
     updatedAt: TimestampString;
   })[];
+  aiAnalyses: ({
+    id: string;
+    model: string;
+    summary?: string | null;
+    strengths?: string[] | null;
+    nextQuestions?: string[] | null;
+    recommendations?: string[] | null;
+    sourceFingerprint?: string | null;
+    updatedAt: TimestampString;
+  } & AiAnalysis_Key)[];
 }
 
 export interface GetMyStudentWorkVariables {
@@ -362,6 +372,7 @@ export interface GetTeacherActivityData {
       id: string;
       scope: string;
       studentExternalId?: string | null;
+      studentVisible: boolean;
       status: string;
       model: string;
       summary?: string | null;
@@ -397,6 +408,7 @@ export interface GetTeacherActivityResultsData {
       student: {
         id: string;
         externalId?: string | null;
+        authUid?: string | null;
         name: string;
         studentNumber: string;
         schoolClass: {
@@ -433,6 +445,7 @@ export interface GetTeacherActivityResultsData {
       id: string;
       scope: string;
       studentExternalId?: string | null;
+      studentVisible: boolean;
       status: string;
       model: string;
       summary?: string | null;
@@ -572,6 +585,15 @@ export interface SetActivityStatusVariables {
   status: ActivityStatus;
 }
 
+export interface SetAiAnalysisVisibilityData {
+  aiAnalysis_update?: AiAnalysis_Key | null;
+}
+
+export interface SetAiAnalysisVisibilityVariables {
+  id: string;
+  studentVisible: boolean;
+}
+
 export interface SetMyIndividualSubmissionData {
   individualSubmission_upsert: IndividualSubmission_Key;
 }
@@ -667,6 +689,7 @@ export interface UpsertAiAnalysisVariables {
   activityId: string;
   scope: string;
   studentExternalId?: string | null;
+  studentAuthUid?: string | null;
   status: string;
   model: string;
   summary?: string | null;
@@ -910,6 +933,18 @@ export const updateThinkingCardTagsRef: UpdateThinkingCardTagsRef;
 
 export function updateThinkingCardTags(vars: UpdateThinkingCardTagsVariables): MutationPromise<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
 export function updateThinkingCardTags(dc: DataConnect, vars: UpdateThinkingCardTagsVariables): MutationPromise<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+
+interface SetAiAnalysisVisibilityRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetAiAnalysisVisibilityVariables): MutationRef<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetAiAnalysisVisibilityVariables): MutationRef<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+  operationName: string;
+}
+export const setAiAnalysisVisibilityRef: SetAiAnalysisVisibilityRef;
+
+export function setAiAnalysisVisibility(vars: SetAiAnalysisVisibilityVariables): MutationPromise<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
+export function setAiAnalysisVisibility(dc: DataConnect, vars: SetAiAnalysisVisibilityVariables): MutationPromise<SetAiAnalysisVisibilityData, SetAiAnalysisVisibilityVariables>;
 
 interface LinkStudentAuthRef {
   /* Allow users to create refs without passing in DataConnect */

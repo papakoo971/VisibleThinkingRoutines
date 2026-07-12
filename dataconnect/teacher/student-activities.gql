@@ -151,6 +151,22 @@ query GetMyStudentWork($activityId: String!) @auth(level: USER) {
     status
     updatedAt
   }
+  aiAnalyses(where: {
+    activity: { id: { eq: $activityId } }
+    studentAuthUid: { eq_expr: "auth.uid" }
+    studentVisible: { eq: true }
+    status: { eq: "complete" }
+    scope: { eq: "student" }
+  }) {
+    id
+    model
+    summary
+    strengths
+    nextQuestions
+    recommendations
+    sourceFingerprint
+    updatedAt
+  }
 }
 
 mutation UpsertMyThinkingCard($externalId: String!, $activityId: String!, $studentId: String!, $column: RoutineColumn!, $content: String!) @auth(level: USER) @transaction {

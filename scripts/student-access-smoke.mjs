@@ -118,6 +118,7 @@ try {
     activityId,
     scope: "class",
     studentExternalId: null,
+    studentAuthUid: null,
     status: "complete",
     model: "smoke/model",
     summary: "검증 요약",
@@ -136,6 +137,36 @@ try {
   if (savedAnalysis?.summary !== "검증 요약" || savedAnalysis.totalTokens !== 30 || savedAnalysis.sourceFingerprint !== teacherResults.result.sourceFingerprint) {
     throw new Error(`Persisted AI analysis was not returned correctly: ${JSON.stringify(savedAnalysis)}`);
   }
+  const studentAnalysisId = `${activityId}:student:smoke`;
+  await sqlMutation("UpsertAiAnalysis", {
+    id: studentAnalysisId,
+    activityId,
+    scope: "student",
+    studentExternalId: "s1",
+    studentAuthUid: assignedStudent.uid,
+    status: "complete",
+    model: "smoke/model",
+    summary: "학생 공개 검증 요약",
+    strengths: ["학생 공개 강점"],
+    misconceptions: ["교사 전용 오개념"],
+    nextQuestions: ["학생 공개 질문"],
+    recommendations: ["학생 공개 추천"],
+    sourceFingerprint: teacherResults.result.submissions[0].sourceFingerprint,
+    inputTokens: 10,
+    outputTokens: 20,
+    totalTokens: 30,
+    errorMessage: null,
+  }, teacher.idToken);
+  const beforeFeedback = await api(workPath, { idToken: assignedStudent.idToken });
+  if (beforeFeedback.result.aiFeedback !== null) throw new Error("Private AI feedback leaked to the student.");
+  const foreignVisibility = await api(resultsPath, { method: "PATCH", idToken: unassignedStudent.idToken, body: { analysisId: studentAnalysisId, studentVisible: true } });
+  if (foreignVisibility.status !== 403) throw new Error(`Non-owner AI visibility update should be 403, got ${foreignVisibility.status}.`);
+  const publishedFeedback = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { analysisId: studentAnalysisId, studentVisible: true } });
+  if (publishedFeedback.status !== 200) throw new Error("Teacher could not publish student AI feedback.");
+  const visibleFeedback = await api(workPath, { idToken: assignedStudent.idToken });
+  if (visibleFeedback.result.aiFeedback?.summary !== "학생 공개 검증 요약" || "misconceptions" in (visibleFeedback.result.aiFeedback ?? {})) throw new Error("Published AI feedback was missing or exposed teacher-only fields.");
+  const hiddenFeedback = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { analysisId: studentAnalysisId, studentVisible: false } });
+  if (hiddenFeedback.status !== 200 || (await api(workPath, { idToken: assignedStudent.idToken })).result.aiFeedback !== null) throw new Error("Teacher could not hide student AI feedback.");
   const cardId = teacherResults.result.submissions[0].cards[0].id;
   const tagged = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { cardId, tags: ["좋은 관찰", "사용자 태그"], tagsPublic: true } });
   if (tagged.status !== 200) throw new Error("Teacher card tag update failed.");
@@ -187,7 +218,7 @@ try {
   const removedSettings = await api(aiSettingsPath, { method: "DELETE", idToken: teacher.idToken });
   if (removedSettings.status !== 200) throw new Error("Teacher AI settings deletion failed.");
 
-  console.log("PASS: per-user encrypted AI settings, provider routing, analysis persistence, owner checks, and activity lifecycle all persist.");
+  console.log("PASS: encrypted AI settings, model routing, teacher-approved student feedback, owner checks, and activity lifecycle all persist.");
 } finally {
   if (teacher) await Promise.allSettled([
     api("/api/teacher/ai-settings", { method: "DELETE", idToken: teacher.idToken }),

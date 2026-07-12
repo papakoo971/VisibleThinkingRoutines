@@ -46,7 +46,15 @@ export async function POST(request: Request, context: { params: Promise<{ activi
     const selectedModel = createTeacherAiModel(credential.provider, configuredModel, apiKey);
     const model = `${credential.provider}/${selectedModel.modelId}`;
     const analysisId = `${activityId}:${scope}:${randomUUID()}`;
-    const base = { id: analysisId, activityId, scope, studentExternalId: studentId, model, sourceFingerprint };
+    const base = {
+      id: analysisId,
+      activityId,
+      scope,
+      studentExternalId: studentId,
+      studentAuthUid: scope === "student" ? cards[0]?.student.authUid ?? null : null,
+      model,
+      sourceFingerprint,
+    };
     await saveAnalysis(user.idToken, { ...base, status: "pending" });
 
     try {

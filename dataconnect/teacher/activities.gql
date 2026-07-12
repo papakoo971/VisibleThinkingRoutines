@@ -160,6 +160,7 @@ query GetTeacherActivity($id: String!) @auth(level: USER) {
       id
       scope
       studentExternalId
+      studentVisible
       status
       model
       summary
@@ -182,6 +183,7 @@ mutation UpsertAiAnalysis(
   $activityId: String!
   $scope: String!
   $studentExternalId: String
+  $studentAuthUid: String
   $status: String!
   $model: String!
   $summary: String
@@ -205,6 +207,7 @@ mutation UpsertAiAnalysis(
     activity: { id: $activityId }
     scope: $scope
     studentExternalId: $studentExternalId
+    studentAuthUid: $studentAuthUid
     status: $status
     model: $model
     summary: $summary
@@ -239,6 +242,7 @@ query GetTeacherActivityResults($id: String!) @auth(level: USER) {
       student {
         id
         externalId
+        authUid
         name
         studentNumber
         schoolClass { name }
@@ -269,6 +273,7 @@ query GetTeacherActivityResults($id: String!) @auth(level: USER) {
       id
       scope
       studentExternalId
+      studentVisible
       status
       model
       summary
@@ -309,6 +314,21 @@ mutation UpdateThinkingCardTags($id: String!, $tags: [String!], $tagsPublic: Boo
   thinkingCard_update(key: { id: $id }, data: {
     tags: $tags
     tagsPublic: $tagsPublic
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation SetAiAnalysisVisibility($id: String!, $studentVisible: Boolean!) @auth(level: USER) @transaction {
+  query @redact {
+    aiAnalysis(key: { id: $id }) {
+      scope @check(expr: "this == 'student'")
+      activity {
+        teacherId @check(expr: "this == auth.uid")
+      }
+    }
+  }
+  aiAnalysis_update(key: { id: $id }, data: {
+    studentVisible: $studentVisible
     updatedAt_expr: "request.time"
   })
 }

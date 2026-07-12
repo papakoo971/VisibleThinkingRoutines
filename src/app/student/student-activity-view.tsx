@@ -234,6 +234,17 @@ function StudentActivityWorkspace({
             </div>
           </section>
 
+          {studentWork?.aiFeedback ? (
+            <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">교사가 공개한 AI 피드백</p>
+              <h2 className="mt-2 font-semibold text-emerald-950">나의 사고 과정 피드백</h2>
+              <p className="mt-2 text-sm leading-6 text-emerald-950">{studentWork.aiFeedback.summary}</p>
+              {studentWork.aiFeedback.strengths.length ? <div className="mt-3 rounded-md bg-white/70 p-3 text-sm leading-6"><strong>잘한 점</strong><p className="mt-1">{studentWork.aiFeedback.strengths.join(" · ")}</p></div> : null}
+              {studentWork.aiFeedback.nextQuestions.length ? <div className="mt-2 rounded-md bg-white/70 p-3 text-sm leading-6"><strong>더 생각해 볼 질문</strong><p className="mt-1">{studentWork.aiFeedback.nextQuestions.join(" · ")}</p></div> : null}
+              {studentWork.aiFeedback.recommendations.length ? <div className="mt-2 rounded-md bg-white/70 p-3 text-sm leading-6"><strong>다음 활동 제안</strong><p className="mt-1">{studentWork.aiFeedback.recommendations.join(" · ")}</p></div> : null}
+            </section>
+          ) : null}
+
           {activity.activityMode === "group" ? (
             <section className="rounded-lg border border-zinc-200 bg-white p-4">
               <div className="flex items-center gap-2">

@@ -57,6 +57,7 @@ export async function GET(request: Request, context: { params: Promise<{ activit
     const data = await getWork(activityId, user.idToken);
     const student = data.students[0];
     if (!student) return Response.json({ message: "Student account is not linked" }, { status: 403 });
+    const aiFeedback = [...data.aiAnalyses].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
 
     return Response.json({
       student: { id: student.externalId ?? student.id, name: student.name, className: student.schoolClass.name },
@@ -67,6 +68,15 @@ export async function GET(request: Request, context: { params: Promise<{ activit
         publicTags: card.tagsPublic ? card.tags ?? [] : [],
       })),
       status: fromStatus(data.individualSubmissions[0]?.status),
+      aiFeedback: aiFeedback ? {
+        id: aiFeedback.id,
+        model: aiFeedback.model,
+        summary: aiFeedback.summary,
+        strengths: aiFeedback.strengths ?? [],
+        nextQuestions: aiFeedback.nextQuestions ?? [],
+        recommendations: aiFeedback.recommendations ?? [],
+        updatedAt: aiFeedback.updatedAt,
+      } : null,
     });
   } catch (error) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();

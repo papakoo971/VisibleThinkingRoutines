@@ -5,6 +5,15 @@ export type StudentWork = {
   student: { id: string; name: string; className: string };
   cards: Array<{ id: string; column: RoutineColumn; content: string; publicTags?: string[] }>;
   status: "draft" | "submitted" | "modified";
+  aiFeedback: null | {
+    id: string;
+    model: string;
+    summary: string | null;
+    strengths: string[];
+    nextQuestions: string[];
+    recommendations: string[];
+    updatedAt: string;
+  };
 };
 
 async function authorizationHeader() {

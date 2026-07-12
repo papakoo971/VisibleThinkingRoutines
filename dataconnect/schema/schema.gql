@@ -160,6 +160,8 @@ type AiAnalysis @table(name: "ai_analysis", key: "id") {
   activity: Activity!
   scope: String! @col(dataType: "varchar(20)")
   studentExternalId: String @col(dataType: "varchar(64)")
+  studentAuthUid: String @col(dataType: "varchar(128)")
+  studentVisible: Boolean! @default(value: false)
   status: String! @col(dataType: "varchar(20)")
   model: String! @col(dataType: "varchar(120)")
   summary: String
