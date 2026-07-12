@@ -117,6 +117,7 @@ export interface GetActivityData {
       status: AttendanceStatus;
       student: {
         id: string;
+        externalId?: string | null;
         name: string;
         studentNumber: string;
         schoolClass: {
@@ -131,6 +132,7 @@ export interface GetActivityData {
       activityGroupMembers_on_activityGroup: ({
         student: {
           id: string;
+          externalId?: string | null;
           name: string;
           studentNumber: string;
         } & Student_Key;
@@ -140,6 +142,7 @@ export interface GetActivityData {
       status: SubmissionStatus;
       student: {
         id: string;
+        externalId?: string | null;
       } & Student_Key;
     })[];
     groupSubmissions_on_activity: ({
@@ -155,6 +158,7 @@ export interface GetActivityData {
       } & ActivityGroup_Key;
       student: {
         id: string;
+        externalId?: string | null;
       } & Student_Key;
     })[];
   } & Activity_Key;
@@ -323,7 +327,6 @@ export interface UpsertSchoolClassData {
 }
 
 export interface UpsertSchoolClassVariables {
-  id: string;
   name: string;
 }
 
@@ -332,7 +335,7 @@ export interface UpsertStudentData {
 }
 
 export interface UpsertStudentVariables {
-  id: string;
+  externalId: string;
   schoolClassId: string;
   studentNumber: string;
   name: string;

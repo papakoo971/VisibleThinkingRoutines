@@ -70,6 +70,7 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
       status
       student {
         id
+        externalId
         name
         studentNumber
         schoolClass {
@@ -84,6 +85,7 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
       activityGroupMembers_on_activityGroup {
         student {
           id
+          externalId
           name
           studentNumber
         }
@@ -93,6 +95,7 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
       status
       student {
         id
+        externalId
       }
     }
     groupSubmissions_on_activity {
@@ -108,21 +111,30 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
       }
       student {
         id
+        externalId
       }
     }
   }
 }
 
-mutation UpsertSchoolClass($id: String!, $name: String!) @auth(level: USER, insecureReason: "Classes remain shared prototype data until class ownership migration.") {
+mutation UpsertSchoolClass($name: String!) @auth(level: USER) {
   schoolClass_upsert(data: {
-    id: $id
+    id_expr: "auth.uid + ':' + vars.name"
+    teacherId_expr: "auth.uid"
     name: $name
   })
 }
 
-mutation UpsertStudent($id: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!, $passwordIssued: Boolean!) @auth(level: USER, insecureReason: "Students remain shared prototype data until class ownership migration.") {
+mutation UpsertStudent($externalId: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!, $passwordIssued: Boolean!) @auth(level: USER) @transaction {
+  query @redact {
+    schoolClass(key: { id: $schoolClassId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   student_upsert(data: {
-    id: $id
+    id_expr: "auth.uid + ':' + vars.externalId"
+    teacherId_expr: "auth.uid"
+    externalId: $externalId
     schoolClass: { id: $schoolClassId }
     studentNumber: $studentNumber
     name: $name
@@ -174,6 +186,9 @@ mutation UpsertActivityClass($activityId: String!, $schoolClassId: String!) @aut
     activity(key: { id: $activityId }) {
       teacherId @check(expr: "this == auth.uid")
     }
+    schoolClass(key: { id: $schoolClassId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
   }
   activityClass_upsert(data: {
     activity: { id: $activityId }
@@ -184,6 +199,9 @@ mutation UpsertActivityClass($activityId: String!, $schoolClassId: String!) @aut
 mutation UpsertActivityAttendance($activityId: String!, $studentId: String!, $status: AttendanceStatus!) @auth(level: USER) @transaction {
   query @redact {
     activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+    student(key: { id: $studentId }) {
       teacherId @check(expr: "this == auth.uid")
     }
   }
@@ -214,6 +232,9 @@ mutation UpsertActivityGroupMember($activityGroupId: String!, $studentId: String
         teacherId @check(expr: "this == auth.uid")
       }
     }
+    student(key: { id: $studentId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
   }
   activityGroupMember_upsert(data: {
     activityGroup: { id: $activityGroupId }
@@ -224,6 +245,9 @@ mutation UpsertActivityGroupMember($activityGroupId: String!, $studentId: String
 mutation UpsertIndividualSubmission($activityId: String!, $studentId: String!, $status: SubmissionStatus!) @auth(level: USER) @transaction {
   query @redact {
     activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+    student(key: { id: $studentId }) {
       teacherId @check(expr: "this == auth.uid")
     }
   }
@@ -252,6 +276,9 @@ mutation UpsertGroupSubmission($activityId: String!, $activityGroupId: String!, 
 mutation UpsertGroupSubmissionAgreement($activityId: String!, $activityGroupId: String!, $studentId: String!, $agreed: Boolean!) @auth(level: USER) @transaction {
   query @redact {
     activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+    student(key: { id: $studentId }) {
       teacherId @check(expr: "this == auth.uid")
     }
   }

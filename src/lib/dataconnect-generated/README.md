@@ -341,6 +341,7 @@ export interface GetActivityData {
       status: AttendanceStatus;
       student: {
         id: string;
+        externalId?: string | null;
         name: string;
         studentNumber: string;
         schoolClass: {
@@ -355,6 +356,7 @@ export interface GetActivityData {
       activityGroupMembers_on_activityGroup: ({
         student: {
           id: string;
+          externalId?: string | null;
           name: string;
           studentNumber: string;
         } & Student_Key;
@@ -364,6 +366,7 @@ export interface GetActivityData {
       status: SubmissionStatus;
       student: {
         id: string;
+        externalId?: string | null;
       } & Student_Key;
     })[];
     groupSubmissions_on_activity: ({
@@ -379,6 +382,7 @@ export interface GetActivityData {
       } & ActivityGroup_Key;
       student: {
         id: string;
+        externalId?: string | null;
       } & Student_Key;
     })[];
   } & Activity_Key;
@@ -702,7 +706,6 @@ The `UpsertSchoolClass` mutation requires an argument of type `UpsertSchoolClass
 
 ```typescript
 export interface UpsertSchoolClassVariables {
-  id: string;
   name: string;
 }
 ```
@@ -723,7 +726,6 @@ import { connectorConfig, upsertSchoolClass, UpsertSchoolClassVariables } from '
 
 // The `UpsertSchoolClass` mutation requires an argument of type `UpsertSchoolClassVariables`:
 const upsertSchoolClassVars: UpsertSchoolClassVariables = {
-  id: ..., 
   name: ..., 
 };
 
@@ -731,7 +733,7 @@ const upsertSchoolClassVars: UpsertSchoolClassVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await upsertSchoolClass(upsertSchoolClassVars);
 // Variables can be defined inline as well.
-const { data } = await upsertSchoolClass({ id: ..., name: ..., });
+const { data } = await upsertSchoolClass({ name: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -754,14 +756,13 @@ import { connectorConfig, upsertSchoolClassRef, UpsertSchoolClassVariables } fro
 
 // The `UpsertSchoolClass` mutation requires an argument of type `UpsertSchoolClassVariables`:
 const upsertSchoolClassVars: UpsertSchoolClassVariables = {
-  id: ..., 
   name: ..., 
 };
 
 // Call the `upsertSchoolClassRef()` function to get a reference to the mutation.
 const ref = upsertSchoolClassRef(upsertSchoolClassVars);
 // Variables can be defined inline as well.
-const ref = upsertSchoolClassRef({ id: ..., name: ..., });
+const ref = upsertSchoolClassRef({ name: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -814,7 +815,7 @@ The `UpsertStudent` mutation requires an argument of type `UpsertStudentVariable
 
 ```typescript
 export interface UpsertStudentVariables {
-  id: string;
+  externalId: string;
   schoolClassId: string;
   studentNumber: string;
   name: string;
@@ -838,18 +839,18 @@ import { connectorConfig, upsertStudent, UpsertStudentVariables } from '@visible
 
 // The `UpsertStudent` mutation requires an argument of type `UpsertStudentVariables`:
 const upsertStudentVars: UpsertStudentVariables = {
-  id: ..., 
-  schoolClassId: ..., 
-  studentNumber: ..., 
-  name: ..., 
-  passwordIssued: ..., 
+  externalId: ...,
+  schoolClassId: ...,
+  studentNumber: ...,
+  name: ...,
+  passwordIssued: ...,
 };
 
 // Call the `upsertStudent()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await upsertStudent(upsertStudentVars);
 // Variables can be defined inline as well.
-const { data } = await upsertStudent({ id: ..., schoolClassId: ..., studentNumber: ..., name: ..., passwordIssued: ..., });
+const { data } = await upsertStudent({ externalId: ..., schoolClassId: ..., studentNumber: ..., name: ..., passwordIssued: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -872,17 +873,17 @@ import { connectorConfig, upsertStudentRef, UpsertStudentVariables } from '@visi
 
 // The `UpsertStudent` mutation requires an argument of type `UpsertStudentVariables`:
 const upsertStudentVars: UpsertStudentVariables = {
-  id: ..., 
-  schoolClassId: ..., 
-  studentNumber: ..., 
-  name: ..., 
-  passwordIssued: ..., 
+  externalId: ...,
+  schoolClassId: ...,
+  studentNumber: ...,
+  name: ...,
+  passwordIssued: ...,
 };
 
 // Call the `upsertStudentRef()` function to get a reference to the mutation.
 const ref = upsertStudentRef(upsertStudentVars);
 // Variables can be defined inline as well.
-const ref = upsertStudentRef({ id: ..., schoolClassId: ..., studentNumber: ..., name: ..., passwordIssued: ..., });
+const ref = upsertStudentRef({ externalId: ..., schoolClassId: ..., studentNumber: ..., name: ..., passwordIssued: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1950,4 +1951,3 @@ executeMutation(ref).then((response) => {
   console.log(data.groupSubmissionAgreement_upsert);
 });
 ```
-

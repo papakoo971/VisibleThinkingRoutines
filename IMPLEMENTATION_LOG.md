@@ -1,5 +1,25 @@
 # Implementation Log
 
+## 2026-07-12 Class And Student Ownership
+
+### Completed
+
+- Added nullable `teacherId` ownership fields to `SchoolClass` and `Student` while preserving legacy rows.
+- Added `Student.externalId` and widened storage IDs for UID-scoped class and student identifiers.
+- Derived class and student ownership and storage IDs from `auth.uid` in authenticated SQL Connect mutations.
+- Added transactional ownership checks to class assignment, attendance, group membership, individual submission, and group agreement writes.
+- Restored external student IDs in activity detail responses so the UI continues to use IDs such as `s1`.
+- Migrated the live PostgreSQL schema and deployed the updated `teacher` connector.
+- Added `scripts/teacher-data-isolation-smoke.mjs` for repeatable two-teacher integration verification and automatic cleanup.
+
+### Ownership Verification
+
+- Two teachers can independently reuse `5학년 1반` and external student ID `s1` without storage collisions.
+- Attendance, group membership, and agreement responses restore `s1` instead of exposing UID-scoped storage IDs.
+- A direct attempt by Teacher B to attach Teacher A's student fails with the connector ownership check.
+- Each teacher's activity list contains only their own activity.
+- Test activities and Firebase Auth accounts are removed after verification.
+
 ## 2026-07-12 Activity Ownership
 
 ### Completed
@@ -23,7 +43,6 @@
 - A denied cross-owner delete leaves the activity intact.
 - Direct cross-owner `UpsertActivityClass` connector calls fail with `PERMISSION_DENIED` and roll back.
 - All smoke-test activities and Firebase Auth accounts were removed after verification.
-- `SchoolClass` and `Student` remain shared prototype records; their teacher ownership migration is the next data-isolation follow-up.
 
 ## 2026-07-12
 

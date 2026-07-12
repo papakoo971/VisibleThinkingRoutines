@@ -70,6 +70,18 @@ function routesFor(activityId: string) {
   };
 }
 
+function schoolClassStorageId(uid: string, className: string) {
+  return `${uid}:${className}`;
+}
+
+function studentStorageId(uid: string, externalId: string) {
+  return `${uid}:${externalId}`;
+}
+
+function studentExternalId(student: { id: string; externalId?: string | null }) {
+  return student.externalId ?? student.id;
+}
+
 function listActivityToPayload(activity: ListActivitiesData["activities"][number]): CreatedActivityPayload {
   return {
     activity: {
@@ -103,7 +115,7 @@ function detailActivityToPayload(activity: NonNullable<GetActivityData["activity
     groupAgreements.push({
       activityId: activity.id,
       groupId,
-      studentId: agreement.student.id,
+      studentId: studentExternalId(agreement.student),
       agreed: agreement.agreed,
     });
     agreementsByGroup.set(groupId, groupAgreements);
@@ -126,14 +138,14 @@ function detailActivityToPayload(activity: NonNullable<GetActivityData["activity
     },
     activityAttendance: activity.activityAttendances_on_activity.map((attendance) => ({
       activityId: activity.id,
-      studentId: attendance.student.id,
+      studentId: studentExternalId(attendance.student),
       status: fromAttendanceStatus(attendance.status),
     })),
     activityGroups: activity.activityGroups_on_activity.map((group) => ({
       id: group.id,
       activityId: activity.id,
       name: group.name,
-      studentIds: group.activityGroupMembers_on_activityGroup.map((member) => member.student.id),
+      studentIds: group.activityGroupMembers_on_activityGroup.map((member) => studentExternalId(member.student)),
     })),
     groupSubmissions: activity.groupSubmissions_on_activity.map((submission) => ({
       activityId: activity.id,
@@ -144,7 +156,7 @@ function detailActivityToPayload(activity: NonNullable<GetActivityData["activity
     })),
     individualSubmissions: activity.individualSubmissions_on_activity.map((submission) => ({
       activityId: activity.id,
-      studentId: submission.student.id,
+      studentId: studentExternalId(submission.student),
       status: fromSubmissionStatus(submission.status),
       cards: [],
     })),
@@ -156,7 +168,7 @@ async function executeMutation<Variables>(name: string, variables: Variables, id
   await executeUserMutation<unknown, Variables>(name, variables, idToken);
 }
 
-async function upsertPayloadDependencies(payload: CreatedActivityPayload, idToken: string) {
+async function upsertPayloadDependencies(payload: CreatedActivityPayload, uid: string, idToken: string) {
   const studentIds = new Set([
     ...payload.activityAttendance.map((attendance) => attendance.studentId),
     ...payload.activityGroups.flatMap((group) => group.studentIds),
@@ -167,15 +179,15 @@ async function upsertPayloadDependencies(payload: CreatedActivityPayload, idToke
   const classNames = new Set([...payload.activity.classes, ...payloadStudents.map((student) => student.className)]);
 
   for (const name of classNames) {
-    await executeMutation<UpsertSchoolClassVariables>("UpsertSchoolClass", { id: name, name }, idToken);
+    await executeMutation<UpsertSchoolClassVariables>("UpsertSchoolClass", { name }, idToken);
   }
 
   for (const student of payloadStudents) {
     await executeMutation<UpsertStudentVariables>(
       "UpsertStudent",
       {
-        id: student.id,
-        schoolClassId: student.className,
+        externalId: student.id,
+        schoolClassId: schoolClassStorageId(uid, student.className),
         studentNumber: student.studentNumber,
         name: student.name,
         passwordIssued: student.passwordIssued,
@@ -205,7 +217,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
   },
 
   async upsert(payload, context) {
-    await upsertPayloadDependencies(payload, context.idToken);
+    await upsertPayloadDependencies(payload, context.uid, context.idToken);
     const { activity } = payload;
 
     await executeMutation<CreateActivityVariables>(
@@ -229,14 +241,14 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     for (const className of activity.classes) {
       await executeMutation<UpsertActivityClassVariables>("UpsertActivityClass", {
         activityId: activity.id,
-        schoolClassId: className,
+        schoolClassId: schoolClassStorageId(context.uid, className),
       }, context.idToken);
     }
 
     for (const attendance of payload.activityAttendance) {
       await executeMutation<UpsertActivityAttendanceVariables>("UpsertActivityAttendance", {
         activityId: attendance.activityId,
-        studentId: attendance.studentId,
+        studentId: studentStorageId(context.uid, attendance.studentId),
         status: toAttendanceStatus(attendance.status),
       }, context.idToken);
     }
@@ -251,7 +263,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
       for (const studentId of group.studentIds) {
         await executeMutation<UpsertActivityGroupMemberVariables>("UpsertActivityGroupMember", {
           activityGroupId: group.id,
-          studentId,
+          studentId: studentStorageId(context.uid, studentId),
         }, context.idToken);
       }
     }
@@ -259,7 +271,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     for (const submission of payload.individualSubmissions) {
       await executeMutation<UpsertIndividualSubmissionVariables>("UpsertIndividualSubmission", {
         activityId: submission.activityId,
-        studentId: submission.studentId,
+        studentId: studentStorageId(context.uid, submission.studentId),
         status: toSubmissionStatus(submission.status),
       }, context.idToken);
     }
@@ -275,7 +287,7 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
         await executeMutation<UpsertGroupSubmissionAgreementVariables>("UpsertGroupSubmissionAgreement", {
           activityId: agreement.activityId,
           activityGroupId: agreement.groupId,
-          studentId: agreement.studentId,
+          studentId: studentStorageId(context.uid, agreement.studentId),
           agreed: agreement.agreed,
         }, context.idToken);
       }

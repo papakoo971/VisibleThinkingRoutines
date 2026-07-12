@@ -40,12 +40,15 @@ type TeacherProfile @table(name: "teacher_profile", key: "id") {
 }
 
 type SchoolClass @table(name: "school_class", key: "id") {
-  id: String! @col(dataType: "varchar(64)")
+  id: String! @col(dataType: "varchar(192)")
+  teacherId: String @col(dataType: "varchar(128)")
   name: String! @col(dataType: "varchar(80)")
 }
 
 type Student @table(name: "student", key: "id") {
-  id: String! @col(dataType: "varchar(64)")
+  id: String! @col(dataType: "varchar(192)")
+  teacherId: String @col(dataType: "varchar(128)")
+  externalId: String @col(dataType: "varchar(64)")
   schoolClass: SchoolClass!
   studentNumber: String! @col(dataType: "varchar(32)")
   name: String! @col(dataType: "varchar(80)")
