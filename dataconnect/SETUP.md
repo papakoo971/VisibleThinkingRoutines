@@ -155,3 +155,5 @@ Student accounts are linked through nullable, unique `Student.authUid`. `GetMySt
 The teacher student-management page now supports CSV import. Its authenticated Route Handler validates the teacher profile, rejects duplicate teacher-scoped student numbers, creates Firebase student accounts, links `authUid`, and returns one-time temporary credentials for CSV download. XLSX parsing and password reissuance remain follow-up work.
 
 Individual student work uses `GetMyStudentWork`, `UpsertMyThinkingCard`, `DeleteMyThinkingCard`, and `SetMyIndividualSubmission`. Mutations verify the linked Firebase UID, present attendance, and active activity before writing. Thinking-card storage IDs are derived from `auth.uid` inside SQL Connect, while the API returns only the external card ID used by the UI.
+
+Teacher result reads use `GetTeacherActivityResults`, which filters by the authenticated owner's UID before returning student cards and submission states. `SetActivityStatus` applies the same owner check before closing or reopening an activity; closed activities remain readable to assigned students but all student work mutations reject writes.

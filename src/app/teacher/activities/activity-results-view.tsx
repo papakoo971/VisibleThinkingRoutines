@@ -18,6 +18,7 @@ import {
 import type { RoutineColumn, ThinkingCard } from "@/lib/mock-data";
 import { fetchCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
+import { fetchTeacherActivityResults, updateTeacherActivityStatus, type TeacherActivityResults } from "@/lib/teacher-results";
 
 const columns: { id: RoutineColumn; label: string }[] = [
   { id: "see", label: "See" },
@@ -27,14 +28,18 @@ const columns: { id: RoutineColumn; label: string }[] = [
 
 export function ActivityResultsView({ activityId }: { activityId: string }) {
   const [createdPayload, setCreatedPayload] = useState<CreatedActivityPayload | null>(null);
+  const [liveResults, setLiveResults] = useState<TeacherActivityResults | null>(null);
   const mockActivity = activities.find((item) => item.id === activityId);
 
   useEffect(() => {
     let ignore = false;
 
     if (!mockActivity) {
-      fetchCreatedActivityPayload(activityId).then((payload) => {
-        if (!ignore) setCreatedPayload(payload ?? null);
+      Promise.all([fetchCreatedActivityPayload(activityId), fetchTeacherActivityResults(activityId).catch(() => null)]).then(([payload, results]) => {
+        if (!ignore) {
+          setCreatedPayload(payload ?? null);
+          setLiveResults(results);
+        }
       });
     }
 
@@ -50,6 +55,8 @@ export function ActivityResultsView({ activityId }: { activityId: string }) {
       key={`${activity.id}-${activity.activityMode}`}
       activityId={activityId}
       createdPayload={createdPayload}
+      liveResults={liveResults}
+      onStatusChange={(status) => setLiveResults((current) => current ? { ...current, activity: { ...current.activity, status } } : current)}
     />
   );
 }
@@ -57,20 +64,28 @@ export function ActivityResultsView({ activityId }: { activityId: string }) {
 function ActivityResultsWorkspace({
   activityId,
   createdPayload,
+  liveResults,
+  onStatusChange,
 }: {
   activityId: string;
   createdPayload: CreatedActivityPayload | null;
+  liveResults: TeacherActivityResults | null;
+  onStatusChange: (status: "active" | "closed") => void;
 }) {
   const [anonymous, setAnonymous] = useState(false);
   const [tagFilter, setTagFilter] = useState("전체");
+  const [changingStatus, setChangingStatus] = useState(false);
   const mockActivity = activities.find((item) => item.id === activityId);
-  const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
+  const baseActivity = mockActivity ?? createdPayload?.activity ?? activities[0];
+  const activity = liveResults ? { ...baseActivity, status: liveResults.activity.status } : baseActivity;
   const [resultView, setResultView] = useState<"students" | "groups">(activity.activityMode === "group" ? "groups" : "students");
   const allActivityAttendance = [...activityAttendance, ...(createdPayload?.activityAttendance ?? [])];
   const allActivityGroups = [...activityGroups, ...(createdPayload?.activityGroups ?? [])];
   const allGroupSubmissions = [...groupSubmissions, ...(createdPayload?.groupSubmissions ?? [])];
   const allIndividualSubmissions = [...individualSubmissions, ...(createdPayload?.individualSubmissions ?? [])];
-  const activityIndividualSubmissions = allIndividualSubmissions.filter((submission) => submission.activityId === activity.id);
+  const activityIndividualSubmissions = liveResults
+    ? liveResults.submissions.map((submission) => ({ activityId: activity.id, ...submission }))
+    : allIndividualSubmissions.filter((submission) => submission.activityId === activity.id);
   const activityGroupSubmissions = allGroupSubmissions.filter((submission) => submission.activityId === activity.id);
   const activityCards = activity.activityMode === "group"
     ? activityGroupSubmissions.flatMap((submission) =>
@@ -87,7 +102,9 @@ function ActivityResultsWorkspace({
 
   const filteredCards = tagFilter === "전체" ? activityCards : activityCards.filter((card) => card.tags.includes(tagFilter));
 
-  const participatingStudents = students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id));
+  const participatingStudents = liveResults
+    ? liveResults.students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id))
+    : students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id));
   const participatingGroups = allActivityGroups.filter((group) => group.activityId === activity.id);
 
   return (
@@ -97,6 +114,32 @@ function ActivityResultsWorkspace({
         title={activity.title}
         description={`${activity.activityMode === "group" ? "모둠 활동" : "개인 활동"} · ${activity.subject} · ${activity.routine}`}
       />
+
+      {liveResults ? (
+        <section className="mb-6 flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold">활동 상태: {activity.status === "active" ? "진행 중" : "마감됨"}</p>
+            <p className="mt-1 text-sm text-zinc-600">마감하면 학생 화면은 읽기 전용으로 전환됩니다.</p>
+          </div>
+          <button
+            type="button"
+            disabled={changingStatus}
+            onClick={async () => {
+              setChangingStatus(true);
+              const nextStatus = activity.status === "active" ? "closed" : "active";
+              try {
+                await updateTeacherActivityStatus(activity.id, nextStatus);
+                onStatusChange(nextStatus);
+              } finally {
+                setChangingStatus(false);
+              }
+            }}
+            className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white disabled:bg-zinc-400"
+          >
+            {changingStatus ? "변경 중..." : activity.status === "active" ? "활동 마감" : "다시 열기"}
+          </button>
+        </section>
+      ) : null}
 
       <section className="mb-6 rounded-lg border border-zinc-200 bg-white p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -181,7 +224,7 @@ function ActivityResultsWorkspace({
                   {filteredCards
                     .filter((card) => card.column === column.id)
                     .map((card) => (
-                      <ResultCard key={card.id} card={card} anonymous={anonymous} />
+                        <ResultCard key={card.id} card={card} anonymous={anonymous} studentName={participatingStudents.find((student) => student.id === card.studentId)?.name} />
                     ))}
                 </div>
               </div>
@@ -291,14 +334,14 @@ function ActivityResultsWorkspace({
   );
 }
 
-function ResultCard({ card, anonymous }: { card: ThinkingCard; anonymous: boolean }) {
+function ResultCard({ card, anonymous, studentName }: { card: ThinkingCard; anonymous: boolean; studentName?: string }) {
   const student = getStudentById(card.studentId);
 
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm">
       <p className="text-sm leading-6">{card.content}</p>
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        {!anonymous ? <span className="text-xs font-semibold text-zinc-600">{student ? getStudentName(student.id) : "익명"}</span> : null}
+        {!anonymous ? <span className="text-xs font-semibold text-zinc-600">{studentName ?? (student ? getStudentName(student.id) : "익명")}</span> : null}
         {card.tags.map((tag) => (
           <span key={tag} className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">
             <Tag className="h-3 w-3" />

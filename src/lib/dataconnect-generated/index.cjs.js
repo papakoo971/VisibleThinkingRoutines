@@ -118,6 +118,35 @@ exports.getTeacherActivity = function getTeacherActivity(dcOrVars, varsOrOptions
 }
 ;
 
+const getTeacherActivityResultsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetTeacherActivityResults', inputVars);
+}
+getTeacherActivityResultsRef.operationName = 'GetTeacherActivityResults';
+exports.getTeacherActivityResultsRef = getTeacherActivityResultsRef;
+
+exports.getTeacherActivityResults = function getTeacherActivityResults(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getTeacherActivityResultsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const setActivityStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetActivityStatus', inputVars);
+}
+setActivityStatusRef.operationName = 'SetActivityStatus';
+exports.setActivityStatusRef = setActivityStatusRef;
+
+exports.setActivityStatus = function setActivityStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setActivityStatusRef(dcInstance, inputVars));
+}
+;
+
 const linkStudentAuthRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

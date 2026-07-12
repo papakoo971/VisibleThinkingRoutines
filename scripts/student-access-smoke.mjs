@@ -91,6 +91,21 @@ try {
   if (saved.status !== 200) throw new Error(`Student card save failed: ${JSON.stringify(saved)}`);
   const draft = await api(workPath, { idToken: assignedStudent.idToken });
   if (draft.status !== 200 || draft.result.cards?.[0]?.content !== "자동 저장 검증 카드" || draft.result.status !== "draft") throw new Error("Saved draft was not restored.");
+  const resultsPath = `/api/teacher/activities/${activityId}/results`;
+  const teacherResults = await api(resultsPath, { idToken: teacher.idToken });
+  if (teacherResults.status !== 200 || teacherResults.result.submissions?.[0]?.cards?.[0]?.content !== "자동 저장 검증 카드") throw new Error("Teacher results did not include the saved student card.");
+  const foreignResults = await api(resultsPath, { idToken: unassignedStudent.idToken });
+  if (foreignResults.status !== 404) throw new Error(`Non-owner results should be 404, got ${foreignResults.status}.`);
+  const foreignStatus = await api(resultsPath, { method: "PATCH", idToken: unassignedStudent.idToken, body: { status: "closed" } });
+  if (foreignStatus.status !== 403) throw new Error(`Non-owner status change should be 403, got ${foreignStatus.status}.`);
+  const closed = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { status: "closed" } });
+  if (closed.status !== 200) throw new Error("Teacher could not close the activity.");
+  const closedWrite = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
+    cards: [{ id: `card-${suffix}`, column: "see", content: "마감 후 수정 시도" }], status: "modified",
+  } });
+  if (closedWrite.status !== 403) throw new Error(`Closed activity write should be 403, got ${closedWrite.status}.`);
+  const reopened = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { status: "active" } });
+  if (reopened.status !== 200) throw new Error("Teacher could not reopen the activity.");
   const submitted = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
     cards: [{ id: `card-${suffix}`, column: "think", content: "제출 후 카드" }], status: "submitted",
   } });
@@ -111,7 +126,7 @@ try {
   const anonymousDetail = await api(`/api/created-activities/${activityId}`);
   if (anonymousDetail.status !== 401) throw new Error(`Anonymous detail should be 401, got ${anonymousDetail.status}.`);
 
-  console.log("PASS: student draft/save/submit/modify/delete persists, while unassigned and anonymous access is denied.");
+  console.log("PASS: teacher sees live cards, close blocks student writes, reopen restores editing, and submission lifecycle persists.");
 } finally {
   if (teacher) await Promise.allSettled([
     sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),

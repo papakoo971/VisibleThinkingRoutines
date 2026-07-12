@@ -88,6 +88,7 @@ function StudentActivityWorkspace({
 }) {
   const mockActivity = activities.find((item) => item.id === activityId);
   const activity = mockActivity ?? createdPayload?.activity ?? activities[0];
+  const readOnly = activity.status === "closed";
   const allActivityAttendance = [...activityAttendance, ...(createdPayload?.activityAttendance ?? [])];
   const allActivityGroups = [...activityGroups, ...(createdPayload?.activityGroups ?? [])];
   const allGroupSubmissions = [...groupSubmissions, ...(createdPayload?.groupSubmissions ?? [])];
@@ -133,7 +134,7 @@ function StudentActivityWorkspace({
   }, [modifiedAfterSubmit, submitted]);
 
   useEffect(() => {
-    if (!createdPayload || activity.activityMode !== "individual" || !studentWork) return;
+    if (!createdPayload || activity.activityMode !== "individual" || !studentWork || readOnly) return;
     const version = saveVersion.current;
     const timeout = window.setTimeout(() => {
       saveStudentWork(activityId, {
@@ -146,9 +147,10 @@ function StudentActivityWorkspace({
       });
     }, 700);
     return () => window.clearTimeout(timeout);
-  }, [activity.activityMode, activityId, cards, createdPayload, modifiedAfterSubmit, studentWork, submitted]);
+  }, [activity.activityMode, activityId, cards, createdPayload, modifiedAfterSubmit, readOnly, studentWork, submitted]);
 
   function addCard(column: RoutineColumn) {
+    if (readOnly) return;
     setCards((current) => [...current, { id: crypto.randomUUID(), column, content: "" }]);
     saveVersion.current += 1;
     setSaveState("saving");
@@ -156,6 +158,7 @@ function StudentActivityWorkspace({
   }
 
   function updateCard(id: string, content: string) {
+    if (readOnly) return;
     setCards((current) => current.map((card) => (card.id === id ? { ...card, content } : card)));
     saveVersion.current += 1;
     setSaveState("saving");
@@ -163,6 +166,7 @@ function StudentActivityWorkspace({
   }
 
   function deleteCard(id: string) {
+    if (readOnly) return;
     setCards((current) => current.filter((card) => card.id !== id));
     saveVersion.current += 1;
     setSaveState("saving");
@@ -195,11 +199,11 @@ function StudentActivityWorkspace({
             </span>
             <button
               onClick={() => { saveVersion.current += 1; setSubmitted(true); setModifiedAfterSubmit(false); setSaveState("saving"); }}
-              disabled={activity.activityMode === "group" && !allPresentMembersAgreed}
+              disabled={readOnly || (activity.activityMode === "group" && !allPresentMembersAgreed)}
               className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
             >
               <CheckCircle2 className="h-4 w-4" />
-              제출
+              {readOnly ? "마감됨" : "제출"}
             </button>
           </div>
         </div>
@@ -288,6 +292,7 @@ function StudentActivityWorkspace({
                 onAdd={() => addCard(column.id)}
                 onChange={updateCard}
                 onDelete={deleteCard}
+                readOnly={readOnly}
               />
             ))}
           </div>
@@ -304,6 +309,7 @@ function RoutineColumnBoard({
   onAdd,
   onChange,
   onDelete,
+  readOnly,
 }: {
   column: { id: RoutineColumn; label: string; helper: string };
   cards: LocalCard[];
@@ -311,6 +317,7 @@ function RoutineColumnBoard({
   onAdd: () => void;
   onChange: (id: string, content: string) => void;
   onDelete: (id: string) => void;
+  readOnly: boolean;
 }) {
   return (
     <div className={`${isVisible ? "block" : "hidden"} rounded-md border border-zinc-200 bg-stone-50 p-3 lg:block`}>
@@ -319,7 +326,7 @@ function RoutineColumnBoard({
           <h2 className="font-semibold">{column.label}</h2>
           <p className="mt-1 text-xs text-zinc-500">{column.helper}</p>
         </div>
-        <button onClick={onAdd} className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white shadow-sm">
+        <button type="button" onClick={onAdd} disabled={readOnly} className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white shadow-sm disabled:cursor-not-allowed disabled:text-zinc-300">
           <Plus className="h-4 w-4" />
         </button>
       </div>
@@ -328,12 +335,13 @@ function RoutineColumnBoard({
           <div key={card.id} className="rounded-md border border-zinc-200 bg-white p-2 shadow-sm">
             <textarea
               value={card.content}
+              disabled={readOnly}
               onChange={(event) => onChange(card.id, event.target.value)}
               className="min-h-24 w-full border-0 bg-transparent p-1 text-sm leading-6 outline-none"
               placeholder={`${column.label} 카드 작성`}
             />
             <div className="flex justify-end">
-              <button onClick={() => onDelete(card.id)} className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs text-zinc-500 hover:bg-zinc-100">
+              <button type="button" onClick={() => onDelete(card.id)} disabled={readOnly} className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs text-zinc-500 hover:bg-zinc-100 disabled:hidden">
                 <Trash2 className="h-3.5 w-3.5" />
                 삭제
               </button>

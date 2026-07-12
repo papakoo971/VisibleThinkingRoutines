@@ -117,6 +117,64 @@ query GetTeacherActivity($id: String!) @auth(level: USER) {
   }
 }
 
+query GetTeacherActivityResults($id: String!) @auth(level: USER) {
+  activities(where: { id: { eq: $id }, teacherId: { eq_expr: "auth.uid" } }, limit: 1) {
+    id
+    title
+    routine
+    activityMode
+    subject
+    status
+    thinkingCards_on_activity {
+      id
+      column
+      content
+      tags
+      tagsPublic
+      student {
+        id
+        externalId
+        name
+        studentNumber
+        schoolClass { name }
+      }
+    }
+    individualSubmissions_on_activity {
+      status
+      updatedAt
+      student {
+        id
+        externalId
+        name
+        studentNumber
+        schoolClass { name }
+      }
+    }
+    activityAttendances_on_activity {
+      status
+      student {
+        id
+        externalId
+        name
+        studentNumber
+        schoolClass { name }
+      }
+    }
+  }
+}
+
+mutation SetActivityStatus($id: String!, $status: ActivityStatus!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $id }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
+  activity_update(key: { id: $id }, data: {
+    status: $status
+    updatedAt_expr: "request.time"
+  })
+}
+
 mutation LinkStudentAuth($studentId: String!, $authUid: String!) @auth(level: USER) @transaction {
   query @redact {
     student(key: { id: $studentId }) {

@@ -319,6 +319,62 @@ export interface GetTeacherActivityData {
   } & Activity_Key)[];
 }
 
+export interface GetTeacherActivityResultsData {
+  activities: ({
+    id: string;
+    title: string;
+    routine: string;
+    activityMode: ActivityMode;
+    subject: string;
+    status: ActivityStatus;
+    thinkingCards_on_activity: ({
+      id: string;
+      column: RoutineColumn;
+      content: string;
+      tags?: string[] | null;
+      tagsPublic: boolean;
+      student: {
+        id: string;
+        externalId?: string | null;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          name: string;
+        };
+      } & Student_Key;
+    } & ThinkingCard_Key)[];
+    individualSubmissions_on_activity: ({
+      status: SubmissionStatus;
+      updatedAt: TimestampString;
+      student: {
+        id: string;
+        externalId?: string | null;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          name: string;
+        };
+      } & Student_Key;
+    })[];
+    activityAttendances_on_activity: ({
+      status: AttendanceStatus;
+      student: {
+        id: string;
+        externalId?: string | null;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          name: string;
+        };
+      } & Student_Key;
+    })[];
+  } & Activity_Key)[];
+}
+
+export interface GetTeacherActivityResultsVariables {
+  id: string;
+}
+
 export interface GetTeacherActivityVariables {
   id: string;
 }
@@ -420,6 +476,15 @@ export interface ListMyStudentsData {
 export interface SchoolClass_Key {
   id: string;
   __typename?: 'SchoolClass_Key';
+}
+
+export interface SetActivityStatusData {
+  activity_update?: Activity_Key | null;
+}
+
+export interface SetActivityStatusVariables {
+  id: string;
+  status: ActivityStatus;
 }
 
 export interface SetMyIndividualSubmissionData {
@@ -625,6 +690,30 @@ export const getTeacherActivityRef: GetTeacherActivityRef;
 
 export function getTeacherActivity(vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
 export function getTeacherActivity(dc: DataConnect, vars: GetTeacherActivityVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityData, GetTeacherActivityVariables>;
+
+interface GetTeacherActivityResultsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetTeacherActivityResultsVariables): QueryRef<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetTeacherActivityResultsVariables): QueryRef<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+  operationName: string;
+}
+export const getTeacherActivityResultsRef: GetTeacherActivityResultsRef;
+
+export function getTeacherActivityResults(vars: GetTeacherActivityResultsVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+export function getTeacherActivityResults(dc: DataConnect, vars: GetTeacherActivityResultsVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+
+interface SetActivityStatusRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetActivityStatusVariables): MutationRef<SetActivityStatusData, SetActivityStatusVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetActivityStatusVariables): MutationRef<SetActivityStatusData, SetActivityStatusVariables>;
+  operationName: string;
+}
+export const setActivityStatusRef: SetActivityStatusRef;
+
+export function setActivityStatus(vars: SetActivityStatusVariables): MutationPromise<SetActivityStatusData, SetActivityStatusVariables>;
+export function setActivityStatus(dc: DataConnect, vars: SetActivityStatusVariables): MutationPromise<SetActivityStatusData, SetActivityStatusVariables>;
 
 interface LinkStudentAuthRef {
   /* Allow users to create refs without passing in DataConnect */

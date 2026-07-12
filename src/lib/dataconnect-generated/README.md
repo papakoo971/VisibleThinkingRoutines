@@ -11,6 +11,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetMyTeacherProfile*](#getmyteacherprofile)
   - [*ListActivities*](#listactivities)
   - [*GetTeacherActivity*](#getteacheractivity)
+  - [*GetTeacherActivityResults*](#getteacheractivityresults)
   - [*ListMyStudents*](#listmystudents)
   - [*GetMyStudent*](#getmystudent)
   - [*ListMyStudentActivities*](#listmystudentactivities)
@@ -19,6 +20,7 @@ This README will guide you through the process of using the generated JavaScript
 - [**Mutations**](#mutations)
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
+  - [*SetActivityStatus*](#setactivitystatus)
   - [*LinkStudentAuth*](#linkstudentauth)
   - [*UnlinkStudentAuth*](#unlinkstudentauth)
   - [*UpsertSchoolClass*](#upsertschoolclass)
@@ -449,6 +451,163 @@ const ref = getTeacherActivityRef({ id: ..., });
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = getTeacherActivityRef(dataConnect, getTeacherActivityVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activities);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activities);
+});
+```
+
+## GetTeacherActivityResults
+You can execute the `GetTeacherActivityResults` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getTeacherActivityResults(vars: GetTeacherActivityResultsVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+
+interface GetTeacherActivityResultsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetTeacherActivityResultsVariables): QueryRef<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+}
+export const getTeacherActivityResultsRef: GetTeacherActivityResultsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getTeacherActivityResults(dc: DataConnect, vars: GetTeacherActivityResultsVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+
+interface GetTeacherActivityResultsRef {
+  ...
+  (dc: DataConnect, vars: GetTeacherActivityResultsVariables): QueryRef<GetTeacherActivityResultsData, GetTeacherActivityResultsVariables>;
+}
+export const getTeacherActivityResultsRef: GetTeacherActivityResultsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getTeacherActivityResultsRef:
+```typescript
+const name = getTeacherActivityResultsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetTeacherActivityResults` query requires an argument of type `GetTeacherActivityResultsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetTeacherActivityResultsVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that executing the `GetTeacherActivityResults` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetTeacherActivityResultsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetTeacherActivityResultsData {
+  activities: ({
+    id: string;
+    title: string;
+    routine: string;
+    activityMode: ActivityMode;
+    subject: string;
+    status: ActivityStatus;
+    thinkingCards_on_activity: ({
+      id: string;
+      column: RoutineColumn;
+      content: string;
+      tags?: string[] | null;
+      tagsPublic: boolean;
+      student: {
+        id: string;
+        externalId?: string | null;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          name: string;
+        };
+      } & Student_Key;
+    } & ThinkingCard_Key)[];
+    individualSubmissions_on_activity: ({
+      status: SubmissionStatus;
+      updatedAt: TimestampString;
+      student: {
+        id: string;
+        externalId?: string | null;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          name: string;
+        };
+      } & Student_Key;
+    })[];
+    activityAttendances_on_activity: ({
+      status: AttendanceStatus;
+      student: {
+        id: string;
+        externalId?: string | null;
+        name: string;
+        studentNumber: string;
+        schoolClass: {
+          name: string;
+        };
+      } & Student_Key;
+    })[];
+  } & Activity_Key)[];
+}
+```
+### Using `GetTeacherActivityResults`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getTeacherActivityResults, GetTeacherActivityResultsVariables } from '@visible-thinking/dataconnect';
+
+// The `GetTeacherActivityResults` query requires an argument of type `GetTeacherActivityResultsVariables`:
+const getTeacherActivityResultsVars: GetTeacherActivityResultsVariables = {
+  id: ...,
+};
+
+// Call the `getTeacherActivityResults()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getTeacherActivityResults(getTeacherActivityResultsVars);
+// Variables can be defined inline as well.
+const { data } = await getTeacherActivityResults({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getTeacherActivityResults(dataConnect, getTeacherActivityResultsVars);
+
+console.log(data.activities);
+
+// Or, you can use the `Promise` API.
+getTeacherActivityResults(getTeacherActivityResultsVars).then((response) => {
+  const data = response.data;
+  console.log(data.activities);
+});
+```
+
+### Using `GetTeacherActivityResults`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getTeacherActivityResultsRef, GetTeacherActivityResultsVariables } from '@visible-thinking/dataconnect';
+
+// The `GetTeacherActivityResults` query requires an argument of type `GetTeacherActivityResultsVariables`:
+const getTeacherActivityResultsVars: GetTeacherActivityResultsVariables = {
+  id: ...,
+};
+
+// Call the `getTeacherActivityResultsRef()` function to get a reference to the query.
+const ref = getTeacherActivityResultsRef(getTeacherActivityResultsVars);
+// Variables can be defined inline as well.
+const ref = getTeacherActivityResultsRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getTeacherActivityResultsRef(dataConnect, getTeacherActivityResultsVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -1305,6 +1464,118 @@ console.log(data.teacherProfile_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.teacherProfile_delete);
+});
+```
+
+## SetActivityStatus
+You can execute the `SetActivityStatus` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+setActivityStatus(vars: SetActivityStatusVariables): MutationPromise<SetActivityStatusData, SetActivityStatusVariables>;
+
+interface SetActivityStatusRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetActivityStatusVariables): MutationRef<SetActivityStatusData, SetActivityStatusVariables>;
+}
+export const setActivityStatusRef: SetActivityStatusRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setActivityStatus(dc: DataConnect, vars: SetActivityStatusVariables): MutationPromise<SetActivityStatusData, SetActivityStatusVariables>;
+
+interface SetActivityStatusRef {
+  ...
+  (dc: DataConnect, vars: SetActivityStatusVariables): MutationRef<SetActivityStatusData, SetActivityStatusVariables>;
+}
+export const setActivityStatusRef: SetActivityStatusRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setActivityStatusRef:
+```typescript
+const name = setActivityStatusRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetActivityStatus` mutation requires an argument of type `SetActivityStatusVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetActivityStatusVariables {
+  id: string;
+  status: ActivityStatus;
+}
+```
+### Return Type
+Recall that executing the `SetActivityStatus` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetActivityStatusData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetActivityStatusData {
+  activity_update?: Activity_Key | null;
+}
+```
+### Using `SetActivityStatus`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setActivityStatus, SetActivityStatusVariables } from '@visible-thinking/dataconnect';
+
+// The `SetActivityStatus` mutation requires an argument of type `SetActivityStatusVariables`:
+const setActivityStatusVars: SetActivityStatusVariables = {
+  id: ...,
+  status: ...,
+};
+
+// Call the `setActivityStatus()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setActivityStatus(setActivityStatusVars);
+// Variables can be defined inline as well.
+const { data } = await setActivityStatus({ id: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setActivityStatus(dataConnect, setActivityStatusVars);
+
+console.log(data.activity_update);
+
+// Or, you can use the `Promise` API.
+setActivityStatus(setActivityStatusVars).then((response) => {
+  const data = response.data;
+  console.log(data.activity_update);
+});
+```
+
+### Using `SetActivityStatus`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setActivityStatusRef, SetActivityStatusVariables } from '@visible-thinking/dataconnect';
+
+// The `SetActivityStatus` mutation requires an argument of type `SetActivityStatusVariables`:
+const setActivityStatusVars: SetActivityStatusVariables = {
+  id: ...,
+  status: ...,
+};
+
+// Call the `setActivityStatusRef()` function to get a reference to the mutation.
+const ref = setActivityStatusRef(setActivityStatusVars);
+// Variables can be defined inline as well.
+const ref = setActivityStatusRef({ id: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setActivityStatusRef(dataConnect, setActivityStatusVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.activity_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activity_update);
 });
 ```
 

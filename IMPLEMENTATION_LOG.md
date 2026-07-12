@@ -1,5 +1,27 @@
 # Implementation Log
 
+## 2026-07-12 Live Teacher Results And Activity Closing
+
+### Completed
+
+- Added owner-filtered teacher result queries returning attendance, students, individual submissions, and thinking cards.
+- Added a transactional owner-checked activity status mutation for closing and reopening activities.
+- Added authenticated teacher result GET/PATCH Route Handlers with minimal result DTOs.
+- Connected created-activity result boards, participating students, submission badges, card counts, and anonymous view to live PostgreSQL data.
+- Added live student submission detail pages for dynamically created activities.
+- Added activity close/reopen controls to the teacher result screen.
+- Disabled student card editing, adding, deleting, and submission controls when an activity is closed.
+- Kept the SQL Connect active-status check as the authoritative write boundary and normalized denied writes to `403`.
+- Deployed the updated connector and regenerated the SDK.
+
+### Verification
+
+- The teacher result API returns a student's newly saved card and submission state.
+- The owner can close an activity, after which the assigned student's write returns `403`.
+- Reopening restores student editing and submission writes.
+- A non-owner receives `404` for results and `403` for status changes.
+- Test activities, cards, links, and Firebase Auth users are removed after verification.
+
 ## 2026-07-12 Student Card Autosave And Submission
 
 ### Completed

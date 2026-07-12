@@ -44,7 +44,7 @@ async function executeSqlConnect<Data, Variables>(
 
   if (!response.ok || result.errors?.length) {
     const message = result.errors?.map((error) => error.message).filter(Boolean).join("; ") || result.message;
-    if (message?.includes("Only the activity owner") || message?.includes("do not have access")) {
+    if (message?.includes("Only the activity owner") || message?.includes("do not have access") || message?.includes("permission denied")) {
       throw new SqlConnectAuthorizationError(message);
     }
     throw new Error(message || `SQL Connect ${operationName} failed with ${response.status}.`);

@@ -4,6 +4,7 @@ import { ArrowLeft, Brain, Tag } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { activities, individualSubmissions, students } from "@/lib/mock-data";
 import type { RoutineColumn } from "@/lib/mock-data";
+import { LiveStudentSubmission } from "../live-student-submission";
 
 const columns: { id: RoutineColumn; label: string; description: string }[] = [
   { id: "see", label: "See", description: "실제로 관찰한 것" },
@@ -24,7 +25,8 @@ export default async function StudentSubmissionPage({
   const activity = activities.find((item) => item.id === activityId);
   const student = students.find((item) => item.id === studentId);
 
-  if (!activity || !student) notFound();
+  if (!activity) return <LiveStudentSubmission activityId={activityId} studentId={studentId} />;
+  if (!student) notFound();
 
   const studentCards = individualSubmissions.find((submission) => submission.activityId === activity.id && submission.studentId === student.id)?.cards ?? [];
 

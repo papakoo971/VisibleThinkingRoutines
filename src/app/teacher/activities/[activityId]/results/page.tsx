@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { ActivityResultsView } from "../../activity-results-view";
 import { activities } from "@/lib/mock-data";
 
@@ -13,8 +12,6 @@ export default async function ActivityResultsPage({
 }) {
   const { activityId } = await params;
   const activity = activities.find((item) => item.id === activityId);
-
-  if (!activity && !activityId.startsWith("new-")) notFound();
 
   return <ActivityResultsView activityId={activity?.id ?? activityId} />;
 }
