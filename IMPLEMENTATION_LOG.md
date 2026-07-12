@@ -1,5 +1,16 @@
 # Implementation Log
 
+## 2026-07-12 Per-Teacher AI Model Selection
+
+### Completed
+
+- Added curated model-version choices for OpenAI, Anthropic Claude, and Google Gemini.
+- Added quality, speed, and cost guidance beside each model choice in the AI settings dialog.
+- Persisted the selected model with each teacher's encrypted provider credential.
+- Allowed model-only changes without requiring the teacher to re-enter an unchanged provider API key.
+- Required a new key when switching providers and rejected model IDs outside the server allowlist.
+- Preserved existing credentials by applying the current provider default when their model field is empty.
+
 ## 2026-07-12 Per-Teacher AI Provider Credentials
 
 ### Completed

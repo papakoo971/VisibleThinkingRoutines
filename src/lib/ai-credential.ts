@@ -4,19 +4,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
-
-export const aiProviders = ["openai", "anthropic", "google"] as const;
-export type AiProvider = (typeof aiProviders)[number];
-
-export const aiProviderModels: Record<AiProvider, string> = {
-  openai: "gpt-5.4",
-  anthropic: "claude-sonnet-4-6",
-  google: "gemini-2.5-flash",
-};
-
-export function isAiProvider(value: unknown): value is AiProvider {
-  return typeof value === "string" && aiProviders.includes(value as AiProvider);
-}
+import type { AiProvider } from "@/lib/ai-models";
 
 function encryptionKey() {
   const secret = process.env.AI_CREDENTIAL_ENCRYPTION_SECRET;
@@ -42,8 +30,7 @@ export function decryptApiKey(input: { encryptedApiKey: string; initializationVe
   return Buffer.concat([decipher.update(Buffer.from(input.encryptedApiKey, "base64")), decipher.final()]).toString("utf8");
 }
 
-export function createTeacherAiModel(provider: AiProvider, apiKey: string): { model: LanguageModel; modelId: string } {
-  const modelId = aiProviderModels[provider];
+export function createTeacherAiModel(provider: AiProvider, modelId: string, apiKey: string): { model: LanguageModel; modelId: string } {
   if (provider === "anthropic") return { model: createAnthropic({ apiKey })(modelId), modelId };
   if (provider === "google") return { model: createGoogleGenerativeAI({ apiKey })(modelId), modelId };
   return { model: createOpenAI({ apiKey })(modelId), modelId };

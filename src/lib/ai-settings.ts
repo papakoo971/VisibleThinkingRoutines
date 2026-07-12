@@ -1,7 +1,7 @@
 import { getFirebaseAuth } from "@/lib/firebase-auth";
-import type { AiProvider } from "@/lib/ai-credential";
+import type { AiProvider } from "@/lib/ai-models";
 
-export type AiSettings = { configured: boolean; provider: AiProvider | null; keyHint: string | null; updatedAt: string | null };
+export type AiSettings = { configured: boolean; provider: AiProvider | null; model: string | null; keyHint: string | null; updatedAt: string | null };
 
 async function authorizationHeaders(includeJson = false) {
   const user = getFirebaseAuth().currentUser;
@@ -15,11 +15,11 @@ export async function fetchAiSettings() {
   return response.json() as Promise<AiSettings>;
 }
 
-export async function saveAiSettings(provider: AiProvider, apiKey: string) {
+export async function saveAiSettings(provider: AiProvider, model: string, apiKey?: string) {
   const response = await fetch("/api/teacher/ai-settings", {
     method: "PUT",
     headers: await authorizationHeaders(true),
-    body: JSON.stringify({ provider, apiKey }),
+    body: JSON.stringify({ provider, model, apiKey }),
   });
   const result = (await response.json()) as AiSettings & { message?: string };
   if (!response.ok) throw new Error(result.message ?? "AI 설정을 저장하지 못했습니다.");

@@ -28,6 +28,7 @@ mutation DeleteMyTeacherProfile @auth(level: USER) {
 query GetMyAiCredential @auth(level: USER) {
   teacherAiCredential(key: { id_expr: "auth.uid" }) {
     provider
+    model
     encryptedApiKey
     initializationVector
     authenticationTag
@@ -38,6 +39,7 @@ query GetMyAiCredential @auth(level: USER) {
 
 mutation UpsertMyAiCredential(
   $provider: String!
+  $model: String
   $encryptedApiKey: String!
   $initializationVector: String!
   $authenticationTag: String!
@@ -46,6 +48,7 @@ mutation UpsertMyAiCredential(
   teacherAiCredential_upsert(data: {
     id_expr: "auth.uid"
     provider: $provider
+    model: $model
     encryptedApiKey: $encryptedApiKey
     initializationVector: $initializationVector
     authenticationTag: $authenticationTag

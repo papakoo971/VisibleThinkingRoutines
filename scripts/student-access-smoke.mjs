@@ -99,10 +99,12 @@ try {
   const aiSettingsPath = "/api/teacher/ai-settings";
   const emptySettings = await api(aiSettingsPath, { idToken: teacher.idToken });
   if (emptySettings.status !== 200 || emptySettings.result.configured !== false) throw new Error("New teacher unexpectedly has AI settings.");
-  const savedSettings = await api(aiSettingsPath, { method: "PUT", idToken: teacher.idToken, body: { provider: "google", apiKey: "AIza-invalid-smoke-test-key-1234567890" } });
-  if (savedSettings.status !== 200 || savedSettings.result.provider !== "google" || savedSettings.result.keyHint !== "7890") throw new Error(`AI settings save failed: ${JSON.stringify(savedSettings)}`);
+  const savedSettings = await api(aiSettingsPath, { method: "PUT", idToken: teacher.idToken, body: { provider: "google", model: "gemini-2.5-flash", apiKey: "AIza-invalid-smoke-test-key-1234567890" } });
+  if (savedSettings.status !== 200 || savedSettings.result.provider !== "google" || savedSettings.result.model !== "gemini-2.5-flash" || savedSettings.result.keyHint !== "7890") throw new Error(`AI settings save failed: ${JSON.stringify(savedSettings)}`);
+  const changedModel = await api(aiSettingsPath, { method: "PUT", idToken: teacher.idToken, body: { provider: "google", model: "gemini-2.5-pro" } });
+  if (changedModel.status !== 200 || changedModel.result.model !== "gemini-2.5-pro" || changedModel.result.keyHint !== "7890") throw new Error("AI model-only update failed.");
   const maskedSettings = await api(aiSettingsPath, { idToken: teacher.idToken });
-  if (!maskedSettings.result.configured || maskedSettings.result.keyHint !== "7890" || "encryptedApiKey" in maskedSettings.result || "apiKey" in maskedSettings.result) throw new Error("AI settings were not safely masked.");
+  if (!maskedSettings.result.configured || maskedSettings.result.model !== "gemini-2.5-pro" || maskedSettings.result.keyHint !== "7890" || "encryptedApiKey" in maskedSettings.result || "apiKey" in maskedSettings.result) throw new Error("AI settings were not safely masked.");
   const foreignSettings = await api(aiSettingsPath, { idToken: unassignedStudent.idToken });
   if (foreignSettings.status !== 200 || foreignSettings.result.configured !== false) throw new Error("AI credentials leaked across users.");
   const analysisPath = `/api/teacher/activities/${activityId}/analysis`;

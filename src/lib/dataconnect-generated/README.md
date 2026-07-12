@@ -226,6 +226,7 @@ The `data` property is an object of type `GetMyAiCredentialData`, which is defin
 export interface GetMyAiCredentialData {
   teacherAiCredential?: {
     provider: string;
+    model?: string | null;
     encryptedApiKey: string;
     initializationVector: string;
     authenticationTag: string;
@@ -1768,6 +1769,7 @@ The `UpsertMyAiCredential` mutation requires an argument of type `UpsertMyAiCred
 ```typescript
 export interface UpsertMyAiCredentialVariables {
   provider: string;
+  model?: string | null;
   encryptedApiKey: string;
   initializationVector: string;
   authenticationTag: string;
@@ -1792,6 +1794,7 @@ import { connectorConfig, upsertMyAiCredential, UpsertMyAiCredentialVariables } 
 // The `UpsertMyAiCredential` mutation requires an argument of type `UpsertMyAiCredentialVariables`:
 const upsertMyAiCredentialVars: UpsertMyAiCredentialVariables = {
   provider: ...,
+  model: ..., // optional
   encryptedApiKey: ...,
   initializationVector: ...,
   authenticationTag: ...,
@@ -1802,7 +1805,7 @@ const upsertMyAiCredentialVars: UpsertMyAiCredentialVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await upsertMyAiCredential(upsertMyAiCredentialVars);
 // Variables can be defined inline as well.
-const { data } = await upsertMyAiCredential({ provider: ..., encryptedApiKey: ..., initializationVector: ..., authenticationTag: ..., keyHint: ..., });
+const { data } = await upsertMyAiCredential({ provider: ..., model: ..., encryptedApiKey: ..., initializationVector: ..., authenticationTag: ..., keyHint: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1826,6 +1829,7 @@ import { connectorConfig, upsertMyAiCredentialRef, UpsertMyAiCredentialVariables
 // The `UpsertMyAiCredential` mutation requires an argument of type `UpsertMyAiCredentialVariables`:
 const upsertMyAiCredentialVars: UpsertMyAiCredentialVariables = {
   provider: ...,
+  model: ..., // optional
   encryptedApiKey: ...,
   initializationVector: ...,
   authenticationTag: ...,
@@ -1835,7 +1839,7 @@ const upsertMyAiCredentialVars: UpsertMyAiCredentialVariables = {
 // Call the `upsertMyAiCredentialRef()` function to get a reference to the mutation.
 const ref = upsertMyAiCredentialRef(upsertMyAiCredentialVars);
 // Variables can be defined inline as well.
-const ref = upsertMyAiCredentialRef({ provider: ..., encryptedApiKey: ..., initializationVector: ..., authenticationTag: ..., keyHint: ..., });
+const ref = upsertMyAiCredentialRef({ provider: ..., model: ..., encryptedApiKey: ..., initializationVector: ..., authenticationTag: ..., keyHint: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

@@ -151,6 +151,7 @@ export interface FindActivityByCodeVariables {
 export interface GetMyAiCredentialData {
   teacherAiCredential?: {
     provider: string;
+    model?: string | null;
     encryptedApiKey: string;
     initializationVector: string;
     authenticationTag: string;
@@ -717,6 +718,7 @@ export interface UpsertMyAiCredentialData {
 
 export interface UpsertMyAiCredentialVariables {
   provider: string;
+  model?: string | null;
   encryptedApiKey: string;
   initializationVector: string;
   authenticationTag: string;

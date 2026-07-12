@@ -42,6 +42,7 @@ type TeacherProfile @table(name: "teacher_profile", key: "id") {
 type TeacherAiCredential @table(name: "teacher_ai_credential", key: "id") {
   id: String! @col(dataType: "varchar(128)")
   provider: String! @col(dataType: "varchar(20)")
+  model: String @col(dataType: "varchar(120)")
   encryptedApiKey: String!
   initializationVector: String! @col(dataType: "varchar(32)")
   authenticationTag: String! @col(dataType: "varchar(32)")

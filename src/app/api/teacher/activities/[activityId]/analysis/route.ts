@@ -2,7 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import type { GetMyAiCredentialData, GetTeacherActivityResultsData, UpsertAiAnalysisVariables } from "@/lib/dataconnect-generated";
-import { createTeacherAiModel, decryptApiKey, isAiProvider } from "@/lib/ai-credential";
+import { createTeacherAiModel, decryptApiKey } from "@/lib/ai-credential";
+import { defaultAiModel, isAiModel, isAiProvider } from "@/lib/ai-models";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
 import { executeUserMutation, executeUserQuery } from "@/lib/server-sql-connect";
 
@@ -40,7 +41,9 @@ export async function POST(request: Request, context: { params: Promise<{ activi
     }
 
     const sourceFingerprint = createHash("sha256").update(JSON.stringify(cards.map((card) => [card.id, card.updatedAt, card.content]))).digest("hex");
-    const selectedModel = createTeacherAiModel(credential.provider, apiKey);
+    const configuredModel = credential.model ?? defaultAiModel(credential.provider);
+    if (!isAiModel(credential.provider, configuredModel)) return Response.json({ message: "Configured AI model is not supported" }, { status: 409 });
+    const selectedModel = createTeacherAiModel(credential.provider, configuredModel, apiKey);
     const model = `${credential.provider}/${selectedModel.modelId}`;
     const analysisId = `${activityId}:${scope}:${randomUUID()}`;
     const base = { id: analysisId, activityId, scope, studentExternalId: studentId, model, sourceFingerprint };
