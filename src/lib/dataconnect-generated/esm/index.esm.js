@@ -318,6 +318,19 @@ export function upsertGroupSubmissionAgreement(dcOrVars, vars) {
   return executeMutation(upsertGroupSubmissionAgreementRef(dcInstance, inputVars));
 }
 
+export const findActivityByCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'FindActivityByCode', inputVars);
+}
+findActivityByCodeRef.operationName = 'FindActivityByCode';
+
+export function findActivityByCode(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(findActivityByCodeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
 export const getMyStudentRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

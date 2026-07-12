@@ -83,6 +83,9 @@ export interface CreateActivityVariables {
   status: ActivityStatus;
   code: string;
   materialType: string;
+  materialUrl?: string | null;
+  materialName?: string | null;
+  instructions?: string | null;
   activityDate: DateString;
   submittedCount: number;
   targetCount: number;
@@ -126,6 +129,16 @@ export interface DeleteStudentVariables {
   id: string;
 }
 
+export interface FindActivityByCodeData {
+  activities: ({
+    id: string;
+  } & Activity_Key)[];
+}
+
+export interface FindActivityByCodeVariables {
+  code: string;
+}
+
 export interface GetMyStudentActivityData {
   activityAttendances: ({
     activity: {
@@ -137,6 +150,9 @@ export interface GetMyStudentActivityData {
       status: ActivityStatus;
       code: string;
       materialType: string;
+      materialUrl?: string | null;
+      materialName?: string | null;
+      instructions?: string | null;
       activityDate: DateString;
       submittedCount: number;
       targetCount: number;
@@ -259,6 +275,9 @@ export interface GetTeacherActivityData {
     status: ActivityStatus;
     code: string;
     materialType: string;
+    materialUrl?: string | null;
+    materialName?: string | null;
+    instructions?: string | null;
     activityDate: DateString;
     submittedCount: number;
     targetCount: number;
@@ -422,6 +441,9 @@ export interface ListActivitiesData {
     status: ActivityStatus;
     code: string;
     materialType: string;
+    materialUrl?: string | null;
+    materialName?: string | null;
+    instructions?: string | null;
     activityDate: DateString;
     submittedCount: number;
     targetCount: number;
@@ -445,6 +467,9 @@ export interface ListMyStudentActivitiesData {
       status: ActivityStatus;
       code: string;
       materialType: string;
+      materialUrl?: string | null;
+      materialName?: string | null;
+      instructions?: string | null;
       activityDate: DateString;
       submittedCount: number;
       targetCount: number;
@@ -906,6 +931,18 @@ export const upsertGroupSubmissionAgreementRef: UpsertGroupSubmissionAgreementRe
 
 export function upsertGroupSubmissionAgreement(vars: UpsertGroupSubmissionAgreementVariables): MutationPromise<UpsertGroupSubmissionAgreementData, UpsertGroupSubmissionAgreementVariables>;
 export function upsertGroupSubmissionAgreement(dc: DataConnect, vars: UpsertGroupSubmissionAgreementVariables): MutationPromise<UpsertGroupSubmissionAgreementData, UpsertGroupSubmissionAgreementVariables>;
+
+interface FindActivityByCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FindActivityByCodeVariables): QueryRef<FindActivityByCodeData, FindActivityByCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: FindActivityByCodeVariables): QueryRef<FindActivityByCodeData, FindActivityByCodeVariables>;
+  operationName: string;
+}
+export const findActivityByCodeRef: FindActivityByCodeRef;
+
+export function findActivityByCode(vars: FindActivityByCodeVariables, options?: ExecuteQueryOptions): QueryPromise<FindActivityByCodeData, FindActivityByCodeVariables>;
+export function findActivityByCode(dc: DataConnect, vars: FindActivityByCodeVariables, options?: ExecuteQueryOptions): QueryPromise<FindActivityByCodeData, FindActivityByCodeVariables>;
 
 interface GetMyStudentRef {
   /* Allow users to create refs without passing in DataConnect */

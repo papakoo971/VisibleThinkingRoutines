@@ -58,7 +58,7 @@ async function sqlMutation(operationName, variables, idToken) {
 
 function payload() {
   return {
-    activity: { id: activityId, title: "학생 접근 검증", routine: "See-Think-Wonder", activityMode: "individual", subject: "통합 테스트", classes: ["5학년 1반"], status: "active", code: "STUDENT-ACCESS", materialType: "image", activityDate: "2026-07-12", submittedCount: 0, targetCount: 1 },
+    activity: { id: activityId, title: "학생 접근 검증", routine: "See-Think-Wonder", activityMode: "individual", subject: "통합 테스트", classes: ["5학년 1반"], status: "active", code: "STW-Q7K9M", materialType: "image", materialUrl: "https://example.com/material.png", materialName: "material.png", instructions: "검증 안내문", activityDate: "2026-07-12", submittedCount: 0, targetCount: 1 },
     activityAttendance: [{ activityId, studentId: "s1", status: "present" }],
     activityGroups: [],
     groupSubmissions: [],
@@ -83,7 +83,9 @@ try {
     throw new Error(`Assigned student session failed: ${JSON.stringify(assignedSession)}`);
   }
   const assignedDetail = await api(`/api/created-activities/${activityId}`, { idToken: assignedStudent.idToken });
-  if (assignedDetail.status !== 200 || assignedDetail.result.activity?.activity.id !== activityId) throw new Error("Assigned student detail failed.");
+  if (assignedDetail.status !== 200 || assignedDetail.result.activity?.activity.id !== activityId || assignedDetail.result.activity?.activity.instructions !== "검증 안내문") throw new Error("Assigned student detail or material metadata failed.");
+  const codeLookup = await api("/api/activities/by-code/STW-Q7K9M");
+  if (codeLookup.status !== 200 || codeLookup.result.activityId !== activityId) throw new Error("Active activity code lookup failed.");
   const workPath = `/api/student/activities/${activityId}/work`;
   const saved = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
     cards: [{ id: `card-${suffix}`, column: "see", content: "자동 저장 검증 카드" }], status: "draft",
@@ -100,12 +102,16 @@ try {
   if (foreignStatus.status !== 403) throw new Error(`Non-owner status change should be 403, got ${foreignStatus.status}.`);
   const closed = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { status: "closed" } });
   if (closed.status !== 200) throw new Error("Teacher could not close the activity.");
+  const closedCode = await api("/api/activities/by-code/STW-Q7K9M");
+  if (closedCode.status !== 404) throw new Error("Closed activity code should not resolve.");
   const closedWrite = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
     cards: [{ id: `card-${suffix}`, column: "see", content: "마감 후 수정 시도" }], status: "modified",
   } });
   if (closedWrite.status !== 403) throw new Error(`Closed activity write should be 403, got ${closedWrite.status}.`);
   const reopened = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { status: "active" } });
   if (reopened.status !== 200) throw new Error("Teacher could not reopen the activity.");
+  const reopenedCode = await api("/api/activities/by-code/STW-Q7K9M");
+  if (reopenedCode.status !== 200) throw new Error("Reopened activity code did not resolve.");
   const submitted = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: {
     cards: [{ id: `card-${suffix}`, column: "think", content: "제출 후 카드" }], status: "submitted",
   } });

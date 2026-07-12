@@ -215,17 +215,21 @@ function StudentActivityWorkspace({
             <div className="border-b border-zinc-200 px-4 py-3">
               <h2 className="font-semibold">중심 자료</h2>
               <p className="mt-1 text-sm leading-6 text-zinc-600">
-                자료를 자세히 관찰한 뒤 보이는 것, 생각한 것, 궁금한 것을 카드로 나누어 작성하세요.
+                {activity.instructions ?? "자료를 자세히 관찰한 뒤 보이는 것, 생각한 것, 궁금한 것을 카드로 나누어 작성하세요."}
               </p>
             </div>
             <div className="p-4">
-              <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-zinc-200 bg-[linear-gradient(135deg,#e7f5ef_0%,#f4f1e8_50%,#dfe7f1_100%)]">
+              {activity.materialUrl ? (
+                <object data={activity.materialUrl} type={activity.materialType === "pdf" ? "application/pdf" : undefined} className="aspect-[4/3] w-full rounded-lg border border-zinc-200" aria-label={activity.materialName ?? "활동 중심 자료"}>
+                  <a href={activity.materialUrl} target="_blank" rel="noreferrer" className="text-sm font-semibold text-emerald-700">자료 새 창에서 열기</a>
+                </object>
+              ) : <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-zinc-200 bg-[linear-gradient(135deg,#e7f5ef_0%,#f4f1e8_50%,#dfe7f1_100%)]">
                 <div className="rounded-lg border border-white/70 bg-white/80 px-4 py-3 text-center shadow-sm">
                   <FileText className="mx-auto h-8 w-8 text-emerald-700" />
                   <p className="mt-2 text-sm font-semibold">이미지/PDF 미리보기 영역</p>
                   <p className="mt-1 text-xs text-zinc-500">Firebase Storage 연결 후 실제 자료 표시</p>
                 </div>
-              </div>
+              </div>}
             </div>
           </section>
 

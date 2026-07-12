@@ -13,6 +13,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetTeacherActivity*](#getteacheractivity)
   - [*GetTeacherActivityResults*](#getteacheractivityresults)
   - [*ListMyStudents*](#listmystudents)
+  - [*FindActivityByCode*](#findactivitybycode)
   - [*GetMyStudent*](#getmystudent)
   - [*ListMyStudentActivities*](#listmystudentactivities)
   - [*GetMyStudentActivity*](#getmystudentactivity)
@@ -227,6 +228,9 @@ export interface ListActivitiesData {
     status: ActivityStatus;
     code: string;
     materialType: string;
+    materialUrl?: string | null;
+    materialName?: string | null;
+    instructions?: string | null;
     activityDate: DateString;
     submittedCount: number;
     targetCount: number;
@@ -342,6 +346,9 @@ export interface GetTeacherActivityData {
     status: ActivityStatus;
     code: string;
     materialType: string;
+    materialUrl?: string | null;
+    materialName?: string | null;
+    instructions?: string | null;
     activityDate: DateString;
     submittedCount: number;
     targetCount: number;
@@ -724,6 +731,117 @@ executeQuery(ref).then((response) => {
 });
 ```
 
+## FindActivityByCode
+You can execute the `FindActivityByCode` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+findActivityByCode(vars: FindActivityByCodeVariables, options?: ExecuteQueryOptions): QueryPromise<FindActivityByCodeData, FindActivityByCodeVariables>;
+
+interface FindActivityByCodeRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FindActivityByCodeVariables): QueryRef<FindActivityByCodeData, FindActivityByCodeVariables>;
+}
+export const findActivityByCodeRef: FindActivityByCodeRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+findActivityByCode(dc: DataConnect, vars: FindActivityByCodeVariables, options?: ExecuteQueryOptions): QueryPromise<FindActivityByCodeData, FindActivityByCodeVariables>;
+
+interface FindActivityByCodeRef {
+  ...
+  (dc: DataConnect, vars: FindActivityByCodeVariables): QueryRef<FindActivityByCodeData, FindActivityByCodeVariables>;
+}
+export const findActivityByCodeRef: FindActivityByCodeRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the findActivityByCodeRef:
+```typescript
+const name = findActivityByCodeRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `FindActivityByCode` query requires an argument of type `FindActivityByCodeVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface FindActivityByCodeVariables {
+  code: string;
+}
+```
+### Return Type
+Recall that executing the `FindActivityByCode` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `FindActivityByCodeData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface FindActivityByCodeData {
+  activities: ({
+    id: string;
+  } & Activity_Key)[];
+}
+```
+### Using `FindActivityByCode`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, findActivityByCode, FindActivityByCodeVariables } from '@visible-thinking/dataconnect';
+
+// The `FindActivityByCode` query requires an argument of type `FindActivityByCodeVariables`:
+const findActivityByCodeVars: FindActivityByCodeVariables = {
+  code: ...,
+};
+
+// Call the `findActivityByCode()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await findActivityByCode(findActivityByCodeVars);
+// Variables can be defined inline as well.
+const { data } = await findActivityByCode({ code: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await findActivityByCode(dataConnect, findActivityByCodeVars);
+
+console.log(data.activities);
+
+// Or, you can use the `Promise` API.
+findActivityByCode(findActivityByCodeVars).then((response) => {
+  const data = response.data;
+  console.log(data.activities);
+});
+```
+
+### Using `FindActivityByCode`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, findActivityByCodeRef, FindActivityByCodeVariables } from '@visible-thinking/dataconnect';
+
+// The `FindActivityByCode` query requires an argument of type `FindActivityByCodeVariables`:
+const findActivityByCodeVars: FindActivityByCodeVariables = {
+  code: ...,
+};
+
+// Call the `findActivityByCodeRef()` function to get a reference to the query.
+const ref = findActivityByCodeRef(findActivityByCodeVars);
+// Variables can be defined inline as well.
+const ref = findActivityByCodeRef({ code: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = findActivityByCodeRef(dataConnect, findActivityByCodeVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activities);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activities);
+});
+```
+
 ## GetMyStudent
 You can execute the `GetMyStudent` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
@@ -871,6 +989,9 @@ export interface ListMyStudentActivitiesData {
       status: ActivityStatus;
       code: string;
       materialType: string;
+      materialUrl?: string | null;
+      materialName?: string | null;
+      instructions?: string | null;
       activityDate: DateString;
       submittedCount: number;
       targetCount: number;
@@ -988,6 +1109,9 @@ export interface GetMyStudentActivityData {
       status: ActivityStatus;
       code: string;
       materialType: string;
+      materialUrl?: string | null;
+      materialName?: string | null;
+      instructions?: string | null;
       activityDate: DateString;
       submittedCount: number;
       targetCount: number;
@@ -2290,6 +2414,9 @@ export interface CreateActivityVariables {
   status: ActivityStatus;
   code: string;
   materialType: string;
+  materialUrl?: string | null;
+  materialName?: string | null;
+  instructions?: string | null;
   activityDate: DateString;
   submittedCount: number;
   targetCount: number;
@@ -2320,6 +2447,9 @@ const createActivityVars: CreateActivityVariables = {
   status: ...,
   code: ...,
   materialType: ...,
+  materialUrl: ..., // optional
+  materialName: ..., // optional
+  instructions: ..., // optional
   activityDate: ...,
   submittedCount: ...,
   targetCount: ...,
@@ -2329,7 +2459,7 @@ const createActivityVars: CreateActivityVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createActivity(createActivityVars);
 // Variables can be defined inline as well.
-const { data } = await createActivity({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
+const { data } = await createActivity({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., materialUrl: ..., materialName: ..., instructions: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2360,6 +2490,9 @@ const createActivityVars: CreateActivityVariables = {
   status: ...,
   code: ...,
   materialType: ...,
+  materialUrl: ..., // optional
+  materialName: ..., // optional
+  instructions: ..., // optional
   activityDate: ...,
   submittedCount: ...,
   targetCount: ...,
@@ -2368,7 +2501,7 @@ const createActivityVars: CreateActivityVariables = {
 // Call the `createActivityRef()` function to get a reference to the mutation.
 const ref = createActivityRef(createActivityVars);
 // Variables can be defined inline as well.
-const ref = createActivityRef({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
+const ref = createActivityRef({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., materialUrl: ..., materialName: ..., instructions: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

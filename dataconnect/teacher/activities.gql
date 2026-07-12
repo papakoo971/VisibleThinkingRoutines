@@ -35,6 +35,9 @@ query ListActivities @auth(level: USER) {
     status
     code
     materialType
+    materialUrl
+    materialName
+    instructions
     activityDate
     submittedCount
     targetCount
@@ -57,6 +60,9 @@ query GetTeacherActivity($id: String!) @auth(level: USER) {
     status
     code
     materialType
+    materialUrl
+    materialName
+    instructions
     activityDate
     submittedCount
     targetCount
@@ -266,6 +272,9 @@ mutation CreateActivity(
   $status: ActivityStatus!
   $code: String!
   $materialType: String!
+  $materialUrl: String
+  $materialName: String
+  $instructions: String
   $activityDate: Date!
   $submittedCount: Int!
   $targetCount: Int!
@@ -280,6 +289,9 @@ mutation CreateActivity(
     status: $status
     code: $code
     materialType: $materialType
+    materialUrl: $materialUrl
+    materialName: $materialName
+    instructions: $instructions
     activityDate: $activityDate
     submittedCount: $submittedCount
     targetCount: $targetCount

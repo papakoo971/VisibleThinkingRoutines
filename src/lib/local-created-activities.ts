@@ -12,6 +12,9 @@ export type CreatedActivityPayload = {
     status: "active" | "closed";
     code: string;
     materialType: string;
+    materialUrl?: string | null;
+    materialName?: string | null;
+    instructions?: string | null;
     activityDate: string;
     submittedCount: number;
     targetCount: number;

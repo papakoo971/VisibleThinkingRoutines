@@ -1,3 +1,9 @@
+query FindActivityByCode($code: String!) @auth(level: PUBLIC, insecureReason: "Activity codes must resolve to an ID before student authentication and assignment authorization.") {
+  activities(where: { code: { eq: $code }, status: { eq: ACTIVE } }, limit: 1) {
+    id
+  }
+}
+
 query GetMyStudent @auth(level: USER) {
   students(where: { authUid: { eq_expr: "auth.uid" } }, limit: 1) {
     id
@@ -25,6 +31,9 @@ query ListMyStudentActivities @auth(level: USER) {
       status
       code
       materialType
+      materialUrl
+      materialName
+      instructions
       activityDate
       submittedCount
       targetCount
@@ -53,6 +62,9 @@ query GetMyStudentActivity($id: String!) @auth(level: USER) {
       status
       code
       materialType
+      materialUrl
+      materialName
+      instructions
       activityDate
       submittedCount
       targetCount

@@ -30,6 +30,9 @@ export type Activity = {
   status: "active" | "closed";
   code: string;
   materialType: "image" | "pdf";
+  materialUrl?: string | null;
+  materialName?: string | null;
+  instructions?: string | null;
   activityDate: string;
   submittedCount: number;
   targetCount: number;

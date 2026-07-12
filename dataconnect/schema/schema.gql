@@ -66,6 +66,9 @@ type Activity @table(name: "activity", key: "id") {
   status: ActivityStatus!
   code: String! @col(dataType: "varchar(32)")
   materialType: String! @col(dataType: "varchar(40)")
+  materialUrl: String
+  materialName: String @col(dataType: "varchar(255)")
+  instructions: String
   activityDate: Date!
   submittedCount: Int! @default(value: 0)
   targetCount: Int! @default(value: 0)

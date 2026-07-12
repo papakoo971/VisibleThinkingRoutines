@@ -1,10 +1,12 @@
 "use client";
 
 import { DragEvent, useMemo, useState } from "react";
+import Image from "next/image";
 import { CheckCircle2, GripVertical, ImageUp, Plus, QrCode, Trash2, Users, X } from "lucide-react";
 import { classes, groups, students } from "@/lib/mock-data";
 import { persistCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
+import { generateActivityCode, generateActivityQr, uploadActivityMaterial } from "@/lib/activity-assets";
 
 type ActivityTemplate = {
   id: string;
@@ -38,6 +40,10 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
     Object.fromEntries(students.map((student) => [student.id, "present"]))
   );
   const [generatedPreview, setGeneratedPreview] = useState<GeneratedActivityPreview | null>(null);
+  const [materialFile, setMaterialFile] = useState<File | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const selectedStudents = useMemo(
     () => students.filter((student) => student.className === selectedClassName),
@@ -96,7 +102,12 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
   }
 
   async function createActivityPreview(formData: FormData) {
+    setCreating(true);
+    setCreateError(null);
     const activityId = `new-${selectedTemplate.id}-${Date.now()}`;
+    try {
+    const material = materialFile ? await uploadActivityMaterial(activityId, materialFile) : null;
+    const activityCode = generateActivityCode();
     const targetStudentIds = students.filter((student) => targetClasses.includes(student.className)).map((student) => student.id);
     const activityGroups =
       activityMode === "group"
@@ -140,8 +151,11 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
         subject: String(formData.get("subject") || "사회"),
         classes: targetClasses,
         status: "active",
-        code: "STW-72K",
-        materialType: "image-or-pdf",
+        code: activityCode,
+        materialType: material?.type ?? "none",
+        materialUrl: material?.url,
+        materialName: material?.name,
+        instructions: String(formData.get("instructions") || selectedTemplate.guide),
         activityDate: new Date().toISOString().slice(0, 10),
         submittedCount: 0,
         targetCount: activityMode === "group" ? activityGroups.length : targetStudentIds.length,
@@ -158,6 +172,12 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
 
     const savedPayload = await persistCreatedActivityPayload(generatedPayload);
     setGeneratedPreview(savedPayload);
+    setQrDataUrl(await generateActivityQr(`${window.location.origin}/student?activityId=${encodeURIComponent(activityId)}`));
+    } catch (error) {
+      setCreateError(error instanceof Error ? error.message : "활동을 생성하지 못했습니다.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
@@ -272,25 +292,33 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
 
           <label className="text-sm font-medium">
             안내 텍스트
-            <textarea className="mt-1 min-h-28 w-full rounded-md border border-zinc-300 p-3" defaultValue={selectedTemplate.guide} />
+            <textarea name="instructions" className="mt-1 min-h-28 w-full rounded-md border border-zinc-300 p-3" defaultValue={selectedTemplate.guide} />
           </label>
 
           <div className="rounded-lg border border-dashed border-zinc-300 bg-stone-50 p-6 text-center">
             <ImageUp className="mx-auto h-8 w-8 text-emerald-700" />
             <p className="mt-2 text-sm font-medium">이미지 또는 PDF 중심 자료 업로드</p>
             <p className="mt-1 text-xs text-zinc-500">초기 구현은 중심 자료 1개만 사용합니다.</p>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              onChange={(event) => setMaterialFile(event.target.files?.[0] ?? null)}
+              className="mt-4 block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-950 file:px-3 file:py-2 file:font-semibold file:text-white"
+            />
+            {materialFile ? <p className="mt-2 text-xs text-zinc-600">선택: {materialFile.name}</p> : null}
           </div>
 
-          <button className="h-11 rounded-md bg-zinc-950 text-sm font-semibold text-white">활동 생성</button>
+          {createError ? <p role="alert" className="text-sm text-red-700">{createError}</p> : null}
+          <button disabled={creating} className="h-11 rounded-md bg-zinc-950 text-sm font-semibold text-white disabled:bg-zinc-400">{creating ? "업로드 및 생성 중..." : "활동 생성"}</button>
         </div>
       </form>
 
       <aside className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="font-semibold">생성 후 제공 정보</h2>
         <div className="mt-4 rounded-lg border border-zinc-200 p-4 text-center">
-          <QrCode className="mx-auto h-20 w-20 text-zinc-800" />
-          <p className="mt-3 text-sm font-semibold">활동 코드 예시</p>
-          <p className="mt-1 font-mono text-2xl font-bold tracking-wider">STW-72K</p>
+          {qrDataUrl ? <Image src={qrDataUrl} alt="학생 활동 접속 QR 코드" width={160} height={160} unoptimized className="mx-auto h-40 w-40" /> : <QrCode className="mx-auto h-20 w-20 text-zinc-800" />}
+          <p className="mt-3 text-sm font-semibold">활동 코드</p>
+          <p className="mt-1 font-mono text-2xl font-bold tracking-wider">{generatedPreview?.activity.code ?? "생성 후 표시"}</p>
         </div>
         <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
           <div className="flex items-center gap-2">
@@ -302,7 +330,7 @@ export function ActivitySetupForm({ selectedTemplate }: { selectedTemplate: Acti
           </p>
         </div>
         <p className="mt-4 text-sm leading-6 text-zinc-600">
-          실제 저장 기능을 연결하면 활동 ID, 짧은 코드, QR 접속 URL을 서버에서 생성합니다.
+          활동 생성 후 학생 접속 URL을 담은 QR 코드와 짧은 활동 코드를 제공합니다.
         </p>
         {generatedPreview ? (
           <div className="mt-5 rounded-lg border border-zinc-200 bg-stone-50 p-4">

@@ -1,5 +1,30 @@
 # Implementation Log
 
+## 2026-07-12 Activity Materials Codes And QR
+
+### Completed
+
+- Added nullable activity instructions, material URL, and material filename fields and migrated the live PostgreSQL schema.
+- Added client-side JPG/PNG/WebP/PDF validation with a 10MB limit and teacher/activity-scoped Firebase Storage paths.
+- Added one-time random five-character activity code generation without ambiguous characters.
+- Added local QR PNG generation with no external QR service dependency.
+- Added a public active-code resolver that returns only the activity ID; activity detail still requires student authentication and assignment.
+- Added authenticated student activity-code entry and dynamic navigation.
+- Rendered persisted instructions and image/PDF material in the student activity workspace.
+- Added Storage rules restricting writes to the owning teacher UID path and reads to authenticated users.
+- Added the optional Storage bucket environment variable with a current Firebase default-bucket fallback.
+
+### Verification
+
+- Material URL, filename, type, and instructions persist and return in assigned-student activity detail.
+- Active activity codes resolve to the correct activity ID, closed codes return `404`, and reopened codes resolve again.
+- QR generation returns a valid PNG data URL.
+- Student and home pages render without a Next.js error overlay.
+
+### External Setup Remaining
+
+- Firebase Storage has not yet been initialized for project `visible-thinking-routines`; the CLI cannot deploy `storage.rules` until a default bucket and location are created from Firebase Console > Storage > Get Started.
+
 ## 2026-07-12 Live Teacher Results And Activity Closing
 
 ### Completed

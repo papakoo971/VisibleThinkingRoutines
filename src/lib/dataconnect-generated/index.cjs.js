@@ -372,6 +372,21 @@ exports.upsertGroupSubmissionAgreement = function upsertGroupSubmissionAgreement
 }
 ;
 
+const findActivityByCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'FindActivityByCode', inputVars);
+}
+findActivityByCodeRef.operationName = 'FindActivityByCode';
+exports.findActivityByCodeRef = findActivityByCodeRef;
+
+exports.findActivityByCode = function findActivityByCode(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(findActivityByCodeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
 const getMyStudentRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

@@ -12,6 +12,7 @@ export function StudentPortal() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activityCode, setActivityCode] = useState("");
 
   useEffect(() => onAuthStateChanged(getFirebaseAuth(), async (user) => {
     if (!user) {
@@ -23,6 +24,8 @@ export function StudentPortal() {
     try {
       setSession(await fetchStudentSession());
       setError(null);
+      const pendingActivityId = new URLSearchParams(window.location.search).get("activityId");
+      if (pendingActivityId) window.location.href = `/student/activities/${encodeURIComponent(pendingActivityId)}`;
     } catch (sessionError) {
       setSession(null);
       setError(sessionError instanceof Error ? sessionError.message : "학생 정보를 불러오지 못했습니다.");
@@ -56,6 +59,17 @@ export function StudentPortal() {
     setError(null);
   }
 
+  async function openActivityCode() {
+    setError(null);
+    const response = await fetch(`/api/activities/by-code/${encodeURIComponent(activityCode.trim().toUpperCase())}`, { cache: "no-store" });
+    if (!response.ok) {
+      setError("진행 중인 활동 코드를 확인해 주세요.");
+      return;
+    }
+    const result = (await response.json()) as { activityId: string };
+    window.location.href = `/student/activities/${result.activityId}`;
+  }
+
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-zinc-950">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[360px_1fr]">
@@ -65,12 +79,21 @@ export function StudentPortal() {
           <p className="mt-2 text-sm leading-6 text-zinc-600">교사가 발급한 학생 계정으로 로그인하면 배정된 활동만 확인할 수 있습니다.</p>
 
           {session ? (
-            <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <div className="mt-5 grid gap-4">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
               <p className="font-semibold text-emerald-950">{session.student.name}</p>
               <p className="mt-1 text-sm text-emerald-900">{session.student.className} · {session.student.studentNumber}</p>
               <button type="button" onClick={handleLogout} className="mt-4 inline-flex h-9 items-center gap-2 rounded-md border border-emerald-300 bg-white px-3 text-sm font-semibold text-emerald-950">
                 <LogOut className="h-4 w-4" /> 로그아웃
               </button>
+            </div>
+            <div className="rounded-lg border border-zinc-200 p-4">
+              <label className="text-sm font-medium">활동 코드
+                <input value={activityCode} onChange={(event) => setActivityCode(event.target.value)} placeholder="STW-ABCDE" className="mt-1 h-10 w-full rounded-md border border-zinc-300 px-3 font-mono uppercase" />
+              </label>
+              <button type="button" onClick={openActivityCode} className="mt-3 h-9 w-full rounded-md bg-zinc-950 text-sm font-semibold text-white">코드로 참여하기</button>
+              {error ? <p role="alert" className="mt-2 text-sm text-red-700">{error}</p> : null}
+            </div>
             </div>
           ) : (
             <form className="mt-5 grid gap-3" onSubmit={handleLogin}>
