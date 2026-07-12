@@ -47,6 +47,13 @@ export async function GET(request: Request, context: { params: Promise<{ activit
       attendance: attendance.status === AttendanceStatus.ABSENT ? "absent" : "present",
     }]));
     const sourceFingerprint = createHash("sha256").update(JSON.stringify(activity.thinkingCards_on_activity.map((card) => [card.id, card.updatedAt, card.content]))).digest("hex");
+    const presentStudentIds = new Set(activity.activityAttendances_on_activity
+      .filter((attendance) => attendance.status !== AttendanceStatus.ABSENT)
+      .map((attendance) => attendance.student.id));
+    const submittedCount = activity.individualSubmissions_on_activity.filter((submission) =>
+      presentStudentIds.has(submission.student.id) && submission.status === SubmissionStatus.SUBMITTED
+    ).length;
+    const targetCount = presentStudentIds.size;
 
     return Response.json({
       activity: {
@@ -58,6 +65,11 @@ export async function GET(request: Request, context: { params: Promise<{ activit
         status: activity.status === ActivityStatus.CLOSED ? "closed" : "active",
       },
       students: Array.from(students.values()),
+      submissionSummary: {
+        submittedCount,
+        targetCount,
+        rate: targetCount ? Math.round((submittedCount / targetCount) * 100) : 0,
+      },
       submissions: activity.individualSubmissions_on_activity.map((submission) => ({
         studentId: externalStudentId(submission.student),
         status: submissionName(submission.status),

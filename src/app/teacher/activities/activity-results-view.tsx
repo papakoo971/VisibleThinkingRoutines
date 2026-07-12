@@ -129,6 +129,7 @@ function ActivityResultsWorkspace({
   const participatingGroups = allActivityGroups.filter((group) => group.activityId === activity.id);
   const classAnalysis = liveResults?.analyses.filter((analysis) => analysis.scope === "class" && analysis.status === "complete").sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
   const analysisStale = Boolean(classAnalysis && classAnalysis.sourceFingerprint !== liveResults?.sourceFingerprint);
+  const submissionSummary = liveResults?.submissionSummary;
 
   return (
     <AppShell>
@@ -172,6 +173,8 @@ function ActivityResultsWorkspace({
               <h2 className="font-semibold">학급 AI 분석 보고서</h2>
             </div>
             <p className="mt-2 text-sm leading-6 text-zinc-600">{classAnalysis?.summary ?? "학생 카드가 준비되면 학급 분석을 실행할 수 있습니다."}</p>
+            {submissionSummary ? <p className="mt-2 text-sm font-semibold text-zinc-700">{submissionSummary.targetCount}명 중 {submissionSummary.submittedCount}명 제출 · 제출률 {submissionSummary.rate}%</p> : null}
+            {submissionSummary && submissionSummary.rate < 70 ? <p className="mt-1 text-sm text-amber-700">제출률이 낮아 일부 학생 결과를 기준으로 한 분석입니다.</p> : null}
             {analysisStale ? <p className="mt-2 text-sm font-semibold text-amber-700">카드가 변경되어 분석 갱신이 필요합니다.</p> : null}
             {analysisError ? <p role="alert" className="mt-2 text-sm text-red-700">{analysisError}</p> : null}
           </div>

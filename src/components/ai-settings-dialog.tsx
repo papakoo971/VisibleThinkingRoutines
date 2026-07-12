@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bot, KeyRound, Trash2, X } from "lucide-react";
 import { aiModelOptions, defaultAiModel, type AiProvider } from "@/lib/ai-models";
-import { deleteAiSettings, fetchAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
+import { deleteAiSettings, fetchAiSettings, saveAiSettings, testAiSettings, type AiSettings } from "@/lib/ai-settings";
 
 const providers: Array<{ id: AiProvider; name: string; description: string; placeholder: string }> = [
   { id: "openai", name: "OpenAI", description: "GPT 모델", placeholder: "sk-..." },
@@ -72,6 +72,20 @@ export function AiSettingsDialog({ open, onClose }: { open: boolean; onClose: ()
     }
   }
 
+  async function handleTest() {
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await testAiSettings();
+      setMessage("저장된 API 키와 모델 연결을 확인했습니다.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "AI 연결 확인에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/45 p-4" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className="w-full max-w-lg rounded-2xl bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="ai-settings-title">
@@ -135,6 +149,7 @@ export function AiSettingsDialog({ open, onClose }: { open: boolean; onClose: ()
         <div className="flex items-center justify-between border-t border-zinc-200 px-6 py-4">
           <button type="button" onClick={() => void handleDelete()} disabled={saving || !settings?.configured} className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"><Trash2 className="h-4 w-4" /> 키 삭제</button>
           <div className="flex gap-2">
+            <button type="button" onClick={() => void handleTest()} disabled={saving || loading || !settings?.configured} className="h-10 rounded-lg border border-emerald-300 px-4 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40">연결 확인</button>
             <button type="button" onClick={onClose} className="h-10 rounded-lg border border-zinc-300 px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50">닫기</button>
             <button type="button" onClick={() => void handleSave()} disabled={saving || loading || ((!settings?.configured || settings.provider !== provider) && apiKey.trim().length < 20)} className="h-10 rounded-lg bg-zinc-950 px-4 text-sm font-semibold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">{saving ? "저장 중..." : "AI 설정 저장"}</button>
           </div>

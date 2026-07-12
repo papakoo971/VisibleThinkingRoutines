@@ -30,3 +30,15 @@ export async function deleteAiSettings() {
   const response = await fetch("/api/teacher/ai-settings", { method: "DELETE", headers: await authorizationHeaders() });
   if (!response.ok) throw new Error("AI 설정을 삭제하지 못했습니다.");
 }
+
+export async function testAiSettings() {
+  const response = await fetch("/api/teacher/ai-settings", { method: "POST", headers: await authorizationHeaders() });
+  const result = (await response.json()) as { ok?: boolean; message?: string; errorCode?: string };
+  if (!response.ok) {
+    if (result.errorCode === "invalid_key") throw new Error("API 키가 유효하지 않습니다.");
+    if (result.errorCode === "rate_limit") throw new Error("호출 한도 또는 사용량을 확인해 주세요.");
+    if (result.errorCode === "timeout") throw new Error("연결 확인 시간이 초과되었습니다.");
+    throw new Error("AI 제공자에 연결하지 못했습니다.");
+  }
+  return result;
+}

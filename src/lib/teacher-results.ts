@@ -4,6 +4,7 @@ import type { RoutineColumn } from "@/lib/mock-data";
 export type TeacherActivityResults = {
   activity: { id: string; title: string; routine: string; activityMode: "individual" | "group"; subject: string; status: "active" | "closed" };
   students: Array<{ id: string; name: string; studentNumber: string; className: string; attendance: "present" | "absent" }>;
+  submissionSummary: { submittedCount: number; targetCount: number; rate: number };
   submissions: Array<{
     studentId: string;
     status: "draft" | "submitted" | "modified";
@@ -64,7 +65,18 @@ export async function generateTeacherAnalysis(activityId: string, scope: "class"
     headers: await headers(true),
     body: JSON.stringify({ scope, studentId }),
   });
-  const result = (await response.json()) as { message?: string };
-  if (!response.ok) throw new Error(result.message === "AI API key is not configured" ? "왼쪽 아래 설정에서 AI API 키를 먼저 등록해 주세요." : "AI 분석을 생성하지 못했습니다.");
+  const result = (await response.json()) as { message?: string; errorCode?: string };
+  if (!response.ok) throw new Error(analysisErrorMessage(result));
   return result;
+}
+
+function analysisErrorMessage(result: { message?: string; errorCode?: string }) {
+  if (result.message === "AI API key is not configured") return "왼쪽 아래 설정에서 AI API 키를 먼저 등록해 주세요.";
+  if (result.message === "Student submission is required") return "학생이 제출을 완료한 뒤 개인 분석을 실행할 수 있습니다.";
+  if (result.errorCode === "invalid_key") return "API 키가 유효하지 않습니다. AI 설정에서 키를 확인해 주세요.";
+  if (result.errorCode === "rate_limit") return "AI 제공자의 호출 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.";
+  if (result.errorCode === "timeout") return "AI 응답 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.";
+  if (result.errorCode === "invalid_response") return "AI가 분석 형식에 맞는 응답을 만들지 못했습니다. 다시 시도해 주세요.";
+  if (result.errorCode === "provider_unavailable") return "AI 제공자에 일시적인 장애가 있습니다. 잠시 후 다시 시도해 주세요.";
+  return "AI 분석을 생성하지 못했습니다.";
 }

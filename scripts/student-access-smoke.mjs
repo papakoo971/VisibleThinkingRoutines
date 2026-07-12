@@ -138,6 +138,9 @@ try {
   const resultsPath = `/api/teacher/activities/${activityId}/results`;
   const teacherResults = await api(resultsPath, { idToken: teacher.idToken });
   if (teacherResults.status !== 200 || teacherResults.result.submissions?.[0]?.cards?.[0]?.content !== "자동 저장 검증 카드") throw new Error("Teacher results did not include the saved student card.");
+  if (teacherResults.result.submissionSummary?.submittedCount !== 0 || teacherResults.result.submissionSummary?.targetCount !== 1 || teacherResults.result.submissionSummary?.rate !== 0) throw new Error("Teacher submission summary was incorrect for a draft.");
+  const prematureStudentAnalysis = await api(`/api/teacher/activities/${activityId}/analysis`, { method: "POST", idToken: teacher.idToken, body: { scope: "student", studentId: "s1" } });
+  if (prematureStudentAnalysis.status !== 409 || prematureStudentAnalysis.result.message !== "Student submission is required") throw new Error("Individual AI analysis should require a submitted response.");
   const aiSettingsPath = "/api/teacher/ai-settings";
   const emptySettings = await api(aiSettingsPath, { idToken: teacher.idToken });
   if (emptySettings.status !== 200 || emptySettings.result.configured !== false) throw new Error("New teacher unexpectedly has AI settings.");
@@ -147,6 +150,8 @@ try {
   if (changedModel.status !== 200 || changedModel.result.model !== "gemini-2.5-pro" || changedModel.result.keyHint !== "7890") throw new Error("AI model-only update failed.");
   const maskedSettings = await api(aiSettingsPath, { idToken: teacher.idToken });
   if (!maskedSettings.result.configured || maskedSettings.result.model !== "gemini-2.5-pro" || maskedSettings.result.keyHint !== "7890" || "encryptedApiKey" in maskedSettings.result || "apiKey" in maskedSettings.result) throw new Error("AI settings were not safely masked.");
+  const invalidConnection = await api(aiSettingsPath, { method: "POST", idToken: teacher.idToken });
+  if (invalidConnection.status !== 502 || invalidConnection.result.errorCode !== "invalid_key") throw new Error(`Invalid provider credentials were not classified correctly: ${JSON.stringify(invalidConnection)}`);
   const foreignSettings = await api(aiSettingsPath, { idToken: unassignedStudent.idToken });
   if (foreignSettings.status !== 200 || foreignSettings.result.configured !== false) throw new Error("AI credentials leaked across users.");
   const analysisPath = `/api/teacher/activities/${activityId}/analysis`;
@@ -244,6 +249,7 @@ try {
   if (restored.result.status !== "submitted" || restored.result.cards?.[0]?.column !== "think") throw new Error("Submitted work was not restored.");
   const changedResults = await api(resultsPath, { idToken: teacher.idToken });
   if (changedResults.result.sourceFingerprint === savedAnalysis.sourceFingerprint) throw new Error("Changed cards did not invalidate the saved AI analysis fingerprint.");
+  if (changedResults.result.submissionSummary?.submittedCount !== 1 || changedResults.result.submissionSummary?.targetCount !== 1 || changedResults.result.submissionSummary?.rate !== 100) throw new Error("Teacher submission summary was incorrect after submission.");
   const deleted = await api(workPath, { method: "PUT", idToken: assignedStudent.idToken, body: { cards: [], status: "modified" } });
   if (deleted.status !== 200) throw new Error("Student card deletion failed.");
   const afterDelete = await api(workPath, { idToken: assignedStudent.idToken });

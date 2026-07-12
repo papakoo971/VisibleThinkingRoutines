@@ -1,5 +1,23 @@
 # Implementation Log
 
+## 2026-07-12 AI Provider Readiness And Submission Rate
+
+### Completed
+
+- Added a minimal live connection check for each teacher's saved OpenAI, Claude, or Gemini key and selected model.
+- Added provider error classification for invalid credentials, rate limits, timeouts, malformed structured output, and temporary provider failures.
+- Added AI call timeouts, bounded retries, output-token limits, and request cancellation propagation.
+- Added present-student submission counts and rates to live teacher results and the class AI report.
+- Added a low-submission-rate warning and included submission context in the class-analysis prompt.
+- Restricted individual AI analysis to submitted student work.
+
+### Verification
+
+- The integration smoke test classifies the intentionally invalid provider key without exposing it.
+- Submission summary changes from 0/1 (0%) for a draft to 1/1 (100%) after submission.
+- Individual analysis before submission returns `409`.
+- ESLint and TypeScript checks pass.
+
 ## 2026-07-12 Student Account Management
 
 ### Completed

@@ -3,6 +3,7 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import type { GetMyAiCredentialData, GetTeacherActivityResultsData, UpsertAiAnalysisVariables } from "@/lib/dataconnect-generated";
 import { createTeacherAiModel, decryptApiKey } from "@/lib/ai-credential";
+import { classifyAiProviderError } from "@/lib/ai-provider-error";
 import { defaultAiModel, isAiModel, isAiProvider } from "@/lib/ai-models";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
 import { executeUserMutation, executeUserQuery } from "@/lib/server-sql-connect";
@@ -28,6 +29,12 @@ export async function POST(request: Request, context: { params: Promise<{ activi
     const data = await executeUserQuery<GetTeacherActivityResultsData, { id: string }>("GetTeacherActivityResults", { id: activityId }, user.idToken);
     const activity = data.activities[0];
     if (!activity) return Response.json({ message: "Activity not found" }, { status: 404 });
+    const selectedSubmission = scope === "student"
+      ? activity.individualSubmissions_on_activity.find((submission) => (submission.student.externalId ?? submission.student.id) === studentId)
+      : null;
+    if (scope === "student" && selectedSubmission?.status !== "SUBMITTED") {
+      return Response.json({ message: "Student submission is required" }, { status: 409 });
+    }
     const cards = activity.thinkingCards_on_activity.filter((card) => scope === "class" || (card.student.externalId ?? card.student.id) === studentId);
     if (!cards.length) return Response.json({ message: "No cards to analyze" }, { status: 400 });
     const credentialData = await executeUserQuery<GetMyAiCredentialData, Record<string, never>>("GetMyAiCredential", {}, user.idToken);
@@ -57,12 +64,25 @@ export async function POST(request: Request, context: { params: Promise<{ activi
     };
     await saveAnalysis(user.idToken, { ...base, status: "pending" });
 
+    const presentStudentIds = new Set(activity.activityAttendances_on_activity
+      .filter((attendance) => attendance.status !== "ABSENT")
+      .map((attendance) => attendance.student.id));
+    const submittedCount = activity.individualSubmissions_on_activity.filter((submission) =>
+      presentStudentIds.has(submission.student.id) && submission.status === "SUBMITTED"
+    ).length;
+    const targetCount = presentStudentIds.size;
+    const submissionRate = targetCount ? Math.round((submittedCount / targetCount) * 100) : 0;
+
     try {
       const result = await generateText({
         model: selectedModel.model,
         output: Output.object({ schema: analysisSchema, name: "thinkingRoutineAnalysis" }),
+        abortSignal: request.signal,
+        timeout: 60_000,
+        maxRetries: 2,
+        maxOutputTokens: 1_800,
         system: "당신은 학생의 사고과정을 지원하는 교육 분석가입니다. 평가나 낙인 대신 관찰 가능한 근거를 사용하고, 한국어로 간결하게 작성하세요.",
-        prompt: `활동: ${activity.title}\n루틴: ${activity.routine}\n분석 범위: ${scope === "class" ? "학급 전체" : `학생 ${studentId}`}\n카드:\n${cards.map((card) => `[${card.column}] ${card.content}`).join("\n")}\n강점, 오개념 가능성, 후속 발문, 추천 후속 활동을 분석하세요.`,
+        prompt: `활동: ${activity.title}\n루틴: ${activity.routine}\n분석 범위: ${scope === "class" ? "학급 전체" : `학생 ${studentId}`}\n제출 현황: ${submittedCount}/${targetCount}명 (${submissionRate}%)${scope === "class" && submissionRate < 70 ? " - 일부 학생 결과를 기준으로 해석할 것" : ""}\n카드:\n${cards.map((card) => `[${card.column}] ${card.content}`).join("\n")}\n강점, 오개념 가능성, 후속 발문, 추천 후속 활동을 분석하세요.`,
       });
       const output = result.output;
       await saveAnalysis(user.idToken, {
@@ -76,7 +96,7 @@ export async function POST(request: Request, context: { params: Promise<{ activi
       return Response.json({ id: analysisId, status: "complete", ...output, model, sourceFingerprint, usage: result.totalUsage }, { status: 201 });
     } catch (error) {
       await saveAnalysis(user.idToken, { ...base, status: "error", errorMessage: error instanceof Error ? error.message.slice(0, 1000) : "AI generation failed" });
-      return Response.json({ id: analysisId, status: "error", message: "AI analysis failed" }, { status: 502 });
+      return Response.json({ id: analysisId, status: "error", message: "AI analysis failed", errorCode: classifyAiProviderError(error) }, { status: 502 });
     }
   } catch (error) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();

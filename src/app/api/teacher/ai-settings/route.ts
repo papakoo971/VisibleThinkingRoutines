@@ -1,5 +1,7 @@
+import { generateText } from "ai";
 import type { GetMyAiCredentialData, UpsertMyAiCredentialVariables } from "@/lib/dataconnect-generated";
-import { encryptApiKey } from "@/lib/ai-credential";
+import { createTeacherAiModel, decryptApiKey, encryptApiKey } from "@/lib/ai-credential";
+import { classifyAiProviderError } from "@/lib/ai-provider-error";
 import { defaultAiModel, isAiModel, isAiProvider } from "@/lib/ai-models";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
 import { executeUserMutation, executeUserQuery } from "@/lib/server-sql-connect";
@@ -68,6 +70,40 @@ export async function DELETE(request: Request) {
     const user = await requireFirebaseUser(request);
     await executeUserMutation<unknown, Record<string, never>>("DeleteMyAiCredential", {}, user.idToken);
     return Response.json({ configured: false, provider: null, model: null, keyHint: null, updatedAt: null });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) return unauthorizedResponse();
+    throw error;
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const user = await requireFirebaseUser(request);
+    const data = await executeUserQuery<GetMyAiCredentialData, Record<string, never>>("GetMyAiCredential", {}, user.idToken);
+    const credential = data.teacherAiCredential;
+    if (!credential || !isAiProvider(credential.provider)) return Response.json({ message: "AI API key is not configured" }, { status: 409 });
+    const modelId = credential.model ?? defaultAiModel(credential.provider);
+    if (!isAiModel(credential.provider, modelId)) return Response.json({ message: "Configured AI model is not supported" }, { status: 409 });
+    let apiKey: string;
+    try {
+      apiKey = decryptApiKey(credential);
+    } catch {
+      return Response.json({ message: "AI credential encryption is not configured" }, { status: 503 });
+    }
+    try {
+      const selected = createTeacherAiModel(credential.provider, modelId, apiKey);
+      await generateText({
+        model: selected.model,
+        prompt: "연결 확인에 '확인'이라고 짧게 답하세요.",
+        maxOutputTokens: 12,
+        maxRetries: 1,
+        timeout: 20_000,
+        abortSignal: request.signal,
+      });
+      return Response.json({ ok: true, provider: credential.provider, model: modelId });
+    } catch (error) {
+      return Response.json({ message: "AI provider connection failed", errorCode: classifyAiProviderError(error) }, { status: 502 });
+    }
   } catch (error) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();
     throw error;
