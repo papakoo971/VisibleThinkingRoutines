@@ -54,6 +54,7 @@ type Student @table(name: "student", key: "id") {
 
 type Activity @table(name: "activity", key: "id") {
   id: String! @col(dataType: "varchar(96)")
+  teacherId: String! @col(dataType: "varchar(128)")
   title: String!
   routine: String! @col(dataType: "varchar(80)")
   activityMode: ActivityMode!

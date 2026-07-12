@@ -1,26 +1,30 @@
-import { getVisibleThinkingDataConnect } from "@/lib/firebase-sql-connect";
 import { QueryFetchPolicy } from "firebase/data-connect";
 import type { CreatedActivityStore } from "@/lib/created-activity-store";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
 import { students } from "@/lib/mock-data";
+import { getVisibleThinkingAdminDataConnect } from "@/lib/firebase-admin";
+import { getVisibleThinkingDataConnect } from "@/lib/firebase-sql-connect";
 import {
   ActivityMode,
   ActivityStatus,
   AttendanceStatus,
   SubmissionStatus,
-  deleteActivity,
   getActivity,
-  listActivities,
-  upsertActivity,
-  upsertActivityAttendance,
-  upsertActivityClass,
-  upsertActivityGroup,
-  upsertActivityGroupMember,
-  upsertGroupSubmission,
-  upsertGroupSubmissionAgreement,
-  upsertIndividualSubmission,
-  upsertSchoolClass,
-  upsertStudent,
+} from "@/lib/dataconnect-generated";
+import type {
+  CreateActivityVariables,
+  DeleteActivityVariables,
+  GetActivityData,
+  ListActivitiesData,
+  UpsertActivityAttendanceVariables,
+  UpsertActivityClassVariables,
+  UpsertActivityGroupMemberVariables,
+  UpsertActivityGroupVariables,
+  UpsertGroupSubmissionAgreementVariables,
+  UpsertGroupSubmissionVariables,
+  UpsertIndividualSubmissionVariables,
+  UpsertSchoolClassVariables,
+  UpsertStudentVariables,
 } from "@/lib/dataconnect-generated";
 
 function toActivityMode(mode: CreatedActivityPayload["activity"]["activityMode"]) {
@@ -59,10 +63,6 @@ function fromSubmissionStatus(status: SubmissionStatus) {
   return "draft";
 }
 
-function classId(className: string) {
-  return className;
-}
-
 function routesFor(activityId: string) {
   return {
     teacherResults: `/teacher/activities/${activityId}/results`,
@@ -70,9 +70,7 @@ function routesFor(activityId: string) {
   };
 }
 
-function listActivityToPayload(activity: Awaited<ReturnType<typeof listActivities>>["data"]["activities"][number]): CreatedActivityPayload {
-  const classes = activity.activityClasses_on_activity.map((item) => item.schoolClass.name);
-
+function listActivityToPayload(activity: ListActivitiesData["activities"][number]): CreatedActivityPayload {
   return {
     activity: {
       id: activity.id,
@@ -80,7 +78,7 @@ function listActivityToPayload(activity: Awaited<ReturnType<typeof listActivitie
       routine: activity.routine,
       activityMode: fromActivityMode(activity.activityMode),
       subject: activity.subject,
-      classes,
+      classes: activity.activityClasses_on_activity.map((item) => item.schoolClass.name),
       status: fromActivityStatus(activity.status),
       code: activity.code,
       materialType: activity.materialType,
@@ -96,14 +94,7 @@ function listActivityToPayload(activity: Awaited<ReturnType<typeof listActivitie
   };
 }
 
-function detailActivityToPayload(activity: NonNullable<Awaited<ReturnType<typeof getActivity>>["data"]["activity"]>): CreatedActivityPayload {
-  const classes = activity.activityClasses_on_activity.map((item) => item.schoolClass.name);
-  const activityGroups = activity.activityGroups_on_activity.map((group) => ({
-    id: group.id,
-    activityId: activity.id,
-    name: group.name,
-    studentIds: group.activityGroupMembers_on_activityGroup.map((member) => member.student.id),
-  }));
+function detailActivityToPayload(activity: NonNullable<GetActivityData["activity"]>): CreatedActivityPayload {
   const agreementsByGroup = new Map<string, CreatedActivityPayload["groupSubmissions"][number]["agreements"]>();
 
   for (const agreement of activity.groupSubmissionAgreements_on_activity) {
@@ -125,7 +116,7 @@ function detailActivityToPayload(activity: NonNullable<Awaited<ReturnType<typeof
       routine: activity.routine,
       activityMode: fromActivityMode(activity.activityMode),
       subject: activity.subject,
-      classes,
+      classes: activity.activityClasses_on_activity.map((item) => item.schoolClass.name),
       status: fromActivityStatus(activity.status),
       code: activity.code,
       materialType: activity.materialType,
@@ -138,7 +129,12 @@ function detailActivityToPayload(activity: NonNullable<Awaited<ReturnType<typeof
       studentId: attendance.student.id,
       status: fromAttendanceStatus(attendance.status),
     })),
-    activityGroups,
+    activityGroups: activity.activityGroups_on_activity.map((group) => ({
+      id: group.id,
+      activityId: activity.id,
+      name: group.name,
+      studentIds: group.activityGroupMembers_on_activityGroup.map((member) => member.student.id),
+    })),
     groupSubmissions: activity.groupSubmissions_on_activity.map((submission) => ({
       activityId: activity.id,
       groupId: submission.activityGroup.id,
@@ -156,55 +152,57 @@ function detailActivityToPayload(activity: NonNullable<Awaited<ReturnType<typeof
   };
 }
 
+async function executeMutation<Variables>(name: string, variables: Variables) {
+  await getVisibleThinkingAdminDataConnect().executeMutation<unknown, Variables>(name, variables);
+}
+
 async function upsertPayloadDependencies(payload: CreatedActivityPayload) {
-  const dataConnect = getVisibleThinkingDataConnect();
-  const studentIds = new Set<string>([
+  const studentIds = new Set([
     ...payload.activityAttendance.map((attendance) => attendance.studentId),
     ...payload.activityGroups.flatMap((group) => group.studentIds),
     ...payload.individualSubmissions.map((submission) => submission.studentId),
     ...payload.groupSubmissions.flatMap((submission) => submission.agreements.map((agreement) => agreement.studentId)),
   ]);
   const payloadStudents = students.filter((student) => studentIds.has(student.id));
-  const classNames = new Set<string>([
-    ...payload.activity.classes,
-    ...payloadStudents.map((student) => student.className),
-  ]);
+  const classNames = new Set([...payload.activity.classes, ...payloadStudents.map((student) => student.className)]);
 
   for (const name of classNames) {
-    await upsertSchoolClass(dataConnect, { id: classId(name), name });
+    await executeMutation<UpsertSchoolClassVariables>("UpsertSchoolClass", { id: name, name });
   }
 
   for (const student of payloadStudents) {
-    await upsertStudent(dataConnect, {
+    await executeMutation<UpsertStudentVariables>("UpsertStudent", {
       id: student.id,
-      schoolClassId: classId(student.className),
+      schoolClassId: student.className,
       studentNumber: student.studentNumber,
       name: student.name,
       passwordIssued: student.passwordIssued,
     });
   }
-
-  return dataConnect;
 }
 
 export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
-  async list() {
-    const dataConnect = getVisibleThinkingDataConnect();
-    const { data } = await listActivities(dataConnect, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY });
+  async list(teacherId) {
+    void teacherId;
+    const { data } = await getVisibleThinkingAdminDataConnect().executeQuery<ListActivitiesData>("ListActivities");
     return data.activities.map(listActivityToPayload);
   },
 
   async get(activityId) {
-    const dataConnect = getVisibleThinkingDataConnect();
-    const { data } = await getActivity(dataConnect, { id: activityId }, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY });
+    const { data } = await getActivity(
+      getVisibleThinkingDataConnect(),
+      { id: activityId },
+      { fetchPolicy: QueryFetchPolicy.SERVER_ONLY }
+    );
     return data.activity ? detailActivityToPayload(data.activity) : undefined;
   },
 
-  async upsert(payload) {
-    const dataConnect = await upsertPayloadDependencies(payload);
+  async upsert(payload, teacherId) {
+    void teacherId;
+    await upsertPayloadDependencies(payload);
     const { activity } = payload;
 
-    await upsertActivity(dataConnect, {
+    await executeMutation<CreateActivityVariables>("CreateActivity", {
       id: activity.id,
       title: activity.title,
       routine: activity.routine,
@@ -219,11 +217,14 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     });
 
     for (const className of activity.classes) {
-      await upsertActivityClass(dataConnect, { activityId: activity.id, schoolClassId: classId(className) });
+      await executeMutation<UpsertActivityClassVariables>("UpsertActivityClass", {
+        activityId: activity.id,
+        schoolClassId: className,
+      });
     }
 
     for (const attendance of payload.activityAttendance) {
-      await upsertActivityAttendance(dataConnect, {
+      await executeMutation<UpsertActivityAttendanceVariables>("UpsertActivityAttendance", {
         activityId: attendance.activityId,
         studentId: attendance.studentId,
         status: toAttendanceStatus(attendance.status),
@@ -231,15 +232,22 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     }
 
     for (const group of payload.activityGroups) {
-      await upsertActivityGroup(dataConnect, { id: group.id, activityId: group.activityId, name: group.name });
+      await executeMutation<UpsertActivityGroupVariables>("UpsertActivityGroup", {
+        id: group.id,
+        activityId: group.activityId,
+        name: group.name,
+      });
 
       for (const studentId of group.studentIds) {
-        await upsertActivityGroupMember(dataConnect, { activityGroupId: group.id, studentId });
+        await executeMutation<UpsertActivityGroupMemberVariables>("UpsertActivityGroupMember", {
+          activityGroupId: group.id,
+          studentId,
+        });
       }
     }
 
     for (const submission of payload.individualSubmissions) {
-      await upsertIndividualSubmission(dataConnect, {
+      await executeMutation<UpsertIndividualSubmissionVariables>("UpsertIndividualSubmission", {
         activityId: submission.activityId,
         studentId: submission.studentId,
         status: toSubmissionStatus(submission.status),
@@ -247,14 +255,14 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     }
 
     for (const submission of payload.groupSubmissions) {
-      await upsertGroupSubmission(dataConnect, {
+      await executeMutation<UpsertGroupSubmissionVariables>("UpsertGroupSubmission", {
         activityId: submission.activityId,
         activityGroupId: submission.groupId,
         status: toSubmissionStatus(submission.status),
       });
 
       for (const agreement of submission.agreements) {
-        await upsertGroupSubmissionAgreement(dataConnect, {
+        await executeMutation<UpsertGroupSubmissionAgreementVariables>("UpsertGroupSubmissionAgreement", {
           activityId: agreement.activityId,
           activityGroupId: agreement.groupId,
           studentId: agreement.studentId,
@@ -266,8 +274,8 @@ export const sqlConnectCreatedActivityStore: CreatedActivityStore = {
     return payload;
   },
 
-  async remove(activityId) {
-    const dataConnect = getVisibleThinkingDataConnect();
-    await deleteActivity(dataConnect, { id: activityId });
+  async remove(activityId, teacherId) {
+    void teacherId;
+    await executeMutation<DeleteActivityVariables>("DeleteActivity", { id: activityId });
   },
 };

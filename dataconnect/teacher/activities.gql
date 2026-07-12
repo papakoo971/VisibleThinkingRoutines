@@ -25,8 +25,8 @@ mutation DeleteMyTeacherProfile @auth(level: USER) {
   teacherProfile_delete(key: { id_expr: "auth.uid" })
 }
 
-query ListActivities @auth(level: PUBLIC, insecureReason: "Prototype teacher activity list before Firebase Auth is connected.") {
-  activities {
+query ListActivities @auth(level: USER) {
+  activities(where: { teacherId: { eq_expr: "auth.uid" } }) {
     id
     title
     routine
@@ -113,14 +113,14 @@ query GetActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype 
   }
 }
 
-mutation UpsertSchoolClass($id: String!, $name: String!) @auth(level: PUBLIC, insecureReason: "Prototype setup before teacher authentication is connected.") {
+mutation UpsertSchoolClass($id: String!, $name: String!) @auth(level: USER, insecureReason: "Classes remain shared prototype data until class ownership migration.") {
   schoolClass_upsert(data: {
     id: $id
     name: $name
   })
 }
 
-mutation UpsertStudent($id: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!, $passwordIssued: Boolean!) @auth(level: PUBLIC, insecureReason: "Prototype setup before teacher authentication is connected.") {
+mutation UpsertStudent($id: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!, $passwordIssued: Boolean!) @auth(level: USER, insecureReason: "Students remain shared prototype data until class ownership migration.") {
   student_upsert(data: {
     id: $id
     schoolClass: { id: $schoolClassId }
@@ -130,7 +130,7 @@ mutation UpsertStudent($id: String!, $schoolClassId: String!, $studentNumber: St
   })
 }
 
-mutation UpsertActivity(
+mutation CreateActivity(
   $id: String!
   $title: String!
   $routine: String!
@@ -142,9 +142,10 @@ mutation UpsertActivity(
   $activityDate: Date!
   $submittedCount: Int!
   $targetCount: Int!
-) @auth(level: PUBLIC, insecureReason: "Prototype create activity before teacher authentication is connected.") {
-  activity_upsert(data: {
+) @auth(level: USER) {
+  activity_insert(data: {
     id: $id
+    teacherId_expr: "auth.uid"
     title: $title
     routine: $routine
     activityMode: $activityMode
@@ -159,18 +160,33 @@ mutation UpsertActivity(
   })
 }
 
-mutation DeleteActivity($id: String!) @auth(level: PUBLIC, insecureReason: "Prototype delete activity before teacher authentication is connected.") {
+mutation DeleteActivity($id: String!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $id }) {
+      teacherId @check(expr: "this == auth.uid", message: "Only the activity owner can delete this activity.")
+    }
+  }
   activity_delete(key: { id: $id })
 }
 
-mutation UpsertActivityClass($activityId: String!, $schoolClassId: String!) @auth(level: PUBLIC, insecureReason: "Prototype create activity before teacher authentication is connected.") {
+mutation UpsertActivityClass($activityId: String!, $schoolClassId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   activityClass_upsert(data: {
     activity: { id: $activityId }
     schoolClass: { id: $schoolClassId }
   })
 }
 
-mutation UpsertActivityAttendance($activityId: String!, $studentId: String!, $status: AttendanceStatus!) @auth(level: PUBLIC, insecureReason: "Prototype attendance setup before teacher authentication is connected.") {
+mutation UpsertActivityAttendance($activityId: String!, $studentId: String!, $status: AttendanceStatus!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   activityAttendance_upsert(data: {
     activity: { id: $activityId }
     student: { id: $studentId }
@@ -178,7 +194,12 @@ mutation UpsertActivityAttendance($activityId: String!, $studentId: String!, $st
   })
 }
 
-mutation UpsertActivityGroup($id: String!, $activityId: String!, $name: String!) @auth(level: PUBLIC, insecureReason: "Prototype group setup before teacher authentication is connected.") {
+mutation UpsertActivityGroup($id: String!, $activityId: String!, $name: String!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   activityGroup_upsert(data: {
     id: $id
     activity: { id: $activityId }
@@ -186,14 +207,26 @@ mutation UpsertActivityGroup($id: String!, $activityId: String!, $name: String!)
   })
 }
 
-mutation UpsertActivityGroupMember($activityGroupId: String!, $studentId: String!) @auth(level: PUBLIC, insecureReason: "Prototype group setup before teacher authentication is connected.") {
+mutation UpsertActivityGroupMember($activityGroupId: String!, $studentId: String!) @auth(level: USER) @transaction {
+  query @redact {
+    activityGroup(key: { id: $activityGroupId }) {
+      activity {
+        teacherId @check(expr: "this == auth.uid")
+      }
+    }
+  }
   activityGroupMember_upsert(data: {
     activityGroup: { id: $activityGroupId }
     student: { id: $studentId }
   })
 }
 
-mutation UpsertIndividualSubmission($activityId: String!, $studentId: String!, $status: SubmissionStatus!) @auth(level: PUBLIC, insecureReason: "Prototype submission setup before teacher authentication is connected.") {
+mutation UpsertIndividualSubmission($activityId: String!, $studentId: String!, $status: SubmissionStatus!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   individualSubmission_upsert(data: {
     activity: { id: $activityId }
     student: { id: $studentId }
@@ -202,7 +235,12 @@ mutation UpsertIndividualSubmission($activityId: String!, $studentId: String!, $
   })
 }
 
-mutation UpsertGroupSubmission($activityId: String!, $activityGroupId: String!, $status: SubmissionStatus!) @auth(level: PUBLIC, insecureReason: "Prototype submission setup before teacher authentication is connected.") {
+mutation UpsertGroupSubmission($activityId: String!, $activityGroupId: String!, $status: SubmissionStatus!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   groupSubmission_upsert(data: {
     activity: { id: $activityId }
     activityGroup: { id: $activityGroupId }
@@ -211,7 +249,12 @@ mutation UpsertGroupSubmission($activityId: String!, $activityGroupId: String!, 
   })
 }
 
-mutation UpsertGroupSubmissionAgreement($activityId: String!, $activityGroupId: String!, $studentId: String!, $agreed: Boolean!) @auth(level: PUBLIC, insecureReason: "Prototype submission agreement before teacher authentication is connected.") {
+mutation UpsertGroupSubmissionAgreement($activityId: String!, $activityGroupId: String!, $studentId: String!, $agreed: Boolean!) @auth(level: USER) @transaction {
+  query @redact {
+    activity(key: { id: $activityId }) {
+      teacherId @check(expr: "this == auth.uid")
+    }
+  }
   groupSubmissionAgreement_upsert(data: {
     activity: { id: $activityId }
     activityGroup: { id: $activityGroupId }

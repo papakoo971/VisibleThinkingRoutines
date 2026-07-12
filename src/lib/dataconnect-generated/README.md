@@ -16,7 +16,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
   - [*UpsertSchoolClass*](#upsertschoolclass)
   - [*UpsertStudent*](#upsertstudent)
-  - [*UpsertActivity*](#upsertactivity)
+  - [*CreateActivity*](#createactivity)
   - [*DeleteActivity*](#deleteactivity)
   - [*UpsertActivityClass*](#upsertactivityclass)
   - [*UpsertActivityAttendance*](#upsertactivityattendance)
@@ -901,40 +901,40 @@ executeMutation(ref).then((response) => {
 });
 ```
 
-## UpsertActivity
-You can execute the `UpsertActivity` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+## CreateActivity
+You can execute the `CreateActivity` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-upsertActivity(vars: UpsertActivityVariables): MutationPromise<UpsertActivityData, UpsertActivityVariables>;
+createActivity(vars: CreateActivityVariables): MutationPromise<CreateActivityData, CreateActivityVariables>;
 
-interface UpsertActivityRef {
+interface CreateActivityRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertActivityVariables): MutationRef<UpsertActivityData, UpsertActivityVariables>;
+  (vars: CreateActivityVariables): MutationRef<CreateActivityData, CreateActivityVariables>;
 }
-export const upsertActivityRef: UpsertActivityRef;
+export const createActivityRef: CreateActivityRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
 ```typescript
-upsertActivity(dc: DataConnect, vars: UpsertActivityVariables): MutationPromise<UpsertActivityData, UpsertActivityVariables>;
+createActivity(dc: DataConnect, vars: CreateActivityVariables): MutationPromise<CreateActivityData, CreateActivityVariables>;
 
-interface UpsertActivityRef {
+interface CreateActivityRef {
   ...
-  (dc: DataConnect, vars: UpsertActivityVariables): MutationRef<UpsertActivityData, UpsertActivityVariables>;
+  (dc: DataConnect, vars: CreateActivityVariables): MutationRef<CreateActivityData, CreateActivityVariables>;
 }
-export const upsertActivityRef: UpsertActivityRef;
+export const createActivityRef: CreateActivityRef;
 ```
 
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertActivityRef:
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createActivityRef:
 ```typescript
-const name = upsertActivityRef.operationName;
+const name = createActivityRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-The `UpsertActivity` mutation requires an argument of type `UpsertActivityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `CreateActivity` mutation requires an argument of type `CreateActivityVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
-export interface UpsertActivityVariables {
+export interface CreateActivityVariables {
   id: string;
   title: string;
   routine: string;
@@ -949,22 +949,22 @@ export interface UpsertActivityVariables {
 }
 ```
 ### Return Type
-Recall that executing the `UpsertActivity` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+Recall that executing the `CreateActivity` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
 
-The `data` property is an object of type `UpsertActivityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `data` property is an object of type `CreateActivityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
-export interface UpsertActivityData {
-  activity_upsert: Activity_Key;
+export interface CreateActivityData {
+  activity_insert: Activity_Key;
 }
 ```
-### Using `UpsertActivity`'s action shortcut function
+### Using `CreateActivity`'s action shortcut function
 
 ```typescript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, upsertActivity, UpsertActivityVariables } from '@visible-thinking/dataconnect';
+import { connectorConfig, createActivity, CreateActivityVariables } from '@visible-thinking/dataconnect';
 
-// The `UpsertActivity` mutation requires an argument of type `UpsertActivityVariables`:
-const upsertActivityVars: UpsertActivityVariables = {
+// The `CreateActivity` mutation requires an argument of type `CreateActivityVariables`:
+const createActivityVars: CreateActivityVariables = {
   id: ..., 
   title: ..., 
   routine: ..., 
@@ -978,33 +978,33 @@ const upsertActivityVars: UpsertActivityVariables = {
   targetCount: ..., 
 };
 
-// Call the `upsertActivity()` function to execute the mutation.
+// Call the `createActivity()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await upsertActivity(upsertActivityVars);
+const { data } = await createActivity(createActivityVars);
 // Variables can be defined inline as well.
-const { data } = await upsertActivity({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
+const { data } = await createActivity({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
-const { data } = await upsertActivity(dataConnect, upsertActivityVars);
+const { data } = await createActivity(dataConnect, createActivityVars);
 
-console.log(data.activity_upsert);
+console.log(data.activity_insert);
 
 // Or, you can use the `Promise` API.
-upsertActivity(upsertActivityVars).then((response) => {
+createActivity(createActivityVars).then((response) => {
   const data = response.data;
-  console.log(data.activity_upsert);
+  console.log(data.activity_insert);
 });
 ```
 
-### Using `UpsertActivity`'s `MutationRef` function
+### Using `CreateActivity`'s `MutationRef` function
 
 ```typescript
 import { getDataConnect, executeMutation } from 'firebase/data-connect';
-import { connectorConfig, upsertActivityRef, UpsertActivityVariables } from '@visible-thinking/dataconnect';
+import { connectorConfig, createActivityRef, CreateActivityVariables } from '@visible-thinking/dataconnect';
 
-// The `UpsertActivity` mutation requires an argument of type `UpsertActivityVariables`:
-const upsertActivityVars: UpsertActivityVariables = {
+// The `CreateActivity` mutation requires an argument of type `CreateActivityVariables`:
+const createActivityVars: CreateActivityVariables = {
   id: ..., 
   title: ..., 
   routine: ..., 
@@ -1018,25 +1018,25 @@ const upsertActivityVars: UpsertActivityVariables = {
   targetCount: ..., 
 };
 
-// Call the `upsertActivityRef()` function to get a reference to the mutation.
-const ref = upsertActivityRef(upsertActivityVars);
+// Call the `createActivityRef()` function to get a reference to the mutation.
+const ref = createActivityRef(createActivityVars);
 // Variables can be defined inline as well.
-const ref = upsertActivityRef({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
+const ref = createActivityRef({ id: ..., title: ..., routine: ..., activityMode: ..., subject: ..., status: ..., code: ..., materialType: ..., activityDate: ..., submittedCount: ..., targetCount: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
-const ref = upsertActivityRef(dataConnect, upsertActivityVars);
+const ref = createActivityRef(dataConnect, createActivityVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.activity_upsert);
+console.log(data.activity_insert);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.activity_upsert);
+  console.log(data.activity_insert);
 });
 ```
 

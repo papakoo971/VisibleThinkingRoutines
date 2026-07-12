@@ -64,6 +64,24 @@ export interface Activity_Key {
   __typename?: 'Activity_Key';
 }
 
+export interface CreateActivityData {
+  activity_insert: Activity_Key;
+}
+
+export interface CreateActivityVariables {
+  id: string;
+  title: string;
+  routine: string;
+  activityMode: ActivityMode;
+  subject: string;
+  status: ActivityStatus;
+  code: string;
+  materialType: string;
+  activityDate: DateString;
+  submittedCount: number;
+  targetCount: number;
+}
+
 export interface DeleteActivityData {
   activity_delete?: Activity_Key | null;
 }
@@ -240,10 +258,6 @@ export interface UpsertActivityClassVariables {
   schoolClassId: string;
 }
 
-export interface UpsertActivityData {
-  activity_upsert: Activity_Key;
-}
-
 export interface UpsertActivityGroupData {
   activityGroup_upsert: ActivityGroup_Key;
 }
@@ -261,20 +275,6 @@ export interface UpsertActivityGroupVariables {
   id: string;
   activityId: string;
   name: string;
-}
-
-export interface UpsertActivityVariables {
-  id: string;
-  title: string;
-  routine: string;
-  activityMode: ActivityMode;
-  subject: string;
-  status: ActivityStatus;
-  code: string;
-  materialType: string;
-  activityDate: DateString;
-  submittedCount: number;
-  targetCount: number;
 }
 
 export interface UpsertGroupSubmissionAgreementData {
@@ -423,17 +423,17 @@ export const upsertStudentRef: UpsertStudentRef;
 export function upsertStudent(vars: UpsertStudentVariables): MutationPromise<UpsertStudentData, UpsertStudentVariables>;
 export function upsertStudent(dc: DataConnect, vars: UpsertStudentVariables): MutationPromise<UpsertStudentData, UpsertStudentVariables>;
 
-interface UpsertActivityRef {
+interface CreateActivityRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertActivityVariables): MutationRef<UpsertActivityData, UpsertActivityVariables>;
+  (vars: CreateActivityVariables): MutationRef<CreateActivityData, CreateActivityVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpsertActivityVariables): MutationRef<UpsertActivityData, UpsertActivityVariables>;
+  (dc: DataConnect, vars: CreateActivityVariables): MutationRef<CreateActivityData, CreateActivityVariables>;
   operationName: string;
 }
-export const upsertActivityRef: UpsertActivityRef;
+export const createActivityRef: CreateActivityRef;
 
-export function upsertActivity(vars: UpsertActivityVariables): MutationPromise<UpsertActivityData, UpsertActivityVariables>;
-export function upsertActivity(dc: DataConnect, vars: UpsertActivityVariables): MutationPromise<UpsertActivityData, UpsertActivityVariables>;
+export function createActivity(vars: CreateActivityVariables): MutationPromise<CreateActivityData, CreateActivityVariables>;
+export function createActivity(dc: DataConnect, vars: CreateActivityVariables): MutationPromise<CreateActivityData, CreateActivityVariables>;
 
 interface DeleteActivityRef {
   /* Allow users to create refs without passing in DataConnect */

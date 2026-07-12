@@ -1,4 +1,5 @@
 import type { ActivityMode, AttendanceStatus } from "@/lib/mock-data";
+import { getFirebaseAuth } from "@/lib/firebase-auth";
 
 export type CreatedActivityPayload = {
   activity: {
@@ -31,13 +32,22 @@ export type CreatedActivityPayload = {
   };
 };
 
-const storageKey = "visible-thinking-created-activities";
+function storageKey() {
+  return `visible-thinking-created-activities:${getFirebaseAuth().currentUser?.uid ?? "guest"}`;
+}
+
+async function authorizationHeaders(): Promise<Record<string, string>> {
+  const user = getFirebaseAuth().currentUser;
+  if (!user) return {};
+
+  return { Authorization: `Bearer ${await user.getIdToken()}` };
+}
 
 export function readCreatedActivityPayloads() {
   if (typeof window === "undefined") return [];
 
   try {
-    const raw = window.localStorage.getItem(storageKey);
+    const raw = window.localStorage.getItem(storageKey());
     return raw ? (JSON.parse(raw) as CreatedActivityPayload[]) : [];
   } catch {
     return [];
@@ -48,7 +58,7 @@ export function saveCreatedActivityPayload(payload: CreatedActivityPayload) {
   if (typeof window === "undefined") return;
 
   const current = readCreatedActivityPayloads().filter((item) => item.activity.id !== payload.activity.id);
-  window.localStorage.setItem(storageKey, JSON.stringify([payload, ...current]));
+  window.localStorage.setItem(storageKey(), JSON.stringify([payload, ...current]));
 }
 
 export function findCreatedActivityPayload(activityId: string) {
@@ -57,7 +67,8 @@ export function findCreatedActivityPayload(activityId: string) {
 
 export async function fetchCreatedActivityPayloads() {
   try {
-    const response = await fetch("/api/created-activities", { cache: "no-store" });
+    const headers = await authorizationHeaders();
+    const response = await fetch("/api/created-activities", { cache: "no-store", headers });
     if (!response.ok) return readCreatedActivityPayloads();
 
     const data = (await response.json()) as { activities?: CreatedActivityPayload[] };
@@ -69,7 +80,8 @@ export async function fetchCreatedActivityPayloads() {
 
 export async function fetchCreatedActivityPayload(activityId: string) {
   try {
-    const response = await fetch(`/api/created-activities/${activityId}`, { cache: "no-store" });
+    const headers = await authorizationHeaders();
+    const response = await fetch(`/api/created-activities/${activityId}`, { cache: "no-store", headers });
     if (!response.ok) return findCreatedActivityPayload(activityId);
 
     const data = (await response.json()) as { activity?: CreatedActivityPayload };
@@ -83,9 +95,10 @@ export async function persistCreatedActivityPayload(payload: CreatedActivityPayl
   saveCreatedActivityPayload(payload);
 
   try {
+    const authorization = await authorizationHeaders();
     const response = await fetch("/api/created-activities", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authorization },
       body: JSON.stringify(payload),
     });
 

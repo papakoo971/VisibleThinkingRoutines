@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getActivity, upsertSchoolClass, upsertStudent, upsertActivity, deleteActivity, upsertActivityClass } from '@visible-thinking/dataconnect';
+import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getActivity, upsertSchoolClass, upsertStudent, createActivity, deleteActivity, upsertActivityClass } from '@visible-thinking/dataconnect';
 
 
 // Operation GetMyTeacherProfile: 
@@ -38,8 +38,8 @@ const { data } = await UpsertSchoolClass(dataConnect, upsertSchoolClassVars);
 // Operation UpsertStudent:  For variables, look at type UpsertStudentVars in ../index.d.ts
 const { data } = await UpsertStudent(dataConnect, upsertStudentVars);
 
-// Operation UpsertActivity:  For variables, look at type UpsertActivityVars in ../index.d.ts
-const { data } = await UpsertActivity(dataConnect, upsertActivityVars);
+// Operation CreateActivity:  For variables, look at type CreateActivityVars in ../index.d.ts
+const { data } = await CreateActivity(dataConnect, createActivityVars);
 
 // Operation DeleteActivity:  For variables, look at type DeleteActivityVars in ../index.d.ts
 const { data } = await DeleteActivity(dataConnect, deleteActivityVars);

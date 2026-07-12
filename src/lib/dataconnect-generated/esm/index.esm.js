@@ -118,16 +118,16 @@ export function upsertStudent(dcOrVars, vars) {
   return executeMutation(upsertStudentRef(dcInstance, inputVars));
 }
 
-export const upsertActivityRef = (dcOrVars, vars) => {
+export const createActivityRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpsertActivity', inputVars);
+  return mutationRef(dcInstance, 'CreateActivity', inputVars);
 }
-upsertActivityRef.operationName = 'UpsertActivity';
+createActivityRef.operationName = 'CreateActivity';
 
-export function upsertActivity(dcOrVars, vars) {
+export function createActivity(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(upsertActivityRef(dcInstance, inputVars));
+  return executeMutation(createActivityRef(dcInstance, inputVars));
 }
 
 export const deleteActivityRef = (dcOrVars, vars) => {
