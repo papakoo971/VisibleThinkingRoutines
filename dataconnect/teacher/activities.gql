@@ -181,6 +181,21 @@ mutation SetActivityStatus($id: String!, $status: ActivityStatus!) @auth(level: 
   })
 }
 
+mutation UpdateThinkingCardTags($id: String!, $tags: [String!], $tagsPublic: Boolean!) @auth(level: USER) @transaction {
+  query @redact {
+    thinkingCard(key: { id: $id }) {
+      activity {
+        teacherId @check(expr: "this == auth.uid")
+      }
+    }
+  }
+  thinkingCard_update(key: { id: $id }, data: {
+    tags: $tags
+    tagsPublic: $tagsPublic
+    updatedAt_expr: "request.time"
+  })
+}
+
 mutation LinkStudentAuth($studentId: String!, $authUid: String!) @auth(level: USER) @transaction {
   query @redact {
     student(key: { id: $studentId }) {

@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, getTeacherActivityResults, setActivityStatus, linkStudentAuth, unlinkStudentAuth, upsertSchoolClass } from '@visible-thinking/dataconnect';
+import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, getTeacherActivityResults, setActivityStatus, updateThinkingCardTags, linkStudentAuth, unlinkStudentAuth } from '@visible-thinking/dataconnect';
 
 
 // Operation GetMyTeacherProfile:
@@ -38,14 +38,14 @@ const { data } = await GetTeacherActivityResults(dataConnect, getTeacherActivity
 // Operation SetActivityStatus:  For variables, look at type SetActivityStatusVars in ../index.d.ts
 const { data } = await SetActivityStatus(dataConnect, setActivityStatusVars);
 
+// Operation UpdateThinkingCardTags:  For variables, look at type UpdateThinkingCardTagsVars in ../index.d.ts
+const { data } = await UpdateThinkingCardTags(dataConnect, updateThinkingCardTagsVars);
+
 // Operation LinkStudentAuth:  For variables, look at type LinkStudentAuthVars in ../index.d.ts
 const { data } = await LinkStudentAuth(dataConnect, linkStudentAuthVars);
 
 // Operation UnlinkStudentAuth:  For variables, look at type UnlinkStudentAuthVars in ../index.d.ts
 const { data } = await UnlinkStudentAuth(dataConnect, unlinkStudentAuthVars);
-
-// Operation UpsertSchoolClass:  For variables, look at type UpsertSchoolClassVars in ../index.d.ts
-const { data } = await UpsertSchoolClass(dataConnect, upsertSchoolClassVars);
 
 
 ```

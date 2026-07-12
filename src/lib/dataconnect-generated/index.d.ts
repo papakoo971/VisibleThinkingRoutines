@@ -244,6 +244,8 @@ export interface GetMyStudentWorkData {
     id: string;
     column: RoutineColumn;
     content: string;
+    tags?: string[] | null;
+    tagsPublic: boolean;
     updatedAt: TimestampString;
   } & ThinkingCard_Key)[];
   individualSubmissions: ({
@@ -545,6 +547,16 @@ export interface UnlinkStudentAuthVariables {
   studentId: string;
 }
 
+export interface UpdateThinkingCardTagsData {
+  thinkingCard_update?: ThinkingCard_Key | null;
+}
+
+export interface UpdateThinkingCardTagsVariables {
+  id: string;
+  tags?: string[] | null;
+  tagsPublic: boolean;
+}
+
 export interface UpsertActivityAttendanceData {
   activityAttendance_upsert: ActivityAttendance_Key;
 }
@@ -739,6 +751,18 @@ export const setActivityStatusRef: SetActivityStatusRef;
 
 export function setActivityStatus(vars: SetActivityStatusVariables): MutationPromise<SetActivityStatusData, SetActivityStatusVariables>;
 export function setActivityStatus(dc: DataConnect, vars: SetActivityStatusVariables): MutationPromise<SetActivityStatusData, SetActivityStatusVariables>;
+
+interface UpdateThinkingCardTagsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateThinkingCardTagsVariables): MutationRef<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateThinkingCardTagsVariables): MutationRef<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+  operationName: string;
+}
+export const updateThinkingCardTagsRef: UpdateThinkingCardTagsRef;
+
+export function updateThinkingCardTags(vars: UpdateThinkingCardTagsVariables): MutationPromise<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+export function updateThinkingCardTags(dc: DataConnect, vars: UpdateThinkingCardTagsVariables): MutationPromise<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
 
 interface LinkStudentAuthRef {
   /* Allow users to create refs without passing in DataConnect */

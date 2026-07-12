@@ -6,6 +6,7 @@ import {
   SubmissionStatus,
   type GetTeacherActivityResultsData,
   type SetActivityStatusVariables,
+  type UpdateThinkingCardTagsVariables,
 } from "@/lib/dataconnect-generated";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
 import { executeUserMutation, executeUserQuery, SqlConnectAuthorizationError } from "@/lib/server-sql-connect";
@@ -78,6 +79,19 @@ export async function PATCH(request: Request, context: { params: Promise<{ activ
     const user = await requireFirebaseUser(request);
     const { activityId } = await context.params;
     const body = (await request.json()) as { status?: unknown };
+    const tagBody = body as { cardId?: unknown; tags?: unknown; tagsPublic?: unknown };
+    if (typeof tagBody.cardId === "string") {
+      if (!Array.isArray(tagBody.tags) || tagBody.tags.length > 8 || tagBody.tags.some((tag) => typeof tag !== "string" || !tag.trim() || tag.trim().length > 30) || typeof tagBody.tagsPublic !== "boolean") {
+        return Response.json({ message: "Invalid tags" }, { status: 400 });
+      }
+      const tags = Array.from(new Set(tagBody.tags.map((tag) => tag.trim())));
+      await executeUserMutation<unknown, UpdateThinkingCardTagsVariables>("UpdateThinkingCardTags", {
+        id: tagBody.cardId,
+        tags,
+        tagsPublic: tagBody.tagsPublic,
+      }, user.idToken);
+      return Response.json({ cardId: tagBody.cardId, tags, tagsPublic: tagBody.tagsPublic });
+    }
     if (body.status !== "active" && body.status !== "closed") return Response.json({ message: "Invalid status" }, { status: 400 });
     await executeUserMutation<unknown, SetActivityStatusVariables>("SetActivityStatus", {
       id: activityId,

@@ -18,7 +18,7 @@ import {
 import type { RoutineColumn, ThinkingCard } from "@/lib/mock-data";
 import { fetchCreatedActivityPayload } from "@/lib/local-created-activities";
 import type { CreatedActivityPayload } from "@/lib/local-created-activities";
-import { fetchTeacherActivityResults, updateTeacherActivityStatus, type TeacherActivityResults } from "@/lib/teacher-results";
+import { fetchTeacherActivityResults, updateTeacherActivityStatus, updateTeacherCardTags, type TeacherActivityResults } from "@/lib/teacher-results";
 
 const columns: { id: RoutineColumn; label: string }[] = [
   { id: "see", label: "See" },
@@ -57,6 +57,16 @@ export function ActivityResultsView({ activityId }: { activityId: string }) {
       createdPayload={createdPayload}
       liveResults={liveResults}
       onStatusChange={(status) => setLiveResults((current) => current ? { ...current, activity: { ...current.activity, status } } : current)}
+      onCardTagsChange={async (cardId, tags, tagsPublic) => {
+        await updateTeacherCardTags(activityId, cardId, tags, tagsPublic);
+        setLiveResults((current) => current ? {
+          ...current,
+          submissions: current.submissions.map((submission) => ({
+            ...submission,
+            cards: submission.cards.map((card) => card.id === cardId ? { ...card, tags, tagsPublic } : card),
+          })),
+        } : current);
+      }}
     />
   );
 }
@@ -66,11 +76,13 @@ function ActivityResultsWorkspace({
   createdPayload,
   liveResults,
   onStatusChange,
+  onCardTagsChange,
 }: {
   activityId: string;
   createdPayload: CreatedActivityPayload | null;
   liveResults: TeacherActivityResults | null;
   onStatusChange: (status: "active" | "closed") => void;
+  onCardTagsChange: (cardId: string, tags: string[], tagsPublic: boolean) => Promise<void>;
 }) {
   const [anonymous, setAnonymous] = useState(false);
   const [tagFilter, setTagFilter] = useState("전체");
@@ -101,6 +113,7 @@ function ActivityResultsWorkspace({
     : activityIndividualSubmissions.flatMap((submission) => submission.cards);
 
   const filteredCards = tagFilter === "전체" ? activityCards : activityCards.filter((card) => card.tags.includes(tagFilter));
+  const availableTags = Array.from(new Set([...defaultTags, ...activityCards.flatMap((card) => card.tags)]));
 
   const participatingStudents = liveResults
     ? liveResults.students.filter((student) => activityIndividualSubmissions.some((submission) => submission.studentId === student.id))
@@ -202,7 +215,7 @@ function ActivityResultsWorkspace({
                 className="h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm"
               >
                 <option>전체</option>
-                {defaultTags.map((tag) => (
+                {availableTags.map((tag) => (
                   <option key={tag}>{tag}</option>
                 ))}
               </select>
@@ -224,7 +237,7 @@ function ActivityResultsWorkspace({
                   {filteredCards
                     .filter((card) => card.column === column.id)
                     .map((card) => (
-                        <ResultCard key={card.id} card={card} anonymous={anonymous} studentName={participatingStudents.find((student) => student.id === card.studentId)?.name} />
+                        <ResultCard key={card.id} card={card} anonymous={anonymous} studentName={participatingStudents.find((student) => student.id === card.studentId)?.name} editable={Boolean(liveResults)} onUpdate={onCardTagsChange} />
                     ))}
                 </div>
               </div>
@@ -334,8 +347,31 @@ function ActivityResultsWorkspace({
   );
 }
 
-function ResultCard({ card, anonymous, studentName }: { card: ThinkingCard; anonymous: boolean; studentName?: string }) {
+function ResultCard({
+  card,
+  anonymous,
+  studentName,
+  editable,
+  onUpdate,
+}: {
+  card: ThinkingCard;
+  anonymous: boolean;
+  studentName?: string;
+  editable: boolean;
+  onUpdate: (cardId: string, tags: string[], tagsPublic: boolean) => Promise<void>;
+}) {
   const student = getStudentById(card.studentId);
+  const [customTag, setCustomTag] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function save(tags: string[], tagsPublic = card.tagsPublic) {
+    setSaving(true);
+    try {
+      await onUpdate(card.id, tags, tagsPublic);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm">
@@ -349,6 +385,21 @@ function ResultCard({ card, anonymous, studentName }: { card: ThinkingCard; anon
           </span>
         ))}
       </div>
+      {editable ? (
+        <div className="mt-3 border-t border-zinc-100 pt-3">
+          <div className="flex flex-wrap gap-1.5">
+            {defaultTags.map((tag) => {
+              const selected = card.tags.includes(tag);
+              return <button type="button" disabled={saving} key={tag} onClick={() => save(selected ? card.tags.filter((item) => item !== tag) : [...card.tags, tag])} className={`rounded-md px-2 py-1 text-xs font-semibold ${selected ? "bg-emerald-700 text-white" : "bg-zinc-100 text-zinc-600"}`}>{tag}</button>;
+            })}
+          </div>
+          <div className="mt-2 flex gap-2">
+            <input value={customTag} onChange={(event) => setCustomTag(event.target.value)} maxLength={30} placeholder="사용자 태그" className="h-8 min-w-0 flex-1 rounded-md border border-zinc-300 px-2 text-xs" />
+            <button type="button" disabled={saving || !customTag.trim()} onClick={async () => { const tag = customTag.trim(); if (!card.tags.includes(tag)) await save([...card.tags, tag]); setCustomTag(""); }} className="rounded-md border border-zinc-200 px-2 text-xs font-semibold">추가</button>
+          </div>
+          <label className="mt-2 flex items-center gap-2 text-xs text-zinc-600"><input type="checkbox" checked={card.tagsPublic} disabled={saving} onChange={(event) => save(card.tags, event.target.checked)} />학생에게 태그 공개</label>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -60,7 +60,12 @@ export async function GET(request: Request, context: { params: Promise<{ activit
 
     return Response.json({
       student: { id: student.externalId ?? student.id, name: student.name, className: student.schoolClass.name },
-      cards: data.thinkingCards.map((card) => ({ id: cardExternalId(user.claims.uid, card.id), column: fromColumn(card.column), content: card.content })),
+      cards: data.thinkingCards.map((card) => ({
+        id: cardExternalId(user.claims.uid, card.id),
+        column: fromColumn(card.column),
+        content: card.content,
+        publicTags: card.tagsPublic ? card.tags ?? [] : [],
+      })),
       status: fromStatus(data.individualSubmissions[0]?.status),
     });
   } catch (error) {

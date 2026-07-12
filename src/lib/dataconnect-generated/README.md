@@ -22,6 +22,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
   - [*SetActivityStatus*](#setactivitystatus)
+  - [*UpdateThinkingCardTags*](#updatethinkingcardtags)
   - [*LinkStudentAuth*](#linkstudentauth)
   - [*UnlinkStudentAuth*](#unlinkstudentauth)
   - [*UpsertSchoolClass*](#upsertschoolclass)
@@ -1291,6 +1292,8 @@ export interface GetMyStudentWorkData {
     id: string;
     column: RoutineColumn;
     content: string;
+    tags?: string[] | null;
+    tagsPublic: boolean;
     updatedAt: TimestampString;
   } & ThinkingCard_Key)[];
   individualSubmissions: ({
@@ -1700,6 +1703,121 @@ console.log(data.activity_update);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.activity_update);
+});
+```
+
+## UpdateThinkingCardTags
+You can execute the `UpdateThinkingCardTags` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updateThinkingCardTags(vars: UpdateThinkingCardTagsVariables): MutationPromise<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+
+interface UpdateThinkingCardTagsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateThinkingCardTagsVariables): MutationRef<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+}
+export const updateThinkingCardTagsRef: UpdateThinkingCardTagsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateThinkingCardTags(dc: DataConnect, vars: UpdateThinkingCardTagsVariables): MutationPromise<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+
+interface UpdateThinkingCardTagsRef {
+  ...
+  (dc: DataConnect, vars: UpdateThinkingCardTagsVariables): MutationRef<UpdateThinkingCardTagsData, UpdateThinkingCardTagsVariables>;
+}
+export const updateThinkingCardTagsRef: UpdateThinkingCardTagsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateThinkingCardTagsRef:
+```typescript
+const name = updateThinkingCardTagsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateThinkingCardTags` mutation requires an argument of type `UpdateThinkingCardTagsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateThinkingCardTagsVariables {
+  id: string;
+  tags?: string[] | null;
+  tagsPublic: boolean;
+}
+```
+### Return Type
+Recall that executing the `UpdateThinkingCardTags` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateThinkingCardTagsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateThinkingCardTagsData {
+  thinkingCard_update?: ThinkingCard_Key | null;
+}
+```
+### Using `UpdateThinkingCardTags`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateThinkingCardTags, UpdateThinkingCardTagsVariables } from '@visible-thinking/dataconnect';
+
+// The `UpdateThinkingCardTags` mutation requires an argument of type `UpdateThinkingCardTagsVariables`:
+const updateThinkingCardTagsVars: UpdateThinkingCardTagsVariables = {
+  id: ...,
+  tags: ..., // optional
+  tagsPublic: ...,
+};
+
+// Call the `updateThinkingCardTags()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateThinkingCardTags(updateThinkingCardTagsVars);
+// Variables can be defined inline as well.
+const { data } = await updateThinkingCardTags({ id: ..., tags: ..., tagsPublic: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateThinkingCardTags(dataConnect, updateThinkingCardTagsVars);
+
+console.log(data.thinkingCard_update);
+
+// Or, you can use the `Promise` API.
+updateThinkingCardTags(updateThinkingCardTagsVars).then((response) => {
+  const data = response.data;
+  console.log(data.thinkingCard_update);
+});
+```
+
+### Using `UpdateThinkingCardTags`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateThinkingCardTagsRef, UpdateThinkingCardTagsVariables } from '@visible-thinking/dataconnect';
+
+// The `UpdateThinkingCardTags` mutation requires an argument of type `UpdateThinkingCardTagsVariables`:
+const updateThinkingCardTagsVars: UpdateThinkingCardTagsVariables = {
+  id: ...,
+  tags: ..., // optional
+  tagsPublic: ...,
+};
+
+// Call the `updateThinkingCardTagsRef()` function to get a reference to the mutation.
+const ref = updateThinkingCardTagsRef(updateThinkingCardTagsVars);
+// Variables can be defined inline as well.
+const ref = updateThinkingCardTagsRef({ id: ..., tags: ..., tagsPublic: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateThinkingCardTagsRef(dataConnect, updateThinkingCardTagsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.thinkingCard_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.thinkingCard_update);
 });
 ```
 

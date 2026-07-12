@@ -140,6 +140,8 @@ query GetMyStudentWork($activityId: String!) @auth(level: USER) {
     id
     column
     content
+    tags
+    tagsPublic
     updatedAt
   }
   individualSubmissions(where: {

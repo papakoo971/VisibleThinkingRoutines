@@ -3,7 +3,7 @@ import type { RoutineColumn } from "@/lib/mock-data";
 
 export type StudentWork = {
   student: { id: string; name: string; className: string };
-  cards: Array<{ id: string; column: RoutineColumn; content: string }>;
+  cards: Array<{ id: string; column: RoutineColumn; content: string; publicTags?: string[] }>;
   status: "draft" | "submitted" | "modified";
 };
 

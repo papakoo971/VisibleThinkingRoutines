@@ -1,5 +1,25 @@
 # Implementation Log
 
+## 2026-07-12 Card Tags Filtering And Student Visibility
+
+### Completed
+
+- Added an owner-checked transactional mutation for updating thinking-card tags and public visibility.
+- Added teacher result API validation for up to eight unique tags with a 30-character limit.
+- Connected default tag toggles, custom tag entry, and student-public visibility controls to live cards.
+- Added dynamic result filtering across default and custom tags.
+- Returned tags from student work only when `tagsPublic` is enabled.
+- Displayed public teacher tags beneath cards in the student activity workspace.
+- Deployed the updated connector and regenerated the SDK.
+
+### Verification
+
+- The owning teacher can save default and custom tags and read them back from live results.
+- A non-owner receives `403` when attempting to modify another teacher's card tags.
+- Public tags appear in the assigned student's work response.
+- Private teacher tags return as an empty student-visible tag list.
+- Test activities, cards, tags, links, and Firebase Auth users are removed after verification.
+
 ## 2026-07-12 Activity Materials Codes And QR
 
 ### Completed

@@ -19,6 +19,7 @@ type LocalCard = {
   id: string;
   column: RoutineColumn;
   content: string;
+  publicTags?: string[];
 };
 
 const columns: { id: RoutineColumn; label: string; helper: string }[] = [
@@ -344,6 +345,11 @@ function RoutineColumnBoard({
               className="min-h-24 w-full border-0 bg-transparent p-1 text-sm leading-6 outline-none"
               placeholder={`${column.label} 카드 작성`}
             />
+            {card.publicTags?.length ? (
+              <div className="flex flex-wrap gap-1.5 px-1 pb-1">
+                {card.publicTags.map((tag) => <span key={tag} className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">{tag}</span>)}
+              </div>
+            ) : null}
             <div className="flex justify-end">
               <button type="button" onClick={() => onDelete(card.id)} disabled={readOnly} className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs text-zinc-500 hover:bg-zinc-100 disabled:hidden">
                 <Trash2 className="h-3.5 w-3.5" />

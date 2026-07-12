@@ -96,10 +96,21 @@ try {
   const resultsPath = `/api/teacher/activities/${activityId}/results`;
   const teacherResults = await api(resultsPath, { idToken: teacher.idToken });
   if (teacherResults.status !== 200 || teacherResults.result.submissions?.[0]?.cards?.[0]?.content !== "자동 저장 검증 카드") throw new Error("Teacher results did not include the saved student card.");
+  const cardId = teacherResults.result.submissions[0].cards[0].id;
+  const tagged = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { cardId, tags: ["좋은 관찰", "사용자 태그"], tagsPublic: true } });
+  if (tagged.status !== 200) throw new Error("Teacher card tag update failed.");
+  const publicWork = await api(workPath, { idToken: assignedStudent.idToken });
+  if (!publicWork.result.cards?.[0]?.publicTags?.includes("사용자 태그")) throw new Error("Public tags were not visible to the student.");
   const foreignResults = await api(resultsPath, { idToken: unassignedStudent.idToken });
   if (foreignResults.status !== 404) throw new Error(`Non-owner results should be 404, got ${foreignResults.status}.`);
+  const foreignTag = await api(resultsPath, { method: "PATCH", idToken: unassignedStudent.idToken, body: { cardId, tags: ["오개념"], tagsPublic: true } });
+  if (foreignTag.status !== 403) throw new Error(`Non-owner tag update should be 403, got ${foreignTag.status}.`);
   const foreignStatus = await api(resultsPath, { method: "PATCH", idToken: unassignedStudent.idToken, body: { status: "closed" } });
   if (foreignStatus.status !== 403) throw new Error(`Non-owner status change should be 403, got ${foreignStatus.status}.`);
+  const hidden = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { cardId, tags: ["교사용 태그"], tagsPublic: false } });
+  if (hidden.status !== 200) throw new Error("Teacher could not hide card tags.");
+  const privateWork = await api(workPath, { idToken: assignedStudent.idToken });
+  if (privateWork.result.cards?.[0]?.publicTags?.length !== 0) throw new Error("Private teacher tags leaked to the student.");
   const closed = await api(resultsPath, { method: "PATCH", idToken: teacher.idToken, body: { status: "closed" } });
   if (closed.status !== 200) throw new Error("Teacher could not close the activity.");
   const closedCode = await api("/api/activities/by-code/STW-Q7K9M");
@@ -132,7 +143,7 @@ try {
   const anonymousDetail = await api(`/api/created-activities/${activityId}`);
   if (anonymousDetail.status !== 401) throw new Error(`Anonymous detail should be 401, got ${anonymousDetail.status}.`);
 
-  console.log("PASS: teacher sees live cards, close blocks student writes, reopen restores editing, and submission lifecycle persists.");
+  console.log("PASS: teacher tags persist with owner checks, public tags reach students, private tags stay hidden, and activity lifecycle persists.");
 } finally {
   if (teacher) await Promise.allSettled([
     sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),

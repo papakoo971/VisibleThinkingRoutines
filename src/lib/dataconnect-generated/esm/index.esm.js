@@ -125,6 +125,18 @@ export function setActivityStatus(dcOrVars, vars) {
   return executeMutation(setActivityStatusRef(dcInstance, inputVars));
 }
 
+export const updateThinkingCardTagsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateThinkingCardTags', inputVars);
+}
+updateThinkingCardTagsRef.operationName = 'UpdateThinkingCardTags';
+
+export function updateThinkingCardTags(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateThinkingCardTagsRef(dcInstance, inputVars));
+}
+
 export const linkStudentAuthRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

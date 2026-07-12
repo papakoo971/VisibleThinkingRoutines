@@ -31,3 +31,12 @@ export async function updateTeacherActivityStatus(activityId: string, status: "a
   });
   if (!response.ok) throw new Error("활동 상태를 변경하지 못했습니다.");
 }
+
+export async function updateTeacherCardTags(activityId: string, cardId: string, tags: string[], tagsPublic: boolean) {
+  const response = await fetch(`/api/teacher/activities/${activityId}/results`, {
+    method: "PATCH",
+    headers: await headers(true),
+    body: JSON.stringify({ cardId, tags, tagsPublic }),
+  });
+  if (!response.ok) throw new Error("카드 태그를 저장하지 못했습니다.");
+}
