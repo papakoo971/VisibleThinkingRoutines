@@ -74,6 +74,43 @@ export function deleteMyTeacherProfile(dc) {
   return executeMutation(deleteMyTeacherProfileRef(dcInstance, inputVars));
 }
 
+export const getMyAiCredentialRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyAiCredential');
+}
+getMyAiCredentialRef.operationName = 'GetMyAiCredential';
+
+export function getMyAiCredential(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyAiCredentialRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const upsertMyAiCredentialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertMyAiCredential', inputVars);
+}
+upsertMyAiCredentialRef.operationName = 'UpsertMyAiCredential';
+
+export function upsertMyAiCredential(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertMyAiCredentialRef(dcInstance, inputVars));
+}
+
+export const deleteMyAiCredentialRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteMyAiCredential');
+}
+deleteMyAiCredentialRef.operationName = 'DeleteMyAiCredential';
+
+export function deleteMyAiCredential(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(deleteMyAiCredentialRef(dcInstance, inputVars));
+}
+
 export const listActivitiesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

@@ -88,6 +88,49 @@ exports.deleteMyTeacherProfile = function deleteMyTeacherProfile(dc) {
 }
 ;
 
+const getMyAiCredentialRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyAiCredential');
+}
+getMyAiCredentialRef.operationName = 'GetMyAiCredential';
+exports.getMyAiCredentialRef = getMyAiCredentialRef;
+
+exports.getMyAiCredential = function getMyAiCredential(dcOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyAiCredentialRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const upsertMyAiCredentialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertMyAiCredential', inputVars);
+}
+upsertMyAiCredentialRef.operationName = 'UpsertMyAiCredential';
+exports.upsertMyAiCredentialRef = upsertMyAiCredentialRef;
+
+exports.upsertMyAiCredential = function upsertMyAiCredential(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertMyAiCredentialRef(dcInstance, inputVars));
+}
+;
+
+const deleteMyAiCredentialRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteMyAiCredential');
+}
+deleteMyAiCredentialRef.operationName = 'DeleteMyAiCredential';
+exports.deleteMyAiCredentialRef = deleteMyAiCredentialRef;
+
+exports.deleteMyAiCredential = function deleteMyAiCredential(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(deleteMyAiCredentialRef(dcInstance, inputVars));
+}
+;
+
 const listActivitiesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ReactNode, useState } from "react";
 import { signOut } from "firebase/auth";
-import { BookOpenCheck, ClipboardList, LayoutDashboard, LogOut, PanelLeftClose, PanelLeftOpen, Users } from "lucide-react";
+import { BookOpenCheck, ClipboardList, LayoutDashboard, LogOut, PanelLeftClose, PanelLeftOpen, Settings, Users } from "lucide-react";
+import { AiSettingsDialog } from "@/components/ai-settings-dialog";
 import { useAuth } from "@/components/auth-provider";
 import { getFirebaseAuth } from "@/lib/firebase-auth";
 
@@ -17,6 +18,7 @@ const navItems = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { profile } = useAuth();
   const router = useRouter();
 
@@ -75,6 +77,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <button
               type="button"
+              onClick={() => setSettingsOpen(true)}
+              className={`mb-1 flex h-10 w-full items-center rounded-md text-sm font-medium text-zinc-600 hover:bg-emerald-50 hover:text-emerald-900 ${
+                sidebarCollapsed ? "justify-center" : "gap-3 px-3"
+              }`}
+              title="AI 분석 설정"
+            >
+              <Settings className="h-4 w-4" />
+              {sidebarCollapsed ? <span className="sr-only">AI 분석 설정</span> : "AI 분석 설정"}
+            </button>
+            <button
+              type="button"
               onClick={() => void handleSignOut()}
               className={`flex h-10 w-full items-center rounded-md text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 ${
                 sidebarCollapsed ? "justify-center" : "gap-3 px-3"
@@ -95,6 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
+      {settingsOpen ? <AiSettingsDialog open onClose={() => setSettingsOpen(false)} /> : null}
     </div>
   );
 }

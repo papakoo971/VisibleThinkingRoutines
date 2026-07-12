@@ -104,6 +104,10 @@ export interface DeleteActivityVariables {
   id: string;
 }
 
+export interface DeleteMyAiCredentialData {
+  teacherAiCredential_delete?: TeacherAiCredential_Key | null;
+}
+
 export interface DeleteMyTeacherProfileData {
   teacherProfile_delete?: TeacherProfile_Key | null;
 }
@@ -142,6 +146,17 @@ export interface FindActivityByCodeData {
 
 export interface FindActivityByCodeVariables {
   code: string;
+}
+
+export interface GetMyAiCredentialData {
+  teacherAiCredential?: {
+    provider: string;
+    encryptedApiKey: string;
+    initializationVector: string;
+    authenticationTag: string;
+    keyHint: string;
+    updatedAt: TimestampString;
+  };
 }
 
 export interface GetMyStudentActivityData {
@@ -571,6 +586,11 @@ export interface Student_Key {
   __typename?: 'Student_Key';
 }
 
+export interface TeacherAiCredential_Key {
+  id: string;
+  __typename?: 'TeacherAiCredential_Key';
+}
+
 export interface TeacherProfile_Key {
   id: string;
   __typename?: 'TeacherProfile_Key';
@@ -691,6 +711,18 @@ export interface UpsertIndividualSubmissionVariables {
   status: SubmissionStatus;
 }
 
+export interface UpsertMyAiCredentialData {
+  teacherAiCredential_upsert: TeacherAiCredential_Key;
+}
+
+export interface UpsertMyAiCredentialVariables {
+  provider: string;
+  encryptedApiKey: string;
+  initializationVector: string;
+  authenticationTag: string;
+  keyHint: string;
+}
+
 export interface UpsertMyTeacherProfileData {
   teacherProfile_upsert: TeacherProfile_Key;
 }
@@ -768,6 +800,42 @@ export const deleteMyTeacherProfileRef: DeleteMyTeacherProfileRef;
 
 export function deleteMyTeacherProfile(): MutationPromise<DeleteMyTeacherProfileData, undefined>;
 export function deleteMyTeacherProfile(dc: DataConnect): MutationPromise<DeleteMyTeacherProfileData, undefined>;
+
+interface GetMyAiCredentialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyAiCredentialData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetMyAiCredentialData, undefined>;
+  operationName: string;
+}
+export const getMyAiCredentialRef: GetMyAiCredentialRef;
+
+export function getMyAiCredential(options?: ExecuteQueryOptions): QueryPromise<GetMyAiCredentialData, undefined>;
+export function getMyAiCredential(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyAiCredentialData, undefined>;
+
+interface UpsertMyAiCredentialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyAiCredentialVariables): MutationRef<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertMyAiCredentialVariables): MutationRef<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+  operationName: string;
+}
+export const upsertMyAiCredentialRef: UpsertMyAiCredentialRef;
+
+export function upsertMyAiCredential(vars: UpsertMyAiCredentialVariables): MutationPromise<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+export function upsertMyAiCredential(dc: DataConnect, vars: UpsertMyAiCredentialVariables): MutationPromise<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+
+interface DeleteMyAiCredentialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<DeleteMyAiCredentialData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): MutationRef<DeleteMyAiCredentialData, undefined>;
+  operationName: string;
+}
+export const deleteMyAiCredentialRef: DeleteMyAiCredentialRef;
+
+export function deleteMyAiCredential(): MutationPromise<DeleteMyAiCredentialData, undefined>;
+export function deleteMyAiCredential(dc: DataConnect): MutationPromise<DeleteMyAiCredentialData, undefined>;
 
 interface ListActivitiesRef {
   /* Allow users to create refs without passing in DataConnect */

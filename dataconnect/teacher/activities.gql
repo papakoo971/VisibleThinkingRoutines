@@ -25,6 +25,39 @@ mutation DeleteMyTeacherProfile @auth(level: USER) {
   teacherProfile_delete(key: { id_expr: "auth.uid" })
 }
 
+query GetMyAiCredential @auth(level: USER) {
+  teacherAiCredential(key: { id_expr: "auth.uid" }) {
+    provider
+    encryptedApiKey
+    initializationVector
+    authenticationTag
+    keyHint
+    updatedAt
+  }
+}
+
+mutation UpsertMyAiCredential(
+  $provider: String!
+  $encryptedApiKey: String!
+  $initializationVector: String!
+  $authenticationTag: String!
+  $keyHint: String!
+) @auth(level: USER) {
+  teacherAiCredential_upsert(data: {
+    id_expr: "auth.uid"
+    provider: $provider
+    encryptedApiKey: $encryptedApiKey
+    initializationVector: $initializationVector
+    authenticationTag: $authenticationTag
+    keyHint: $keyHint
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation DeleteMyAiCredential @auth(level: USER) {
+  teacherAiCredential_delete(key: { id_expr: "auth.uid" })
+}
+
 query ListActivities @auth(level: USER) {
   activities(where: { teacherId: { eq_expr: "auth.uid" } }) {
     id

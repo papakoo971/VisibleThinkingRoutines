@@ -55,14 +55,13 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 
 Keep `.env.local` uncommitted. It is ignored by `.gitignore`.
 
-For local AI analysis, add a Vercel AI Gateway key and optionally override the model:
+Teacher-provided OpenAI, Anthropic, and Google API keys are encrypted at rest. Configure one stable server-only encryption secret before allowing teachers to save keys:
 
 ```text
-AI_GATEWAY_API_KEY=
-AI_ANALYSIS_MODEL=openai/gpt-5.4
+AI_CREDENTIAL_ENCRYPTION_SECRET=
 ```
 
-On Vercel, `VERCEL_OIDC_TOKEN` can be used instead of a long-lived Gateway API key. Never expose either credential through a `NEXT_PUBLIC_` variable.
+Use at least 32 random characters, keep the value identical across deployments, and back it up securely. Changing or losing it makes existing encrypted teacher keys unreadable. Never expose it through a `NEXT_PUBLIC_` variable.
 
 For local SQL Connect emulator work, set:
 

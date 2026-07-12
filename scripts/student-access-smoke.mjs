@@ -96,9 +96,18 @@ try {
   const resultsPath = `/api/teacher/activities/${activityId}/results`;
   const teacherResults = await api(resultsPath, { idToken: teacher.idToken });
   if (teacherResults.status !== 200 || teacherResults.result.submissions?.[0]?.cards?.[0]?.content !== "자동 저장 검증 카드") throw new Error("Teacher results did not include the saved student card.");
+  const aiSettingsPath = "/api/teacher/ai-settings";
+  const emptySettings = await api(aiSettingsPath, { idToken: teacher.idToken });
+  if (emptySettings.status !== 200 || emptySettings.result.configured !== false) throw new Error("New teacher unexpectedly has AI settings.");
+  const savedSettings = await api(aiSettingsPath, { method: "PUT", idToken: teacher.idToken, body: { provider: "google", apiKey: "AIza-invalid-smoke-test-key-1234567890" } });
+  if (savedSettings.status !== 200 || savedSettings.result.provider !== "google" || savedSettings.result.keyHint !== "7890") throw new Error(`AI settings save failed: ${JSON.stringify(savedSettings)}`);
+  const maskedSettings = await api(aiSettingsPath, { idToken: teacher.idToken });
+  if (!maskedSettings.result.configured || maskedSettings.result.keyHint !== "7890" || "encryptedApiKey" in maskedSettings.result || "apiKey" in maskedSettings.result) throw new Error("AI settings were not safely masked.");
+  const foreignSettings = await api(aiSettingsPath, { idToken: unassignedStudent.idToken });
+  if (foreignSettings.status !== 200 || foreignSettings.result.configured !== false) throw new Error("AI credentials leaked across users.");
   const analysisPath = `/api/teacher/activities/${activityId}/analysis`;
-  const missingCredentials = await api(analysisPath, { method: "POST", idToken: teacher.idToken, body: { scope: "class" } });
-  if (missingCredentials.status !== 503) throw new Error(`AI analysis without credentials should be 503, got ${missingCredentials.status}.`);
+  const invalidProviderCall = await api(analysisPath, { method: "POST", idToken: teacher.idToken, body: { scope: "class" } });
+  if (invalidProviderCall.status !== 502) throw new Error(`Invalid saved provider key should reach the provider and return 502, got ${invalidProviderCall.status}.`);
   const foreignAnalysis = await api(analysisPath, { method: "POST", idToken: unassignedStudent.idToken, body: { scope: "class" } });
   if (foreignAnalysis.status !== 404) throw new Error(`Non-owner AI analysis should be 404, got ${foreignAnalysis.status}.`);
   const analysisId = `${activityId}:class:smoke`;
@@ -173,10 +182,13 @@ try {
   if (unassignedWork.status !== 403) throw new Error(`Unassigned work write should be 403, got ${unassignedWork.status}.`);
   const anonymousDetail = await api(`/api/created-activities/${activityId}`);
   if (anonymousDetail.status !== 401) throw new Error(`Anonymous detail should be 401, got ${anonymousDetail.status}.`);
+  const removedSettings = await api(aiSettingsPath, { method: "DELETE", idToken: teacher.idToken });
+  if (removedSettings.status !== 200) throw new Error("Teacher AI settings deletion failed.");
 
-  console.log("PASS: teacher tags, AI analysis persistence and staleness, owner checks, student visibility, and activity lifecycle all persist.");
+  console.log("PASS: per-user encrypted AI settings, provider routing, analysis persistence, owner checks, and activity lifecycle all persist.");
 } finally {
   if (teacher) await Promise.allSettled([
+    api("/api/teacher/ai-settings", { method: "DELETE", idToken: teacher.idToken }),
     sqlMutation("UnlinkStudentAuth", { studentId: `${teacher.uid}:s1` }, teacher.idToken),
     api(`/api/created-activities/${activityId}`, { method: "DELETE", idToken: teacher.idToken }),
   ]);

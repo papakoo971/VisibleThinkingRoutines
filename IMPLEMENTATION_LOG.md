@@ -1,5 +1,21 @@
 # Implementation Log
 
+## 2026-07-12 Per-Teacher AI Provider Credentials
+
+### Completed
+
+- Added OpenAI, Anthropic Claude, and Google Gemini as selectable direct AI providers.
+- Added an AI analysis settings dialog beside the signed-in teacher account in the lower-left sidebar.
+- Added provider selection and API key registration, replacement, masked status display, and deletion.
+- Encrypted API keys with AES-256-GCM before persistence and returned only the provider and final four-character hint to clients.
+- Isolated credential reads and writes by Firebase `auth.uid` and used only the signed-in teacher's decrypted key for analysis.
+- Routed analysis to GPT-5.4, Claude Sonnet 4.6, or Gemini 2.5 Flash according to the saved provider.
+
+### Security Requirement
+
+- `AI_CREDENTIAL_ENCRYPTION_SECRET` must be configured as a stable server-only secret with at least 32 characters before saving teacher API keys.
+- Provider keys and the encryption secret must never use a `NEXT_PUBLIC_` prefix.
+
 ## 2026-07-12 Persistent Individual And Class AI Analysis
 
 ### Completed

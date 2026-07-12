@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, listActivities, getTeacherActivity, upsertAiAnalysis, getTeacherActivityResults, setActivityStatus, updateThinkingCardTags, linkStudentAuth } from '@visible-thinking/dataconnect';
+import { getMyTeacherProfile, upsertMyTeacherProfile, deleteMyTeacherProfile, getMyAiCredential, upsertMyAiCredential, deleteMyAiCredential, listActivities, getTeacherActivity, upsertAiAnalysis, getTeacherActivityResults } from '@visible-thinking/dataconnect';
 
 
 // Operation GetMyTeacherProfile:
@@ -25,6 +25,15 @@ const { data } = await UpsertMyTeacherProfile(dataConnect, upsertMyTeacherProfil
 
 // Operation DeleteMyTeacherProfile:
 const { data } = await DeleteMyTeacherProfile(dataConnect);
+
+// Operation GetMyAiCredential:
+const { data } = await GetMyAiCredential(dataConnect);
+
+// Operation UpsertMyAiCredential:  For variables, look at type UpsertMyAiCredentialVars in ../index.d.ts
+const { data } = await UpsertMyAiCredential(dataConnect, upsertMyAiCredentialVars);
+
+// Operation DeleteMyAiCredential:
+const { data } = await DeleteMyAiCredential(dataConnect);
 
 // Operation ListActivities:
 const { data } = await ListActivities(dataConnect);
@@ -37,15 +46,6 @@ const { data } = await UpsertAiAnalysis(dataConnect, upsertAiAnalysisVars);
 
 // Operation GetTeacherActivityResults:  For variables, look at type GetTeacherActivityResultsVars in ../index.d.ts
 const { data } = await GetTeacherActivityResults(dataConnect, getTeacherActivityResultsVars);
-
-// Operation SetActivityStatus:  For variables, look at type SetActivityStatusVars in ../index.d.ts
-const { data } = await SetActivityStatus(dataConnect, setActivityStatusVars);
-
-// Operation UpdateThinkingCardTags:  For variables, look at type UpdateThinkingCardTagsVars in ../index.d.ts
-const { data } = await UpdateThinkingCardTags(dataConnect, updateThinkingCardTagsVars);
-
-// Operation LinkStudentAuth:  For variables, look at type LinkStudentAuthVars in ../index.d.ts
-const { data } = await LinkStudentAuth(dataConnect, linkStudentAuthVars);
 
 
 ```

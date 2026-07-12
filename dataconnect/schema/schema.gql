@@ -39,6 +39,17 @@ type TeacherProfile @table(name: "teacher_profile", key: "id") {
   updatedAt: Timestamp! @default(expr: "request.time")
 }
 
+type TeacherAiCredential @table(name: "teacher_ai_credential", key: "id") {
+  id: String! @col(dataType: "varchar(128)")
+  provider: String! @col(dataType: "varchar(20)")
+  encryptedApiKey: String!
+  initializationVector: String! @col(dataType: "varchar(32)")
+  authenticationTag: String! @col(dataType: "varchar(32)")
+  keyHint: String! @col(dataType: "varchar(12)")
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
 type SchoolClass @table(name: "school_class", key: "id") {
   id: String! @col(dataType: "varchar(192)")
   teacherId: String @col(dataType: "varchar(128)")

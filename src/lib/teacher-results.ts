@@ -56,6 +56,6 @@ export async function generateTeacherAnalysis(activityId: string, scope: "class"
     body: JSON.stringify({ scope, studentId }),
   });
   const result = (await response.json()) as { message?: string };
-  if (!response.ok) throw new Error(result.message === "AI Gateway credentials are not configured" ? "AI Gateway 자격증명이 필요합니다." : "AI 분석을 생성하지 못했습니다.");
+  if (!response.ok) throw new Error(result.message === "AI API key is not configured" ? "왼쪽 아래 설정에서 AI API 키를 먼저 등록해 주세요." : "AI 분석을 생성하지 못했습니다.");
   return result;
 }

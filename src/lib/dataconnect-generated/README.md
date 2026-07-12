@@ -9,6 +9,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
   - [*GetMyTeacherProfile*](#getmyteacherprofile)
+  - [*GetMyAiCredential*](#getmyaicredential)
   - [*ListActivities*](#listactivities)
   - [*GetTeacherActivity*](#getteacheractivity)
   - [*GetTeacherActivityResults*](#getteacheractivityresults)
@@ -21,6 +22,8 @@ This README will guide you through the process of using the generated JavaScript
 - [**Mutations**](#mutations)
   - [*UpsertMyTeacherProfile*](#upsertmyteacherprofile)
   - [*DeleteMyTeacherProfile*](#deletemyteacherprofile)
+  - [*UpsertMyAiCredential*](#upsertmyaicredential)
+  - [*DeleteMyAiCredential*](#deletemyaicredential)
   - [*UpsertAiAnalysis*](#upsertaianalysis)
   - [*SetActivityStatus*](#setactivitystatus)
   - [*UpdateThinkingCardTags*](#updatethinkingcardtags)
@@ -181,6 +184,104 @@ console.log(data.teacherProfile);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.teacherProfile);
+});
+```
+
+## GetMyAiCredential
+You can execute the `GetMyAiCredential` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getMyAiCredential(options?: ExecuteQueryOptions): QueryPromise<GetMyAiCredentialData, undefined>;
+
+interface GetMyAiCredentialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyAiCredentialData, undefined>;
+}
+export const getMyAiCredentialRef: GetMyAiCredentialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyAiCredential(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyAiCredentialData, undefined>;
+
+interface GetMyAiCredentialRef {
+  ...
+  (dc: DataConnect): QueryRef<GetMyAiCredentialData, undefined>;
+}
+export const getMyAiCredentialRef: GetMyAiCredentialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyAiCredentialRef:
+```typescript
+const name = getMyAiCredentialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyAiCredential` query has no variables.
+### Return Type
+Recall that executing the `GetMyAiCredential` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyAiCredentialData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyAiCredentialData {
+  teacherAiCredential?: {
+    provider: string;
+    encryptedApiKey: string;
+    initializationVector: string;
+    authenticationTag: string;
+    keyHint: string;
+    updatedAt: TimestampString;
+  };
+}
+```
+### Using `GetMyAiCredential`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyAiCredential } from '@visible-thinking/dataconnect';
+
+
+// Call the `getMyAiCredential()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyAiCredential();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyAiCredential(dataConnect);
+
+console.log(data.teacherAiCredential);
+
+// Or, you can use the `Promise` API.
+getMyAiCredential().then((response) => {
+  const data = response.data;
+  console.log(data.teacherAiCredential);
+});
+```
+
+### Using `GetMyAiCredential`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyAiCredentialRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `getMyAiCredentialRef()` function to get a reference to the query.
+const ref = getMyAiCredentialRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyAiCredentialRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.teacherAiCredential);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teacherAiCredential);
 });
 ```
 
@@ -1629,6 +1730,218 @@ console.log(data.teacherProfile_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.teacherProfile_delete);
+});
+```
+
+## UpsertMyAiCredential
+You can execute the `UpsertMyAiCredential` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertMyAiCredential(vars: UpsertMyAiCredentialVariables): MutationPromise<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+
+interface UpsertMyAiCredentialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertMyAiCredentialVariables): MutationRef<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+}
+export const upsertMyAiCredentialRef: UpsertMyAiCredentialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertMyAiCredential(dc: DataConnect, vars: UpsertMyAiCredentialVariables): MutationPromise<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+
+interface UpsertMyAiCredentialRef {
+  ...
+  (dc: DataConnect, vars: UpsertMyAiCredentialVariables): MutationRef<UpsertMyAiCredentialData, UpsertMyAiCredentialVariables>;
+}
+export const upsertMyAiCredentialRef: UpsertMyAiCredentialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertMyAiCredentialRef:
+```typescript
+const name = upsertMyAiCredentialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertMyAiCredential` mutation requires an argument of type `UpsertMyAiCredentialVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertMyAiCredentialVariables {
+  provider: string;
+  encryptedApiKey: string;
+  initializationVector: string;
+  authenticationTag: string;
+  keyHint: string;
+}
+```
+### Return Type
+Recall that executing the `UpsertMyAiCredential` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertMyAiCredentialData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertMyAiCredentialData {
+  teacherAiCredential_upsert: TeacherAiCredential_Key;
+}
+```
+### Using `UpsertMyAiCredential`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertMyAiCredential, UpsertMyAiCredentialVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyAiCredential` mutation requires an argument of type `UpsertMyAiCredentialVariables`:
+const upsertMyAiCredentialVars: UpsertMyAiCredentialVariables = {
+  provider: ...,
+  encryptedApiKey: ...,
+  initializationVector: ...,
+  authenticationTag: ...,
+  keyHint: ...,
+};
+
+// Call the `upsertMyAiCredential()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertMyAiCredential(upsertMyAiCredentialVars);
+// Variables can be defined inline as well.
+const { data } = await upsertMyAiCredential({ provider: ..., encryptedApiKey: ..., initializationVector: ..., authenticationTag: ..., keyHint: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertMyAiCredential(dataConnect, upsertMyAiCredentialVars);
+
+console.log(data.teacherAiCredential_upsert);
+
+// Or, you can use the `Promise` API.
+upsertMyAiCredential(upsertMyAiCredentialVars).then((response) => {
+  const data = response.data;
+  console.log(data.teacherAiCredential_upsert);
+});
+```
+
+### Using `UpsertMyAiCredential`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertMyAiCredentialRef, UpsertMyAiCredentialVariables } from '@visible-thinking/dataconnect';
+
+// The `UpsertMyAiCredential` mutation requires an argument of type `UpsertMyAiCredentialVariables`:
+const upsertMyAiCredentialVars: UpsertMyAiCredentialVariables = {
+  provider: ...,
+  encryptedApiKey: ...,
+  initializationVector: ...,
+  authenticationTag: ...,
+  keyHint: ...,
+};
+
+// Call the `upsertMyAiCredentialRef()` function to get a reference to the mutation.
+const ref = upsertMyAiCredentialRef(upsertMyAiCredentialVars);
+// Variables can be defined inline as well.
+const ref = upsertMyAiCredentialRef({ provider: ..., encryptedApiKey: ..., initializationVector: ..., authenticationTag: ..., keyHint: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertMyAiCredentialRef(dataConnect, upsertMyAiCredentialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.teacherAiCredential_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teacherAiCredential_upsert);
+});
+```
+
+## DeleteMyAiCredential
+You can execute the `DeleteMyAiCredential` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteMyAiCredential(): MutationPromise<DeleteMyAiCredentialData, undefined>;
+
+interface DeleteMyAiCredentialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<DeleteMyAiCredentialData, undefined>;
+}
+export const deleteMyAiCredentialRef: DeleteMyAiCredentialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteMyAiCredential(dc: DataConnect): MutationPromise<DeleteMyAiCredentialData, undefined>;
+
+interface DeleteMyAiCredentialRef {
+  ...
+  (dc: DataConnect): MutationRef<DeleteMyAiCredentialData, undefined>;
+}
+export const deleteMyAiCredentialRef: DeleteMyAiCredentialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteMyAiCredentialRef:
+```typescript
+const name = deleteMyAiCredentialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteMyAiCredential` mutation has no variables.
+### Return Type
+Recall that executing the `DeleteMyAiCredential` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteMyAiCredentialData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteMyAiCredentialData {
+  teacherAiCredential_delete?: TeacherAiCredential_Key | null;
+}
+```
+### Using `DeleteMyAiCredential`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteMyAiCredential } from '@visible-thinking/dataconnect';
+
+
+// Call the `deleteMyAiCredential()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteMyAiCredential();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteMyAiCredential(dataConnect);
+
+console.log(data.teacherAiCredential_delete);
+
+// Or, you can use the `Promise` API.
+deleteMyAiCredential().then((response) => {
+  const data = response.data;
+  console.log(data.teacherAiCredential_delete);
+});
+```
+
+### Using `DeleteMyAiCredential`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteMyAiCredentialRef } from '@visible-thinking/dataconnect';
+
+
+// Call the `deleteMyAiCredentialRef()` function to get a reference to the mutation.
+const ref = deleteMyAiCredentialRef();
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteMyAiCredentialRef(dataConnect);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.teacherAiCredential_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teacherAiCredential_delete);
 });
 ```
 

@@ -1,7 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import type { GetTeacherActivityResultsData, UpsertAiAnalysisVariables } from "@/lib/dataconnect-generated";
+import type { GetMyAiCredentialData, GetTeacherActivityResultsData, UpsertAiAnalysisVariables } from "@/lib/dataconnect-generated";
+import { createTeacherAiModel, decryptApiKey, isAiProvider } from "@/lib/ai-credential";
 import { requireFirebaseUser, UnauthorizedError, unauthorizedResponse } from "@/lib/server-auth";
 import { executeUserMutation, executeUserQuery } from "@/lib/server-sql-connect";
 
@@ -28,19 +29,26 @@ export async function POST(request: Request, context: { params: Promise<{ activi
     if (!activity) return Response.json({ message: "Activity not found" }, { status: 404 });
     const cards = activity.thinkingCards_on_activity.filter((card) => scope === "class" || (card.student.externalId ?? card.student.id) === studentId);
     if (!cards.length) return Response.json({ message: "No cards to analyze" }, { status: 400 });
-    if (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN) {
-      return Response.json({ message: "AI Gateway credentials are not configured" }, { status: 503 });
+    const credentialData = await executeUserQuery<GetMyAiCredentialData, Record<string, never>>("GetMyAiCredential", {}, user.idToken);
+    const credential = credentialData.teacherAiCredential;
+    if (!credential || !isAiProvider(credential.provider)) return Response.json({ message: "AI API key is not configured" }, { status: 409 });
+    let apiKey: string;
+    try {
+      apiKey = decryptApiKey(credential);
+    } catch {
+      return Response.json({ message: "AI credential encryption is not configured" }, { status: 503 });
     }
 
     const sourceFingerprint = createHash("sha256").update(JSON.stringify(cards.map((card) => [card.id, card.updatedAt, card.content]))).digest("hex");
-    const model = process.env.AI_ANALYSIS_MODEL ?? "openai/gpt-5.4";
+    const selectedModel = createTeacherAiModel(credential.provider, apiKey);
+    const model = `${credential.provider}/${selectedModel.modelId}`;
     const analysisId = `${activityId}:${scope}:${randomUUID()}`;
     const base = { id: analysisId, activityId, scope, studentExternalId: studentId, model, sourceFingerprint };
     await saveAnalysis(user.idToken, { ...base, status: "pending" });
 
     try {
       const result = await generateText({
-        model,
+        model: selectedModel.model,
         output: Output.object({ schema: analysisSchema, name: "thinkingRoutineAnalysis" }),
         system: "당신은 학생의 사고과정을 지원하는 교육 분석가입니다. 평가나 낙인 대신 관찰 가능한 근거를 사용하고, 한국어로 간결하게 작성하세요.",
         prompt: `활동: ${activity.title}\n루틴: ${activity.routine}\n분석 범위: ${scope === "class" ? "학급 전체" : `학생 ${studentId}`}\n카드:\n${cards.map((card) => `[${card.column}] ${card.content}`).join("\n")}\n강점, 오개념 가능성, 후속 발문, 추천 후속 활동을 분석하세요.`,
