@@ -21,9 +21,13 @@
 - QR generation returns a valid PNG data URL.
 - Student and home pages render without a Next.js error overlay.
 
-### External Setup Remaining
+### Storage Activation
 
-- Firebase Storage has not yet been initialized for project `visible-thinking-routines`; the CLI cannot deploy `storage.rules` until a default bucket and location are created from Firebase Console > Storage > Get Started.
+- Initialized default bucket `visible-thinking-routines.firebasestorage.app` and deployed `storage.rules`.
+- Verified owner-path upload, authenticated read, and owner delete with a real PNG object.
+- Verified that an authenticated user receives `403` when writing to another teacher UID path.
+- Split create/update validation from delete authorization because Storage delete requests do not include `request.resource`.
+- Added `scripts/storage-rules-smoke.mjs` for repeatable rule verification and automatic account/object cleanup.
 
 ## 2026-07-12 Live Teacher Results And Activity Closing
 
