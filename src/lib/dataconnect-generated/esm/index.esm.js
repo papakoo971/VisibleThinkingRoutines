@@ -356,6 +356,18 @@ export function deleteStudent(dcOrVars, vars) {
   return executeMutation(deleteStudentRef(dcInstance, inputVars));
 }
 
+export const updateStudentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateStudent', inputVars);
+}
+updateStudentRef.operationName = 'UpdateStudent';
+
+export function updateStudent(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateStudentRef(dcInstance, inputVars));
+}
+
 export const deleteSchoolClassRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

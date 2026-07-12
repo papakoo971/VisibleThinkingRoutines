@@ -1,5 +1,24 @@
 # Implementation Log
 
+## 2026-07-12 Student Account Management
+
+### Completed
+
+- Added XLSX workbook import alongside the existing CSV student-import flow.
+- Added owner-checked student name, number, and class updates through Data Connect.
+- Added existing student temporary-password reissue through Firebase Admin Auth.
+- Added student deletion with linked Firebase account cleanup and a credential preflight that avoids partial deletion.
+- Added one-time password display and copy controls to the class-management screen.
+- Extended the integration smoke test with student update, cross-owner rejection, password reset, and deletion coverage.
+
+### Verification
+
+- The full Firebase/Data Connect integration smoke test passes.
+- Student profile changes and deletion persist after a fresh class-management read.
+- Cross-owner student updates are hidden with `404`.
+- Without Firebase Admin credentials, password reset returns a safe JSON `503`; a configured server credential is required for the live reset operation.
+- The React quality review found no hook, key, or semantic-control regressions in the changed screen.
+
 ## 2026-07-12 Live Teacher Dashboard And Activity Setup
 
 ### Completed

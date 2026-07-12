@@ -16,15 +16,27 @@ const activityId = `student-access-${suffix}`;
 const idTokens = [];
 
 async function createIdentity(label) {
+  const email = `student-access-${label}-${suffix}@example.com`;
+  const password = `Tmp-${suffix}!Aa1`;
   const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: `student-access-${label}-${suffix}@example.com`, password: `Tmp-${suffix}!Aa1`, returnSecureToken: true }),
+    body: JSON.stringify({ email, password, returnSecureToken: true }),
   });
   const result = await response.json();
   if (!response.ok) throw new Error(`Test account creation failed: ${JSON.stringify(result)}`);
   idTokens.push(result.idToken);
-  return { uid: result.localId, idToken: result.idToken };
+  return { uid: result.localId, idToken: result.idToken, email, password };
+}
+
+async function signIn(email, password) {
+  const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, returnSecureToken: true }),
+  });
+  const result = await response.json();
+  return { status: response.status, result };
 }
 
 async function deleteIdentity(idToken) {
@@ -91,6 +103,22 @@ try {
   if (randomized.status !== 201 || randomized.result.groups?.filter((item) => item.classId === classId).length !== 1 || randomized.result.groups.find((item) => item.classId === classId)?.studentIds.length !== 2) throw new Error("Random default group assignment failed.");
   const foreignGroup = await api(managementPath, { method: "POST", idToken: unassignedStudent.idToken, body: { action: "createGroup", classId, name: "침입 모둠" } });
   if (foreignGroup.status !== 403) throw new Error(`Non-owner group creation should be 403, got ${foreignGroup.status}.`);
+  const updatedStudent = await api(`/api/teacher/students/${encodeURIComponent(`${teacher.uid}:s2`)}`, { method: "PATCH", idToken: teacher.idToken, body: { name: "수정된 학생", studentNumber: `UPDATED-${suffix}`, classId } });
+  if (updatedStudent.status !== 200 || !(await api(managementPath, { idToken: teacher.idToken })).result.students.some((item) => item.id === `${teacher.uid}:s2` && item.name === "수정된 학생")) throw new Error("Student profile update failed.");
+  const foreignStudentUpdate = await api(`/api/teacher/students/${encodeURIComponent(`${teacher.uid}:s1`)}`, { method: "PATCH", idToken: unassignedStudent.idToken, body: { name: "침입", studentNumber: "INTRUDER", classId } });
+  if (foreignStudentUpdate.status !== 404) throw new Error(`Non-owner student update should be hidden with 404, got ${foreignStudentUpdate.status}.`);
+  const resetPassword = await api(`/api/teacher/students/${encodeURIComponent(`${teacher.uid}:s1`)}`, { method: "POST", idToken: teacher.idToken, body: { action: "resetPassword" } });
+  if (resetPassword.status === 200 && typeof resetPassword.result.password === "string") {
+    const oldPasswordLogin = await signIn(assignedStudent.email, assignedStudent.password);
+    const newPasswordLogin = await signIn(assignedStudent.email, resetPassword.result.password);
+    if (oldPasswordLogin.status === 200 || newPasswordLogin.status !== 200) throw new Error("Reset student password did not replace the old password.");
+    assignedStudent.idToken = newPasswordLogin.result.idToken;
+    idTokens.push(assignedStudent.idToken);
+  } else if (resetPassword.status !== 503) {
+    throw new Error(`Student password reset failed unexpectedly: ${JSON.stringify(resetPassword)}`);
+  }
+  const deletedStudent = await api(`/api/teacher/students/${encodeURIComponent(`${teacher.uid}:s2`)}`, { method: "DELETE", idToken: teacher.idToken });
+  if (deletedStudent.status !== 200 || (await api(managementPath, { idToken: teacher.idToken })).result.students.some((item) => item.id === `${teacher.uid}:s2`)) throw new Error("Student deletion failed.");
 
   const assignedSession = await api("/api/student/session", { idToken: assignedStudent.idToken });
   if (assignedSession.status !== 200 || assignedSession.result.student?.id !== "s1" || !assignedSession.result.activities?.some((item) => item.activity.id === activityId)) {

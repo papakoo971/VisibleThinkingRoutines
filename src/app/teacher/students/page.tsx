@@ -1,10 +1,11 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import readXlsxFile from "read-excel-file/browser";
 import { Download, FileSpreadsheet, GripVertical, KeyRound, Plus, Trash2, Upload, Users, Workflow } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { getFirebaseAuth } from "@/lib/firebase-auth";
-import { assignStudentToDefaultGroup, createClass, createDefaultGroup, deleteClass, deleteDefaultGroup, fetchClassManagement, randomizeDefaultGroups, type ClassManagement } from "@/lib/class-management";
+import { assignStudentToDefaultGroup, createClass, createDefaultGroup, deleteClass, deleteDefaultGroup, deleteStudent, fetchClassManagement, randomizeDefaultGroups, resetStudentPassword, updateStudent, type ClassManagement } from "@/lib/class-management";
 
 type GroupAssignment = Record<string, string[]>;
 type IssuedCredential = { className: string; studentNumber: string; name: string; email: string; password: string };
@@ -26,6 +27,7 @@ export default function StudentsPage() {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [managementError, setManagementError] = useState<string | null>(null);
+  const [issuedPassword, setIssuedPassword] = useState<{ studentName: string; password: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function StudentsPage() {
     void randomizeDefaultGroups(selectedClassId, randomMode, randomValue).then(setManagement).catch((error: unknown) => setManagementError(error instanceof Error ? error.message : "자동 배정에 실패했습니다."));
   }
 
-  async function importCsv(event: ChangeEvent<HTMLInputElement>) {
+  async function importStudents(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -106,7 +108,13 @@ export default function StudentsPage() {
     setImportError(null);
 
     try {
-      const rows = parseStudentCsv(await file.text());
+      let rows;
+      if (file.name.toLowerCase().endsWith(".xlsx")) {
+        const workbook = await readXlsxFile(file);
+        rows = parseStudentRows((workbook[0]?.data ?? []).map((row) => row.map((cell) => cell == null ? "" : String(cell))));
+      } else {
+        rows = parseStudentCsv(await file.text());
+      }
       const user = getFirebaseAuth().currentUser;
       if (!user) throw new Error("교사 로그인이 필요합니다.");
       const response = await fetch("/api/teacher/students/import", {
@@ -123,7 +131,7 @@ export default function StudentsPage() {
         setSelectedClassId(next.classes.find((item) => item.name === result.credentials[0].className)?.id ?? selectedClassId);
       }
     } catch (error) {
-      setImportError(error instanceof Error ? error.message : "CSV 파일을 처리하지 못했습니다.");
+      setImportError(error instanceof Error ? error.message : "학생 명단 파일을 처리하지 못했습니다.");
     } finally {
       setImporting(false);
     }
@@ -138,6 +146,36 @@ export default function StudentsPage() {
 
   function downloadSample() {
     downloadTextFile("student-import-sample.csv", "\uFEFF학급,학번,이름\n5학년 1반,20260101,김민준\n");
+  }
+
+  async function editStudent(student: ClassManagement["students"][number]) {
+    const name = window.prompt("학생 이름", student.name)?.trim();
+    if (!name) return;
+    const studentNumber = window.prompt("학번", student.studentNumber)?.trim();
+    if (!studentNumber) return;
+    try {
+      await updateStudent(student.id, { name, studentNumber, classId: student.classId });
+      setManagement(await fetchClassManagement());
+      setManagementError(null);
+    } catch (error) { setManagementError(error instanceof Error ? error.message : "학생 정보를 수정하지 못했습니다."); }
+  }
+
+  async function reissuePassword(student: ClassManagement["students"][number]) {
+    try {
+      const result = await resetStudentPassword(student.id);
+      if (!result.password) throw new Error("새 비밀번호를 받지 못했습니다.");
+      setIssuedPassword({ studentName: student.name, password: result.password });
+      setManagementError(null);
+    } catch (error) { setManagementError(error instanceof Error ? error.message : "비밀번호를 재발급하지 못했습니다."); }
+  }
+
+  async function removeStudent(student: ClassManagement["students"][number]) {
+    if (!window.confirm(`${student.name} 학생과 로그인 계정을 삭제할까요? 활동 기록도 함께 삭제될 수 있습니다.`)) return;
+    try {
+      await deleteStudent(student.id);
+      setManagement(await fetchClassManagement());
+      setManagementError(null);
+    } catch (error) { setManagementError(error instanceof Error ? error.message : "학생을 삭제하지 못했습니다."); }
   }
 
   return (
@@ -224,10 +262,10 @@ export default function StudentsPage() {
               <FileSpreadsheet className="h-8 w-8 text-emerald-700" />
               <p className="mt-3 text-sm font-medium">CSV 또는 XLSX 파일 업로드</p>
               <p className="mt-1 text-xs text-zinc-500">필수 컬럼: 학급, 학번, 이름</p>
-              <input ref={fileInputRef} onChange={importCsv} type="file" accept=".csv,text/csv" className="hidden" />
+              <input ref={fileInputRef} onChange={importStudents} type="file" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" />
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={importing} className="mt-4 inline-flex h-9 items-center gap-2 rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white disabled:bg-zinc-400">
                 <Upload className="h-4 w-4" />
-                {importing ? "등록 중..." : "CSV 파일 선택"}
+                {importing ? "등록 중..." : "CSV/XLSX 파일 선택"}
               </button>
             </div>
             <button type="button" onClick={downloadSample} className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white text-sm font-semibold">
@@ -235,6 +273,7 @@ export default function StudentsPage() {
               샘플 CSV 다운로드
             </button>
             {importError ? <p role="alert" className="mt-3 text-sm text-red-700">{importError}</p> : null}
+            {issuedPassword ? <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950"><p className="font-semibold">{issuedPassword.studentName} 임시 비밀번호</p><p className="mt-2 font-mono text-lg font-bold">{issuedPassword.password}</p><p className="mt-1 text-xs">이 창을 닫으면 다시 확인할 수 없습니다.</p><button type="button" onClick={() => void navigator.clipboard.writeText(issuedPassword.password)} className="mt-2 rounded border border-emerald-300 px-2 py-1 text-xs font-semibold">복사</button><button type="button" onClick={() => setIssuedPassword(null)} className="ml-2 rounded border border-emerald-300 px-2 py-1 text-xs font-semibold">닫기</button></div> : null}
             {importResult ? (
               <div className="mt-3 rounded-md border border-zinc-200 bg-stone-50 p-3 text-sm">
                 <p className="font-semibold">총 {importResult.total}행 · 성공 {importResult.successCount} · 오류 {importResult.errorCount}</p>
@@ -260,9 +299,7 @@ export default function StudentsPage() {
                     <td className="px-4 py-3 font-medium">{student.name}</td>
                     <td className="px-4 py-3 text-emerald-700">{student.passwordIssued ? "발급됨" : "미발급"}</td>
                     <td className="px-4 py-3">
-                      <button className="rounded-md border border-zinc-200 px-2.5 py-1.5 text-xs font-semibold">
-                        재발급
-                      </button>
+                      <div className="flex gap-1"><button type="button" onClick={() => void editStudent(student)} className="rounded-md border border-zinc-200 px-2.5 py-1.5 text-xs font-semibold">수정</button><button type="button" onClick={() => void reissuePassword(student)} className="rounded-md border border-zinc-200 px-2.5 py-1.5 text-xs font-semibold">재발급</button><button type="button" onClick={() => void removeStudent(student)} className="rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-semibold text-red-700">삭제</button></div>
                     </td>
                   </tr>
                 ))}
@@ -374,15 +411,18 @@ function StudentDragCard({
 
 function parseStudentCsv(source: string) {
   const lines = source.replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim());
-  if (lines.length < 2) throw new Error("헤더와 학생 데이터가 포함된 CSV 파일을 선택해 주세요.");
-  const headers = parseCsvLine(lines[0]).map((header) => header.trim().toLowerCase());
+  return parseStudentRows(lines.map(parseCsvLine));
+}
+
+function parseStudentRows(rows: string[][]) {
+  if (rows.length < 2) throw new Error("헤더와 학생 데이터가 포함된 파일을 선택해 주세요.");
+  const headers = rows[0].map((header) => header.trim().toLowerCase());
   const classIndex = headers.findIndex((header) => ["학급", "class", "classname"].includes(header));
   const numberIndex = headers.findIndex((header) => ["학번", "studentnumber", "student_number"].includes(header));
   const nameIndex = headers.findIndex((header) => ["이름", "name"].includes(header));
   if ([classIndex, numberIndex, nameIndex].some((index) => index < 0)) throw new Error("필수 헤더는 학급, 학번, 이름입니다.");
 
-  return lines.slice(1).map((line) => {
-    const cells = parseCsvLine(line);
+  return rows.slice(1).filter((cells) => cells.some((cell) => cell.trim())).map((cells) => {
     return { className: cells[classIndex] ?? "", studentNumber: cells[numberIndex] ?? "", name: cells[nameIndex] ?? "" };
   });
 }

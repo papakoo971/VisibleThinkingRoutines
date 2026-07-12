@@ -373,6 +373,7 @@ query GetClassManagement @auth(level: USER) {
   students(where: { teacherId: { eq_expr: "auth.uid" } }) {
     id
     externalId
+    authUid
     studentNumber
     name
     passwordIssued
@@ -488,6 +489,18 @@ mutation DeleteStudent($id: String!) @auth(level: USER) @transaction {
     }
   }
   student_delete(key: { id: $id })
+}
+
+mutation UpdateStudent($id: String!, $schoolClassId: String!, $studentNumber: String!, $name: String!) @auth(level: USER) @transaction {
+  query @redact {
+    student(key: { id: $id }) { teacherId @check(expr: "this == auth.uid") }
+    schoolClass(key: { id: $schoolClassId }) { teacherId @check(expr: "this == auth.uid") }
+  }
+  student_update(key: { id: $id }, data: {
+    schoolClass: { id: $schoolClassId }
+    studentNumber: $studentNumber
+    name: $name
+  })
 }
 
 mutation DeleteSchoolClass($id: String!) @auth(level: USER) @transaction {

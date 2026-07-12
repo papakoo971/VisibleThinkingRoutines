@@ -195,6 +195,7 @@ export interface GetClassManagementData {
   students: ({
     id: string;
     externalId?: string | null;
+    authUid?: string | null;
     studentNumber: string;
     name: string;
     passwordIssued: boolean;
@@ -728,6 +729,17 @@ export interface UnlinkStudentAuthVariables {
   studentId: string;
 }
 
+export interface UpdateStudentData {
+  student_update?: Student_Key | null;
+}
+
+export interface UpdateStudentVariables {
+  id: string;
+  schoolClassId: string;
+  studentNumber: string;
+  name: string;
+}
+
 export interface UpdateThinkingCardTagsData {
   thinkingCard_update?: ThinkingCard_Key | null;
 }
@@ -1198,6 +1210,18 @@ export const deleteStudentRef: DeleteStudentRef;
 export function deleteStudent(vars: DeleteStudentVariables): MutationPromise<DeleteStudentData, DeleteStudentVariables>;
 export function deleteStudent(dc: DataConnect, vars: DeleteStudentVariables): MutationPromise<DeleteStudentData, DeleteStudentVariables>;
 
+interface UpdateStudentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateStudentVariables): MutationRef<UpdateStudentData, UpdateStudentVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateStudentVariables): MutationRef<UpdateStudentData, UpdateStudentVariables>;
+  operationName: string;
+}
+export const updateStudentRef: UpdateStudentRef;
+
+export function updateStudent(vars: UpdateStudentVariables): MutationPromise<UpdateStudentData, UpdateStudentVariables>;
+export function updateStudent(dc: DataConnect, vars: UpdateStudentVariables): MutationPromise<UpdateStudentData, UpdateStudentVariables>;
+
 interface DeleteSchoolClassRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: DeleteSchoolClassVariables): MutationRef<DeleteSchoolClassData, DeleteSchoolClassVariables>;
@@ -1413,4 +1437,3 @@ export const setMyIndividualSubmissionRef: SetMyIndividualSubmissionRef;
 
 export function setMyIndividualSubmission(vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
 export function setMyIndividualSubmission(dc: DataConnect, vars: SetMyIndividualSubmissionVariables): MutationPromise<SetMyIndividualSubmissionData, SetMyIndividualSubmissionVariables>;
-
